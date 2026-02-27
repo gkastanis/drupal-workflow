@@ -1,0 +1,64 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "echo 'DRUPAL WORKFLOW PLUGIN ACTIVE | Rules: /drupal-workflow:drupal-rules | Test: /drupal-workflow:drupal-test | Verify: /drupal-workflow:drupal-verify'",
+          "timeout": 3000,
+          "once": true
+        }]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep",
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/block-sensitive-files.sh",
+          "timeout": 5000
+        }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/php-lint-on-save.sh",
+          "timeout": 10000
+        }]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": ".*",
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/subagent-context-inject.sh",
+          "timeout": 5000
+        }]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/teammate-quality-gate.sh",
+          "timeout": 10000
+        }]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/teammate-quality-gate.sh",
+          "timeout": 10000
+        }]
+      }
+    ]
+  }
+}

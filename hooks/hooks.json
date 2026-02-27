@@ -26,7 +26,8 @@
         "hooks": [{
           "type": "command",
           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/php-lint-on-save.sh",
-          "timeout": 10000
+          "timeout": 10000,
+          "once": false
         }]
       }
     ],
@@ -42,7 +43,7 @@
     ],
     "TeammateIdle": [
       {
-        "matcher": "",
+        "matcher": ".*",
         "hooks": [{
           "type": "command",
           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/teammate-quality-gate.sh",
@@ -52,7 +53,7 @@
     ],
     "TaskCompleted": [
       {
-        "matcher": "",
+        "matcher": ".*",
         "hooks": [{
           "type": "command",
           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/teammate-quality-gate.sh",

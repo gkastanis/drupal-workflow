@@ -41,16 +41,6 @@
         }]
       }
     ],
-    "TeammateIdle": [
-      {
-        "matcher": ".*",
-        "hooks": [{
-          "type": "command",
-          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/teammate-quality-gate.sh",
-          "timeout": 10000
-        }]
-      }
-    ],
     "TaskCompleted": [
       {
         "matcher": ".*",

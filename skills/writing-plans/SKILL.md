@@ -103,7 +103,7 @@ Every delegation MUST include:
 ## Example Delegation
 
 ```
-Task(subagent_type="module-development-agent",
+Task(subagent_type="drupal-builder",
      prompt="""
 ## Task: Create ArticleManager Service
 

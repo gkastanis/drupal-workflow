@@ -1,6 +1,6 @@
 # drupal-workflow
 
-A comprehensive Claude Code plugin for Drupal development. Provides 14 skills, 10 specialized agents, 4 commands, and quality-gate hooks for testing, dependency injection, entity API, caching, security, and verification.
+A comprehensive Claude Code plugin for Drupal development. Provides 14 skills, 3 specialized agents, 4 commands, and quality-gate hooks for testing, dependency injection, entity API, caching, security, and verification.
 
 ## Installation
 
@@ -44,22 +44,15 @@ Skills provide domain knowledge that Claude can consult during development.
 | **discover** | Docs-first codebase discovery. Use before Glob/Grep to get Logic IDs and file paths from semantic documentation. |
 | **writing-plans** | Write comprehensive implementation plans for sub-agents or complex tasks. |
 
-## Agents (10)
+## Agents (3)
 
-Specialized agents for different Drupal development tasks.
+Three focused agents covering the full Drupal development lifecycle: build, review, verify.
 
 | Agent | Description |
 |-------|-------------|
-| **drupal-architect** | Architecture decisions, content models, module selection, database schema design. |
-| **module-development-agent** | Custom module creation: plugins, services, hooks, controllers, forms. |
-| **theme-development-agent** | Theme development: Twig templates, SCSS/CSS, JavaScript behaviors, responsive design. |
-| **configuration-management-agent** | Config export/import, update hooks, environment-specific settings. |
-| **content-migration-agent** | Data migration: source/process plugins, ETL pipelines, content modeling. |
-| **security-compliance-agent** | Security review, OWASP compliance, WCAG 2.1 AA accessibility validation. |
-| **performance-devops-agent** | Performance optimization, caching, CDN configuration, deployment workflows. |
-| **functional-testing-agent** | Behat functional testing: acceptance tests, user workflows, business logic. |
-| **unit-testing-agent** | PHPUnit testing: unit tests, kernel tests, functional tests for custom modules. |
-| **drupal-verifier-agent** | Implementation verification: validates services, entities, hooks, access control. |
+| **drupal-builder** | Full-stack implementation: modules, themes, config, migrations, performance. |
+| **drupal-reviewer** | Architecture, security audit, coding standards, and test writing. |
+| **drupal-verifier** | Implementation verification via ddev drush eval, curl smoke tests, config checks. |
 
 ## Commands (4)
 
@@ -82,7 +75,6 @@ The plugin registers hooks for quality gates:
 | **PreToolUse** | `Read` or `Grep` | Blocks access to sensitive files (`settings.php`, `.env`, credentials). |
 | **PostToolUse** | `Edit` or `Write` | Runs `php -l` lint on modified PHP files (`.php`, `.module`, `.inc`, `.install`, `.theme`). |
 | **SubagentStart** | Any subagent | Injects Drupal context (version detection, agent memory paths). |
-| **TeammateIdle** | Teammate goes idle | Runs quality gate checks on completed work. |
 | **TaskCompleted** | Task marked done | Runs quality gate checks on completed work. |
 
 ## Project Structure
@@ -92,7 +84,7 @@ drupal-workflow/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin metadata
 ├── skills/                   # 14 Drupal development skills
-├── agents/                   # 10 specialized agents
+├── agents/                   # 3 specialized agents
 ├── commands/                 # 4 slash commands
 ├── hooks/
 │   └── hooks.json            # Hook event definitions

@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Drupal development workflow plugins",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "plugins": [
     {
       "name": "drupal-workflow",
       "source": "./",
       "description": "Comprehensive Drupal development workflow: 14 skills, 10 agents, 4 commands, and quality hooks for testing, DI, entity API, caching, security, and verification.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Zorz"
       },

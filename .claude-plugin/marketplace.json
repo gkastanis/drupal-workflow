@@ -1,12 +1,28 @@
 {
   "name": "drupal-workflow",
-  "description": "Drupal development workflow plugins",
+  "owner": {
+    "name": "Zorz",
+    "email": "github@gkastanis"
+  },
+  "metadata": {
+    "description": "Drupal development workflow plugins",
+    "version": "1.0.0"
+  },
   "plugins": [
     {
       "name": "drupal-workflow",
-      "version": "1.0.0",
+      "source": "./",
       "description": "Comprehensive Drupal development workflow: 14 skills, 10 agents, 4 commands, and quality hooks for testing, DI, entity API, caching, security, and verification.",
-      "path": "."
+      "version": "1.0.0",
+      "author": {
+        "name": "Zorz"
+      },
+      "homepage": "https://github.com/gkastanis/drupal-workflow",
+      "repository": "https://github.com/gkastanis/drupal-workflow",
+      "license": "MIT",
+      "keywords": ["drupal", "ddev", "testing", "verification", "modules", "theming", "security", "caching", "migration", "php"],
+      "category": "development",
+      "tags": ["drupal", "ddev", "php", "testing", "agents"]
     }
   ]
 }

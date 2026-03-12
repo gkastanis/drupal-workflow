@@ -126,6 +126,19 @@ Copy-paste these prompts when starting a Claude Code session in a Drupal project
 
 This loads the feature map, business index, and Logic ID counts in one shot. Best when the structural index is already up to date.
 
+### Context efficiency
+
+On a real Drupal project (~85k LOC custom code, 26 features, 433 Logic IDs), `/discover --prime` outputs **~2,500 tokens** (~190 lines) covering:
+
+- Full feature map with structural counts and hotspot scoring
+- Cross-cutting module dependencies
+- Feature registry with descriptions
+- Key entities and core capabilities
+- Logic ID counts per feature (26 tech specs)
+- Available tech specs and query commands
+
+That's ~1.2% of a 200k context window — roughly **34 lines of code awareness per token spent**.
+
 ## Semantic Documentation (Optional)
 
 For large Drupal projects, create `docs/semantic/` in your project root to enable logic-to-code mapping:

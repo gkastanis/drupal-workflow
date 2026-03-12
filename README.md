@@ -103,6 +103,29 @@ drupal-workflow/
 └── README.md
 ```
 
+## Getting Started — Suggested Prompts
+
+Copy-paste these prompts when starting a Claude Code session in a Drupal project.
+
+### Fresh project (no docs/semantic/)
+
+> This is a Drupal project with no semantic documentation yet. Analyze the codebase and generate docs/semantic/ with:
+> 1. 00_BUSINESS_INDEX.md — master feature registry mapping every custom module to a feature code (AUTH, CONT, etc.) with descriptions and key entities
+> 2. tech/*.md — one spec per feature with Logic ID tables (FEAT-L1, FEAT-L2...) mapping each business rule to file:line:function
+> 3. schemas/*.json — entity schemas for each custom content/config entity type
+>
+> Then run /structural-index to generate the structural awareness layer, and /discover --prime to verify everything.
+
+### Existing project (docs/semantic/ exists)
+
+> Run /discover --status to check what exists. If the structural index is missing or stale, run /structural-index to generate it. Then run /discover --prime to load the full project context. Show me the status summary when done.
+
+### Quick session (skip generation, just prime)
+
+> Run /discover --prime
+
+This loads the feature map, business index, and Logic ID counts in one shot. Best when the structural index is already up to date.
+
 ## Semantic Documentation (Optional)
 
 For large Drupal projects, create `docs/semantic/` in your project root to enable logic-to-code mapping:

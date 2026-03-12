@@ -9,6 +9,7 @@ QUERY="$*"
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 DOCS_DIR="$PROJECT_DIR/docs/semantic"
 TECH_DIR="$DOCS_DIR/tech"
+STRUCTURAL_DIR="$DOCS_DIR/structural"
 BUSINESS_INDEX="$DOCS_DIR/00_BUSINESS_INDEX.md"
 
 # Derive project name and QMD collection from directory
@@ -87,6 +88,20 @@ check_status() {
         fi
     else
         echo "⚠️  QMD not installed (optional)"
+    fi
+
+    # Check structural index
+    echo ""
+    if [[ -d "$STRUCTURAL_DIR" ]]; then
+        echo "✅ Structural index: $STRUCTURAL_DIR"
+        STRUCT_COUNT=$(ls "$STRUCTURAL_DIR"/*.md 2>/dev/null | wc -l)
+        echo "   Files: $STRUCT_COUNT"
+        if [[ -f "$STRUCTURAL_DIR/.generated-at" ]]; then
+            echo "   Generated: $(cat "$STRUCTURAL_DIR/.generated-at")"
+        fi
+    else
+        echo "⚠️  Structural index: Not generated"
+        echo "   Run /structural-index to generate"
     fi
 }
 
@@ -168,7 +183,7 @@ lookup_feature() {
 
         # Search business index
         echo "📋 Business Index matches:"
-        grep -i "$feature" "$BUSINESS_INDEX" 2>/dev/null | \
+        grep -iF "$feature" "$BUSINESS_INDEX" 2>/dev/null | \
             grep -E '^\|' | head -10
         echo ""
 
@@ -222,13 +237,68 @@ search_docs() {
 
     # Extract any Logic IDs from matches
     echo "🔗 Potentially Relevant Logic IDs:"
-    grep -ri "$query" "$TECH_DIR" 2>/dev/null | \
+    grep -riF "$query" "$TECH_DIR" 2>/dev/null | \
         grep -oE '[A-Z]{2,4}-L[0-9]+' | sort -u | head -10
+
+    # Structural index fallthrough
+    if [[ -d "$STRUCTURAL_DIR" ]]; then
+        echo "🏗️ Structural Index matches:"
+        for struct_file in "$STRUCTURAL_DIR"/*.md; do
+            if [[ -f "$struct_file" ]]; then
+                local matches=$(grep -icF "$query" "$struct_file" 2>/dev/null || echo 0)
+                if [[ "$matches" -gt 0 ]]; then
+                    echo "  $(basename "$struct_file"): $matches matches"
+                    grep -iF "$query" "$struct_file" 2>/dev/null | head -3
+                fi
+            fi
+        done
+        echo ""
+    fi
 
     echo ""
     echo "💡 SUGGESTED NEXT STEPS:"
     echo "   - Use /semantic-docs to get full spec for a feature"
     echo "   - Read specific tech spec files listed above"
+}
+
+# Structural index query helpers
+query_structural() {
+    local type="$1" query="$2"
+    local file="$STRUCTURAL_DIR/${type}.md"
+
+    if [[ ! -f "$file" ]]; then
+        echo "Structural index not found: $file"
+        echo "Run /structural-index to generate."
+        return 1
+    fi
+
+    echo "=== STRUCTURAL: ${type} ==="
+    echo ""
+    grep -iF "$query" "$file" 2>/dev/null | head -20
+    echo ""
+}
+
+query_dependencies() {
+    local query="$1"
+    local dep_graph="$DOCS_DIR/DEPENDENCY_GRAPH.md"
+
+    if [[ ! -f "$dep_graph" ]]; then
+        echo "Dependency graph not found."
+        echo "Run /structural-index to generate."
+        return 1
+    fi
+
+    echo "=== DEPENDENCY ANALYSIS: $query ==="
+    echo ""
+    # Search for the query in the dependency graph
+    grep -iF -A5 "$query" "$dep_graph" 2>/dev/null | head -30
+    echo ""
+
+    # Also check #UsedBy tags in tech specs
+    if [[ -d "$TECH_DIR" ]]; then
+        echo "Tech spec references:"
+        grep -riF "$query" "$TECH_DIR" 2>/dev/null | grep -i "UsedBy" | head -10
+    fi
 }
 
 # Main logic
@@ -249,6 +319,24 @@ case "$QUERY" in
         ;;
     --status|-s)
         check_status
+        ;;
+    service:*|svc:*)
+        query_structural "services" "${QUERY#*:}"
+        ;;
+    route:*|path:*)
+        query_structural "routes" "${QUERY#*:}"
+        ;;
+    hook:*)
+        query_structural "hooks" "${QUERY#*:}"
+        ;;
+    plugin:*)
+        query_structural "plugins" "${QUERY#*:}"
+        ;;
+    entity:*|ent:*)
+        query_structural "entities" "${QUERY#*:}"
+        ;;
+    deps:*|impact:*)
+        query_dependencies "${QUERY#*:}"
         ;;
     *)
         # Check if it looks like a feature code (2-4 uppercase letters)

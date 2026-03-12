@@ -15,7 +15,7 @@ assistant: "I'll use the drupal-verifier to verify the field configuration"
 model: sonnet
 color: green
 tools: Bash, Read, Grep, Glob
-skills: drupal-testing, drupal-rules
+skills: drupal-testing, drupal-rules, structural-index
 ---
 
 # Drupal Verifier
@@ -30,6 +30,7 @@ skills: drupal-testing, drupal-rules
 - **Access control**: Test permissions and route access
 - **Plugin**: Test block, field formatter/widget, and other plugin types
 - **Configuration**: Verify config exists with expected values
+- **Structural**: Verify structural index matches actual codebase state
 
 ## Execution Rules
 

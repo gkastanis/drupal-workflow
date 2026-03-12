@@ -16,7 +16,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
 color: green
 memory: project
-skills: drupal-service-di, drupal-hook-patterns, drupal-coding-standards, drupal-entity-api, drupal-caching, twig-templating, drupal-conventions, drupal-testing, verification-before-completion, writing-plans, discover, drupal-rules
+skills: drupal-service-di, drupal-hook-patterns, drupal-coding-standards, drupal-entity-api, drupal-caching, twig-templating, drupal-conventions, drupal-testing, verification-before-completion, writing-plans, discover, structural-index, drupal-rules
 ---
 
 # Drupal Builder
@@ -67,6 +67,17 @@ public function __construct(
 - Translatable strings use `|t` in Twig, `t()` in PHP
 - JSON via `\GuzzleHttp\Utils::jsonDecode/jsonEncode`
 - Exceptions for errors (not NULL/FALSE returns)
+
+## Structural Awareness
+
+Before multi-file changes or cross-module work:
+
+1. **Check dependencies**: Run `discover deps:FEATURE` to understand blast radius
+2. **Review hotspots**: Check FEATURE_MAP.md hotspots column for high-traffic files
+3. **Verify consumers**: Before changing a service interface, check who injects it via `discover service:service_id`
+4. **Hook chain awareness**: Before modifying hooks, check `discover hook:hook_name` for all implementations
+
+If structural index is stale or missing, run `/structural-index` first.
 
 ## Handoff
 

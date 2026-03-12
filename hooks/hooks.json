@@ -29,6 +29,15 @@
           "timeout": 10000,
           "once": false
         }]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/staleness-check.sh",
+          "timeout": 5000,
+          "once": false
+        }]
       }
     ],
     "SubagentStart": [

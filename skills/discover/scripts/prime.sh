@@ -16,6 +16,27 @@ echo "=== DOCS-FIRST SESSION PRIMER ==="
 echo "Project: $PROJECT_NAME"
 echo ""
 
+# Load Feature Map if available (Tier 1 — compact, always loadable)
+FEATURE_MAP="$DOCS_DIR/FEATURE_MAP.md"
+if [[ -f "$FEATURE_MAP" ]]; then
+    echo "🗺️  FEATURE MAP (auto-generated)"
+    echo "================================="
+    cat "$FEATURE_MAP"
+    echo ""
+
+    # Check staleness
+    STRUCTURAL_DIR="$DOCS_DIR/structural"
+    if [[ -f "$STRUCTURAL_DIR/.generated-at" ]]; then
+        GEN_TIME=$(cat "$STRUCTURAL_DIR/.generated-at")
+        STALE_COUNT=$(find "$PROJECT_DIR" -newer "$STRUCTURAL_DIR/.generated-at" \( -name "*.services.yml" -o -name "*.routing.yml" -o -name "*.module" \) 2>/dev/null | wc -l)
+        if [[ "$STALE_COUNT" -gt 0 ]]; then
+            echo "⚠️  STALENESS WARNING: $STALE_COUNT structural source files changed since $GEN_TIME"
+            echo "   Run /structural-index to regenerate."
+            echo ""
+        fi
+    fi
+fi
+
 if [[ ! -f "$BUSINESS_INDEX" ]]; then
     echo "⚠️  Business index not found at: $BUSINESS_INDEX"
     echo ""

@@ -1,0 +1,148 @@
+---
+name: structural-index
+description: Generate and query structural indexes for Drupal projects. Parses services.yml, routing.yml, hooks, plugins, and entity types to build an automated dependency graph. Use for blast radius analysis, service dependency mapping, and structural queries. Commands include `/structural-index` to generate, and structural query prefixes via discover (e.g., `discover service:entity_type.manager`, `discover deps:AUTH`).
+---
+
+# Structural Index Skill
+
+Automated structural awareness for Drupal projects — parses declarative configs to map services, routes, hooks, plugins, and entities.
+
+**Project-Agnostic:** Works with any Drupal project.
+
+## Why Use This
+
+Fills the gap between semantic docs (human-authored "why") and raw codebase (Glob/Grep):
+
+```
+Layer 3: Semantic docs       (human-authored, business "why")
+Layer 2: Structural index    (script-generated, Drupal-aware "what" + "how connected")
+Layer 1: Raw codebase        (Glob/Grep/Read)
+```
+
+**Without structural index:**
+- Manually grep for service dependencies
+- Miss cross-module hook interactions
+- No blast radius awareness for changes
+
+**With structural index:**
+- Instant service dependency graph
+- Hook/event chain visibility
+- Feature impact analysis via `discover deps:FEATURE`
+
+## Generate Index
+
+```bash
+$SKILL_DIR/scripts/generate-all.sh [project-dir]
+```
+
+Generates:
+- `docs/semantic/structural/services.md` — Service IDs, classes, injected dependencies
+- `docs/semantic/structural/routes.md` — Route names, paths, controllers, access
+- `docs/semantic/structural/hooks.md` — Hook implementations (procedural + OOP)
+- `docs/semantic/structural/plugins.md` — Block, FieldType, Action, QueueWorker plugins
+- `docs/semantic/structural/entities.md` — Content and config entity types
+- `docs/semantic/DEPENDENCY_GRAPH.md` — Cross-reference dependency analysis
+- `docs/semantic/FEATURE_MAP.md` — Feature overview with structural counts
+
+## Check Staleness
+
+```bash
+$SKILL_DIR/scripts/check-staleness.sh [project-dir]
+```
+
+Reports which structural files need regeneration based on file modification times.
+
+## Query via Discover
+
+Once generated, query structural data through the discover skill:
+
+```bash
+discover service:entity_type.manager    # Find a service
+discover svc:config.factory             # Shorthand
+discover route:/admin/config            # Find routes by path
+discover path:/node                     # Shorthand
+discover hook:node_presave              # Find hook implementations
+discover plugin:Block                   # Find block plugins
+discover entity:node                    # Find entity types
+discover deps:AUTH                      # Blast radius / dependency analysis
+discover impact:my_module               # What depends on this module
+```
+
+## Output Formats
+
+### services.md
+```
+| Service ID | Class | Dependencies | Module | Tags |
+|------------|-------|--------------|--------|------|
+| my_module.service | Drupal\my_module\Service | @entity_type.manager, @config.factory | my_module | event_subscriber |
+```
+
+### routes.md
+```
+| Route Name | Path | Controller/Form | Access | Module |
+|------------|------|-----------------|--------|--------|
+| my_module.settings | /admin/config/my-module | MyController::settings | administer site | my_module |
+```
+
+### hooks.md
+```
+| Hook Name | Implementation | Type | File | Module |
+|-----------|---------------|------|------|--------|
+| node_presave | my_module_node_presave | procedural | my_module.module | my_module |
+| form_alter | MyHooks::formAlter | oop | src/Hook/MyHooks.php | my_module |
+```
+
+### plugins.md
+```
+| Plugin Type | ID | Class | Module | File |
+|-------------|----|-------|--------|------|
+| Block | my_custom_block | MyCustomBlock | my_module | src/Plugin/Block/MyCustomBlock.php |
+```
+
+### entities.md
+```
+| Entity Type | ID | Class | Handlers | Module | File |
+|-------------|----|-------|----------|--------|------|
+| ContentEntityType | node | Node | list_builder, form, views_data | node | core/modules/node/src/Entity/Node.php |
+```
+
+## FEATURE_MAP.md
+
+Compact overview (~500 tokens) always loaded during session priming:
+
+```
+| Code | Name | Services | Hooks | Routes | Plugins | Entities | Hotspots | Spec |
+```
+
+## DEPENDENCY_GRAPH.md
+
+Sections:
+- Service Dependencies (who injects who)
+- Event/Hook Chains
+- Entity Cross-References
+- External Boundaries (HTTP, SMTP, queues)
+- Feature Adjacency Matrix
+
+## When This Triggers
+
+- "Generate structural index"
+- "Rebuild dependency graph"
+- "What services does X use"
+- "Blast radius of changing Y"
+- "Show me the service graph"
+- "What hooks does module X implement"
+- "Map dependencies for feature X"
+
+## Prerequisites
+
+- Drupal project with standard directory structure
+- `docs/semantic/` directory (for output location)
+- No external dependencies required (grep/sed/awk only)
+- Optional: `yq` for improved YAML parsing accuracy
+
+## Integration
+
+- **discover skill**: Structural query prefixes route to structural index
+- **prime.sh**: FEATURE_MAP.md loaded as primary context when available
+- **staleness hook**: Advisory warnings when structural sources change
+- **agents**: Builder checks deps before multi-file changes; Reviewer validates impact

@@ -21,7 +21,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch
 model: sonnet
 color: blue
 memory: project
-skills: drupal-entity-api, drupal-service-di, drupal-security-patterns, drupal-coding-standards, drupal-testing, verification-before-completion, discover, drupal-rules
+skills: drupal-entity-api, drupal-service-di, drupal-security-patterns, drupal-coding-standards, drupal-testing, verification-before-completion, discover, structural-index, drupal-rules
 ---
 
 # Drupal Reviewer
@@ -43,7 +43,8 @@ skills: drupal-entity-api, drupal-service-di, drupal-security-patterns, drupal-c
 3. Manual security review (SQL injection, XSS, access control)
 4. Architecture quality check (single responsibility, clean interfaces, explicit deps)
 5. Accessibility check (WCAG 2.1 AA)
-6. Generate PASS/FAIL report
+6. Structural impact review (check DEPENDENCY_GRAPH.md, verify service consumers)
+7. Generate PASS/FAIL report
 
 ## Red Flags to Report
 
@@ -55,6 +56,9 @@ skills: drupal-entity-api, drupal-service-di, drupal-security-patterns, drupal-c
 - Missing `declare(strict_types=1)`
 - Missing cache metadata on render arrays
 - Direct class dependencies instead of interfaces
+- Modifying a hotspot service without checking consumers via `discover deps:`
+- Breaking service interface contracts without updating all injectors
+- Adding hooks without checking existing hook chain in structural index
 
 ## Report Format
 

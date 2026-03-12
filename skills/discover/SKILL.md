@@ -156,6 +156,52 @@ SUGGESTED ACTIONS
 [Specific Read commands to run]
 ```
 
+## Structural Queries
+
+When a structural index has been generated (`/structural-index`), discover supports prefix-based structural queries:
+
+### Service Lookup
+```bash
+$SKILL_DIR/scripts/discover.sh service:entity_type.manager
+$SKILL_DIR/scripts/discover.sh svc:config.factory
+```
+Returns: Matching services with class, dependencies, and module.
+
+### Route Lookup
+```bash
+$SKILL_DIR/scripts/discover.sh route:/admin/config
+$SKILL_DIR/scripts/discover.sh path:/node
+```
+Returns: Matching routes with controller, access requirements.
+
+### Hook Lookup
+```bash
+$SKILL_DIR/scripts/discover.sh hook:node_presave
+```
+Returns: All implementations (procedural + OOP) with file locations.
+
+### Plugin Lookup
+```bash
+$SKILL_DIR/scripts/discover.sh plugin:Block
+```
+Returns: All plugins of the specified type with class and module.
+
+### Entity Lookup
+```bash
+$SKILL_DIR/scripts/discover.sh entity:node
+$SKILL_DIR/scripts/discover.sh ent:paragraph
+```
+Returns: Entity type definitions with handlers and module.
+
+### Dependency / Impact Analysis
+```bash
+$SKILL_DIR/scripts/discover.sh deps:AUTH
+$SKILL_DIR/scripts/discover.sh impact:my_module
+```
+Returns: Dependencies, consumers, blast radius from DEPENDENCY_GRAPH.md.
+
+**Note:** Structural queries require running `/structural-index` first. Without it, these prefixes fall through to standard search.
+
 ## Graceful Fallback
 
 If no semantic docs exist:

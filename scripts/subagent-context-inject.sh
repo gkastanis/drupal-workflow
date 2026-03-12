@@ -75,4 +75,9 @@ if [[ -f "$PROJECT_DIR/composer.json" ]]; then
     fi
 fi
 
+# Inject structural index availability hint.
+if [[ -f "$PROJECT_DIR/docs/semantic/FEATURE_MAP.md" ]]; then
+    echo "STRUCTURAL INDEX: docs/semantic/FEATURE_MAP.md available. Use 'discover deps:FEATURE' for impact analysis."
+fi
+
 log "Context injection complete for $AGENT_NAME"

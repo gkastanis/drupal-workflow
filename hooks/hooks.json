@@ -4,7 +4,7 @@
       {
         "hooks": [{
           "type": "command",
-          "command": "echo 'DRUPAL WORKFLOW PLUGIN ACTIVE | Rules: /drupal-workflow:drupal-rules | Test: /drupal-workflow:drupal-test | Verify: /drupal-workflow:drupal-verify'",
+          "command": "echo 'DRUPAL WORKFLOW PLUGIN ACTIVE | Start: /drupal-bootstrap | Prime: /drupal-prime | Status: /drupal-status | Test: /drupal-test | Verify: /drupal-verify'",
           "timeout": 3000,
           "once": true
         }]

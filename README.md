@@ -1,6 +1,6 @@
 # drupal-workflow
 
-A comprehensive Claude Code plugin for Drupal development. Provides 15 skills, 3 specialized agents, 4 commands, and quality-gate hooks for testing, dependency injection, entity API, caching, security, and verification.
+A comprehensive Claude Code plugin for Drupal development. Provides 15 skills, 3 specialized agents, 9 commands, and quality-gate hooks for testing, dependency injection, entity API, caching, security, and verification.
 
 ## Installation
 
@@ -55,7 +55,7 @@ Three focused agents covering the full Drupal development lifecycle: build, revi
 | **drupal-reviewer** | Architecture, security audit, coding standards, and test writing. |
 | **drupal-verifier** | Implementation verification via ddev drush eval, curl smoke tests, config checks. |
 
-## Commands (4)
+## Commands (9)
 
 Slash commands for common development workflows.
 
@@ -65,6 +65,11 @@ Slash commands for common development workflows.
 | `/drupal-verify` | `/drupal-verify` | Verify implementation using smoke tests and drush checks. |
 | `/implement` | `/implement` | Implement changes across all affected files with validation. |
 | `/verify-changes` | `/verify-changes` | Verify code changes are complete and consistent. |
+| `/drupal-bootstrap` | `/drupal-bootstrap` | Auto-detect project state and bootstrap semantic docs, structural index, and session context. |
+| `/drupal-prime` | `/drupal-prime` | Load project context into session (feature map, business index, Logic IDs). |
+| `/drupal-refresh` | `/drupal-refresh` | Regenerate structural index and reload session context. |
+| `/drupal-status` | `/drupal-status` | Check documentation, structural index, and staleness status. |
+| `/drupal-blast-radius` | `/drupal-blast-radius AUTH` | Analyze dependencies and blast radius for a feature or module. |
 
 ## Hooks
 
@@ -109,20 +114,19 @@ Copy-paste these prompts when starting a Claude Code session in a Drupal project
 
 ### Fresh project (no docs/semantic/)
 
-> This is a Drupal project with no semantic documentation yet. Analyze the codebase and generate docs/semantic/ with:
-> 1. 00_BUSINESS_INDEX.md — master feature registry mapping every custom module to a feature code (AUTH, CONT, etc.) with descriptions and key entities
-> 2. tech/*.md — one spec per feature with Logic ID tables (FEAT-L1, FEAT-L2...) mapping each business rule to file:line:function
-> 3. schemas/*.json — entity schemas for each custom content/config entity type
->
-> Then run /structural-index to generate the structural awareness layer, and /discover --prime to verify everything.
+> Run `/drupal-bootstrap`
+
+This auto-detects project state and bootstraps semantic docs, structural index, and session context in one step.
 
 ### Existing project (docs/semantic/ exists)
 
-> Run /discover --status to check what exists. If the structural index is missing or stale, run /structural-index to generate it. Then run /discover --prime to load the full project context. Show me the status summary when done.
+> Run `/drupal-status` then `/drupal-refresh` if needed.
+
+This checks documentation and structural index staleness, then regenerates and re-primes if anything is out of date.
 
 ### Quick session (skip generation, just prime)
 
-> Run /discover --prime
+> Run `/drupal-prime`
 
 This loads the feature map, business index, and Logic ID counts in one shot. Best when the structural index is already up to date.
 

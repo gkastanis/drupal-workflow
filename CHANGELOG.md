@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.0] - 2026-03-12
+
+### Added
+
+- `/drupal-bootstrap` command: auto-detect project state and run appropriate setup
+- `/drupal-prime` command: load project context into session
+- `/drupal-refresh` command: regenerate structural index and re-prime
+- `/drupal-status` command: check docs, structural index, and staleness
+- `/drupal-blast-radius` command: dependency and blast radius analysis
+
 ## [1.1.0] - 2026-03-12
 
 ### Added

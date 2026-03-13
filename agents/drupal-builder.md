@@ -73,9 +73,11 @@ public function __construct(
 Before creating new services, utility methods, or helper classes — check if the functionality already exists.
 
 1. **Check structural index**: Read `docs/semantic/structural/services.md` and search for services in the same domain (e.g., before writing a date utility, search for "date", "calendar", "business_day")
-2. **Check existing service classes**: If a matching service exists, read its class to see if it already has the method you need
-3. **Check base classes**: Before adding a method to a class, check its parent/trait chain for existing implementations
-4. **Search the codebase**: `Grep` for the method name or key terms — someone may have solved this already in a different module
+2. **Check method index**: Run `discover method:KEYWORD` to find existing public methods across all services, controllers, and forms
+3. **Check existing service classes**: If a matching service exists, read its class to see if it already has the method you need
+4. **Check base classes**: Before adding a method to a class, check its parent/trait chain for existing implementations
+5. **Check permissions**: Before defining new permissions, run `discover perm:KEYWORD` to avoid duplicating existing ones
+6. **Search the codebase**: `Grep` for the method name or key terms — someone may have solved this already in a different module
 
 If `docs/semantic/structural/` does not exist, tell the developer:
 > No structural index found. Run `/drupal-bootstrap` to generate it — this helps prevent duplicate code by mapping all existing services, hooks, and plugins.
@@ -88,6 +90,8 @@ Before multi-file changes or cross-module work:
 2. **Review hotspots**: Check FEATURE_MAP.md hotspots column for high-traffic files
 3. **Verify consumers**: Before changing a service interface, check who injects it via `discover service:service_id`
 4. **Hook chain awareness**: Before modifying hooks, check `discover hook:hook_name` for all implementations
+5. **Permission check**: Before adding permissions, run `discover perm:module_name` to see existing permissions in the module
+6. **Method index**: Run `discover method:ClassName` to see all public methods on a service before extending it
 
 If structural index is stale or missing, run `/drupal-refresh` first.
 

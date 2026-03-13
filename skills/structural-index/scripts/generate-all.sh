@@ -21,6 +21,10 @@ GENERATORS=(
     "generate-hook-registry.sh"
     "generate-plugin-registry.sh"
     "generate-entity-map.sh"
+    "generate-entity-schemas.sh"
+    "generate-base-fields.sh"
+    "generate-permission-registry.sh"
+    "generate-method-index.sh"
 )
 
 ERRORS=0

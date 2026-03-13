@@ -4,8 +4,16 @@
       {
         "hooks": [{
           "type": "command",
-          "command": "echo 'DRUPAL WORKFLOW PLUGIN ACTIVE | Start: /drupal-bootstrap | Prime: /drupal-prime | Status: /drupal-status | Test: /drupal-test | Verify: /drupal-verify'",
+          "command": "echo 'DRUPAL WORKFLOW PLUGIN ACTIVE | Start: /drupal-bootstrap | Prime: /drupal-prime | Status: /drupal-status | Semantic: /drupal-semantic | Test: /drupal-test | Verify: /drupal-verify'",
           "timeout": 3000,
+          "once": true
+        }]
+      },
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "PROJECT_DIR=\"${CLAUDE_PROJECT_DIR:-$(pwd)}\"; TIMESTAMP=\"$PROJECT_DIR/docs/semantic/structural/.generated-at\"; if [ -f \"$TIMESTAMP\" ]; then STALE=$(find \"$PROJECT_DIR\" -newer \"$TIMESTAMP\" \\( -name '*.services.yml' -o -name '*.routing.yml' -o -name '*.module' -o -name '*.permissions.yml' \\) -path '*/modules/*' 2>/dev/null | head -1); if [ -n \"$STALE\" ]; then bash \"${CLAUDE_PLUGIN_ROOT}/skills/structural-index/scripts/generate-all.sh\" \"$PROJECT_DIR\" >/dev/null 2>&1 && echo 'STRUCTURAL INDEX: Auto-regenerated (source files changed since last generation).'; fi; fi; exit 0",
+          "timeout": 15000,
           "once": true
         }]
       }

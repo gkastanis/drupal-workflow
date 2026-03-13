@@ -1,5 +1,57 @@
 # Changelog
 
+## [1.5.0] - 2026-03-13
+
+### Added
+
+- **Semantic Architect agent** (`@semantic-architect`): AI-powered Layer 3 documentation generator.
+  - Reads structural index (Layer 2) + source code to produce business index, tech specs with Logic IDs, and business schemas.
+  - Incremental update protocol preserves existing Logic IDs.
+  - Quality checklist ensures every service method, route, and hook has a Logic ID.
+  - Context window management: one feature per agent spawn.
+- **`/drupal-semantic` command** with 5 subcommands:
+  - `status` — check semantic doc coverage and staleness
+  - `feature FEAT` — generate/update tech spec for a feature
+  - `index` — generate/update the business index
+  - `schema ENTITY` — generate/update a business schema
+  - `init` — full project semantic doc generation (orchestrates multiple agent spawns)
+- **`*.business.json` schema format**: AI-authored entity schemas containing only business rules, related entities, and examples — no field definitions. Separates AI-authored content from auto-generated `*.base-fields.json` and `*.BUNDLE.json`.
+- **Schema auto-migration**: Agent detects conflicting `*.json` with `business_rules`, strips field definitions, renames to `*.business.json`.
+- **SessionStart auto-regen**: Structural index automatically regenerates when source files have changed since last generation (~10s cost, 0s when fresh).
+
+### Changed
+
+- `drupal-bootstrap.md`: Step 2 now nudges user toward `/drupal-semantic init` instead of generating semantic docs inline.
+- `semantic-docs/SKILL.md`: Documentation structure updated to show all three schema types (`*.base-fields.json`, `*.BUNDLE.json`, `*.business.json`).
+- `structural-index/SKILL.md`: Layer diagram references `@semantic-architect` as Layer 3 generator.
+- `hooks.json`: SessionStart hook adds staleness check with auto-regen.
+- README: Updated to 4 agents, 10 commands, schema tree with `*.business.json`.
+
+## [1.4.0] - 2026-03-13
+
+### Added
+
+- Base field generator (`generate-base-fields.sh`): parses PHP `baseFieldDefinitions()` and entity type attributes.
+  - Generates per-entity JSON schemas in `docs/semantic/schemas/*.base-fields.json` with entity metadata, field types, settings, cardinality.
+  - Summary table in `docs/semantic/structural/base-fields.md`.
+  - Patches `entities.md` Fields column with base+config format (e.g., `19+8`).
+- Permission registry generator (`generate-permission-registry.sh`): parses `*.permissions.yml` in custom modules.
+  - Outputs `docs/semantic/structural/permissions.md` with permission names, titles, modules, restrictions.
+- Method index generator (`generate-method-index.sh`): indexes public methods in Service/Controller/Form classes.
+  - Outputs `docs/semantic/structural/methods.md` with 3 sections, return types, and line numbers.
+- `discover perm:NAME` and `discover method:NAME` query prefixes for structural discovery.
+
+## [1.3.0] - 2026-03-13
+
+### Added
+
+- Entity schema generation from config YAML (`field.storage.*.yml` + `field.field.*.yml`).
+  - Generates per-bundle JSON schemas in `docs/semantic/schemas/` with field types, labels, cardinality, target types/bundles, and allowed values.
+  - Summary table in `docs/semantic/structural/schemas.md`.
+  - Enhances `entities.md` with Fields column showing count breakdown (e.g., `8 (3 ref, 1 list)`).
+- `discover schema:ENTITY` query prefix for on-demand schema lookup.
+- Config directory auto-detection: `config/sync`, `config/default`, `config/staging`, `../config/sync`, with fallback to `modules/custom/*/config/install`.
+
 ## [1.2.0] - 2026-03-12
 
 ### Added

@@ -48,6 +48,17 @@ show_help() {
     echo "  discover.sh --prime           Output business index for context"
     echo "  discover.sh --status          Check docs/QMD status"
     echo ""
+    echo "Structural queries:"
+    echo "  discover.sh service:NAME      Find a service"
+    echo "  discover.sh route:/PATH       Find routes by path"
+    echo "  discover.sh hook:NAME         Find hook implementations"
+    echo "  discover.sh plugin:TYPE       Find plugins"
+    echo "  discover.sh entity:NAME       Find entity types"
+    echo "  discover.sh schema:ENTITY     Show entity field schema (JSON)"
+    echo "  discover.sh perm:NAME         Find permissions"
+    echo "  discover.sh method:KEYWORD    Find public methods (searches class, method, module)"
+    echo "  discover.sh deps:FEATURE      Blast radius / dependency analysis"
+    echo ""
     echo "Examples:"
     echo "  discover.sh AUTH              Full authentication spec"
     echo "  discover.sh timer             Search for timer-related docs"
@@ -334,6 +345,44 @@ case "$QUERY" in
         ;;
     entity:*|ent:*)
         query_structural "entities" "${QUERY#*:}"
+        ;;
+    perm:*|permission:*)
+        query_structural "permissions" "${QUERY#*:}"
+        ;;
+    method:*)
+        query_structural "methods" "${QUERY#*:}"
+        ;;
+    schema:*)
+        SCHEMA_DIR="$DOCS_DIR/schemas"
+        SCHEMA_QUERY="${QUERY#*:}"
+
+        if [[ ! -d "$SCHEMA_DIR" ]]; then
+            echo "No schemas found at: $SCHEMA_DIR"
+            echo "Run /structural-index to generate."
+            exit 1
+        fi
+
+        echo "=== SCHEMA: $SCHEMA_QUERY ==="
+        echo ""
+
+        SCHEMA_FOUND=false
+        for sf in "$SCHEMA_DIR"/*.json; do
+            [[ -f "$sf" ]] || continue
+            sfn=$(basename "$sf")
+            if [[ "$sfn" == *"$SCHEMA_QUERY"* ]]; then
+                echo "--- $sfn ---"
+                cat "$sf"
+                echo ""
+                SCHEMA_FOUND=true
+            fi
+        done
+
+        if [[ "$SCHEMA_FOUND" == false ]]; then
+            echo "No schema matching '$SCHEMA_QUERY'"
+            echo ""
+            echo "Available schemas:"
+            ls "$SCHEMA_DIR"/*.json 2>/dev/null | xargs -I{} basename {} .json
+        fi
         ;;
     deps:*|impact:*)
         query_dependencies "${QUERY#*:}"

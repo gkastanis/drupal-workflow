@@ -22,11 +22,16 @@ Check in order:
 
 ### Step 2: Handle — No Semantic Docs
 
-If `docs/semantic/` does not exist, analyze the codebase and generate:
+If `docs/semantic/` does not exist:
 
-- **`docs/semantic/00_BUSINESS_INDEX.md`** — Master feature registry. Map every custom module to a feature code (AUTH, CONT, SRCH, etc.) with description and key entities.
-- **`docs/semantic/tech/*.md`** — One spec per feature. Each contains a Logic ID table (FEAT-L1, FEAT-L2...) mapping business rules to `file:line:function`.
-- **`docs/semantic/schemas/*.json`** — Entity schemas for each custom content/config entity type.
+1. Create the directory: `mkdir -p docs/semantic/`
+2. Proceed to Step 3 (generate the structural index first — it's a prerequisite for semantic docs)
+3. After structural index is generated, tell the user:
+
+> No semantic docs found. Structural index generated successfully.
+> Run `/drupal-semantic init` to generate business index, tech specs, and business schemas.
+
+Do NOT generate semantic docs inline — they require the `@semantic-architect` agent which the user should invoke explicitly via `/drupal-semantic init`.
 
 Then proceed to Step 3.
 

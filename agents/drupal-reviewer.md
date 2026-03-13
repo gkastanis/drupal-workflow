@@ -59,7 +59,8 @@ skills: drupal-entity-api, drupal-service-di, drupal-security-patterns, drupal-c
 - Modifying a hotspot service without checking consumers via `discover deps:`
 - Breaking service interface contracts without updating all injectors
 - Adding hooks without checking existing hook chain in structural index
-- **Duplicate functionality**: new service/helper that reimplements what an existing service already does — check `structural/services.md`
+- **Duplicate functionality**: new service/helper that reimplements what an existing service already does — check `structural/services.md` and `discover method:KEYWORD`
+- **Duplicate permissions**: new permission that overlaps with existing ones — check `discover perm:module_name`
 - No structural index present — nudge developer to run `/drupal-bootstrap`
 
 ## Report Format

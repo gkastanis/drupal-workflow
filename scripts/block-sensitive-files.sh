@@ -8,7 +8,7 @@ LOG_FILE="/tmp/blocked-sensitive-files.log"
 timestamp() { date '+%Y-%m-%d %H:%M:%S'; }
 
 log() {
-    echo "[$(timestamp)] $1" >> "$LOG_FILE"
+    echo "[$(timestamp)] $1" >> "$LOG_FILE" 2>/dev/null || true
 }
 
 # Configuration file location

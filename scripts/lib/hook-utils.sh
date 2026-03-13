@@ -8,7 +8,7 @@ LOG_FILE="${HOOK_LOG_FILE:-/tmp/test-driven-handoff.log}"
 timestamp() { date '+%Y-%m-%d %H:%M:%S'; }
 
 log() {
-    echo "[$(timestamp)] $1" >> "$LOG_FILE"
+    echo "[$(timestamp)] $1" >> "$LOG_FILE" 2>/dev/null || true
 }
 
 # Parse a JSON field using jq with grep/sed fallback.

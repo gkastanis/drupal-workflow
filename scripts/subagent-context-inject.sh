@@ -9,7 +9,7 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && p
 # Source shared utilities with inline fallback.
 source "$PLUGIN_ROOT/scripts/lib/hook-utils.sh" 2>/dev/null || {
     timestamp() { date '+%Y-%m-%d %H:%M:%S'; }
-    log() { echo "[$(timestamp)] $1" >> "$LOG_FILE"; }
+    log() { echo "[$(timestamp)] $1" >> "$LOG_FILE" 2>/dev/null || true; }
     json_field() {
         local json="$1" jq_path="$2" fallback_key="$3" value=""
         if command -v jq >/dev/null 2>&1; then value=$(echo "$json" | jq -r "$jq_path" 2>/dev/null); fi

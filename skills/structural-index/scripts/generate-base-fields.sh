@@ -564,14 +564,11 @@ for php_file in "${ENTITY_FILES[@]}"; do
     }
     ' "$php_file" 2>/dev/null)
 
-    # Count fields and categories (use temp file to avoid subshell/pipe issues with set -e)
-    TMP_COUNT="/tmp/bf_count_$$"
-    echo "$FIELDS_JSON" > "$TMP_COUNT"
-    field_count=$(grep -c '"type":' "$TMP_COUNT" || true)
-    ref_count=$(grep -c '"target_type":' "$TMP_COUNT" || true)
-    list_count=$(grep -c '"allowed_values":' "$TMP_COUNT" || true)
-    computed_count=$(grep -c '"computed": true' "$TMP_COUNT" || true)
-    rm -f "$TMP_COUNT"
+    # Count fields and categories (use heredoc to avoid temp files — plugin runs in read-only sandbox)
+    field_count=$(echo "$FIELDS_JSON" | grep -c '"type":' || true)
+    ref_count=$(echo "$FIELDS_JSON" | grep -c '"target_type":' || true)
+    list_count=$(echo "$FIELDS_JSON" | grep -c '"allowed_values":' || true)
+    computed_count=$(echo "$FIELDS_JSON" | grep -c '"computed": true' || true)
     # Default to 0 if empty
     [[ -z "$field_count" ]] && field_count=0
     [[ -z "$ref_count" ]] && ref_count=0

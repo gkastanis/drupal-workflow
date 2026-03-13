@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.7.0] - 2026-03-14
+
+### Added
+
+- **Eval framework** (7 scripts, 315 assertions): Automated quality checks for all skills, agents, hooks, and behavioral tests.
+  - `eval-skills.py`: 165 assertions across 15 reference skills (content quality, key terms, imperatives).
+  - `eval-agents.py`: 60 assertions across 4 agent definitions (structure, frontmatter, skills).
+  - `eval-hooks.py`: 20 assertions for hooks system integrity.
+  - `eval-semantic-architect.py`: 25 assertions for tech spec output quality (behavioral).
+  - `eval-builder-agent.py`: 20 assertions for skill application (behavioral — does the agent use its loaded skills?).
+  - `eval-reviewer-agent.py`: 15 assertions for issue detection (behavioral).
+  - `eval-verifier-agent.py`: 10 assertions for verification output (behavioral).
+- **Playground pages**: Interactive HTML docs for Discover (search/query routing) and Agents (team/skills/hooks). Navigation across all 3 pages.
+
+### Fixed
+
+- **All commands**: Replace `$PLUGIN_DIR` (nonexistent) with `$CLAUDE_PLUGIN_ROOT` (actual env var). This was causing "PLUGIN_DIR: not found" on all projects.
+
+### Improved
+
+- **11 skill definitions**: Fixed YAML frontmatter format (7 skills), added imperative language (8 skills), added missing key terms like `baseFieldDefinitions`, `accessCheck`, `#cache`, `|t` (5 skills).
+- **drupal-verifier agent**: Added `## Scope` section.
+- **semantic-architect agent**: Added `## Scope` section, trimmed content from 8592 to 7989 chars.
+- **drupal-rules**: Added `accessCheck`, `#cache` metadata, and `TranslatableMarkup` rules.
+
 ## [1.6.0] - 2026-03-13
 
 ### Added
@@ -16,7 +41,7 @@
 - **`/drupal-bootstrap`**: Rewritten to follow the 3-step pipeline (structural → semantic → CLAUDE.md hint). No longer runs `prime.sh`.
 - **`/drupal-refresh`**: Runs `inject-claude-md.sh` instead of heavy `prime.sh` after regenerating structural index.
 - **`/drupal-prime`**: Documented as debug/overview command (~2500 tokens), not part of the main pipeline.
-- **All commands**: Standardized on `$PLUGIN_DIR` variable (was mixed `$CLAUDE_PLUGIN_ROOT`).
+- **All commands**: Standardized variable references (later fixed to `$CLAUDE_PLUGIN_ROOT` in v1.7.0).
 - **`prime.sh`**: Fixed Logic ID counting (use frontmatter instead of broken grep pattern), fixed stale command references.
 - **README**: New Workflow section explaining the 3-step pipeline, updated command descriptions, project structure.
 

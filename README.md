@@ -242,6 +242,75 @@ The generators automatically detect `web/`, `www/`, and top-level `modules/` dir
 
 </details>
 
+<details>
+<summary><strong>Evaluation</strong> — semantic docs impact on AI agent performance</summary>
+
+### Setup
+
+Tested how a one-line prompt hint ("read `docs/semantic/00_BUSINESS_INDEX.md` before exploring code") affects AI agent response quality, speed, and cost on real developer questions.
+
+- **Model**: Claude Sonnet
+- **Method**: Same question asked twice per project — once without hint, once with
+- **Scope**: 8 questions across 6 Drupal projects (D9/D10/D11, 6-43 custom modules each)
+- **Agent**: Read-only with file exploration tools, two runs to measure variance
+
+### Results
+
+| # | Question Type | Without | With | Speed Delta | Cost Delta |
+|---|--------------|---------|------|-------------|------------|
+| 1 | Status overview | 20.2s | 35.0s | +73% slower | +23% |
+| 2 | Hook/service tracing | 86.0s | 85.4s | ~same | ~same |
+| 3 | Debugging (find function) | 25.5s | 28.1s | ~same | +45% |
+| 4 | Scope new feature | 53.2s | 58.4s | ~same | ~same |
+| 5 | Feature status check | 78.3s | 24.1s | **69% faster** | **53% cheaper** |
+| 6 | Module inventory | 64.6s | 88.8s | +37% slower | +8% |
+| 7 | Impact analysis | 37.2s | 31.2s | 16% faster | +12% |
+| 8 | Onboarding overview | 60.4s | 19.3s | **68% faster** | **69% cheaper** |
+
+**Totals across 2 runs:**
+
+| Metric | Without | With | Delta |
+|--------|---------|------|-------|
+| Time (Run 1) | 509.5s | 272.9s | **-46% faster** |
+| Time (Run 2) | 425.4s | 370.3s | **-13% faster** |
+| Cost (Run 2) | $1.033 | $0.891 | **-14% cheaper** |
+| Output tokens | 7,074 | 8,196 | +16% more detail |
+
+### Where semantic docs help most
+
+- **Broad questions**: "what features exist?", "project overview", "feature status" — 30-80s saved
+- Agent reads the business index once instead of grep-exploring dozens of files
+- Answers include business context, known limitations, and architecture details that grep can't surface
+
+**Quality examples:**
+- Onboarding question found 4 content types without hint, **7 with hint** (including role-gated private types)
+- Feature status question included "Known Limitations" and "What's Not Built Yet" sections
+
+### Where they don't help
+
+- **Narrow grep-friendly questions**: "where is function X?" — grep finds it in seconds regardless
+- **Deep source-code tracing**: "what hooks touch X?" — agent must read actual PHP regardless
+- **Small-surface-area questions**: theme with 5 preprocess functions — no index needed
+- **Debugging**: "X is broken, find it" — needs code-level tracing, not docs
+
+### When to prime vs. skip
+
+| Prime (`/drupal-prime`) | Skip priming |
+|------------------------|--------------|
+| "What's the status of X?" | "Where is function X?" |
+| "Overview for a new dev" | "What hooks touch X?" |
+| "List all modules/features" | "X is broken, find it" |
+| "What would I need to change?" | Theme/template questions |
+| "Scope a new feature" | "Trace this execution flow" |
+
+**Rule of thumb**: If the answer requires knowing about things across many files, semantic docs win big. If the answer lives in one specific file, grep is just as fast.
+
+### Cost analysis
+
+With hint is 14% cheaper despite reading 41% more total tokens, because fewer tool-use turns (reads index then answers, vs. grep-read-grep-read-answer cycles) and cache reads replace expensive cache creation.
+
+</details>
+
 ## License
 
 MIT

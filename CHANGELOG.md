@@ -1,12 +1,24 @@
 # Changelog
 
-## [1.5.5] - 2026-03-13
+## [1.6.0] - 2026-03-13
 
 ### Added
 
 - **CLAUDE.md auto-injection** (`scripts/inject-claude-md.sh`): After semantic doc generation, injects a compact `## Codebase` section into the project's CLAUDE.md with feature counts, Logic ID totals, and CODE:Name pairs. This is the prompt hint that drives +61% speed improvement from the v4 eval.
   - Creates CLAUDE.md if missing, replaces existing `## Codebase` section, or appends. Idempotent.
   - Wired into `/drupal-semantic init` (Step 7), `feature` (Step 3), and `index` (Step 3).
+- **Tech spec validator** (`scripts/validate-tech-specs.sh`): Checks `CODE_01_Name.md` naming and YAML frontmatter. `--fix` auto-renames and adds missing frontmatter. Fixes non-deterministic agent output.
+- **New `/drupal-semantic` subcommands**: `validate [--fix]` and `inject` for standalone use without spawning the architect agent.
+
+### Changed
+
+- **`@semantic-architect` agent**: Hardened file naming constraints with explicit MUST rules and forbidden examples to reduce non-deterministic output across repos.
+- **`/drupal-bootstrap`**: Rewritten to follow the 3-step pipeline (structural → semantic → CLAUDE.md hint). No longer runs `prime.sh`.
+- **`/drupal-refresh`**: Runs `inject-claude-md.sh` instead of heavy `prime.sh` after regenerating structural index.
+- **`/drupal-prime`**: Documented as debug/overview command (~2500 tokens), not part of the main pipeline.
+- **All commands**: Standardized on `$PLUGIN_DIR` variable (was mixed `$CLAUDE_PLUGIN_ROOT`).
+- **`prime.sh`**: Fixed Logic ID counting (use frontmatter instead of broken grep pattern), fixed stale command references.
+- **README**: New Workflow section explaining the 3-step pipeline, updated command descriptions, project structure.
 
 ## [1.5.0] - 2026-03-13
 

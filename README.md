@@ -66,9 +66,9 @@ Slash commands for common development workflows.
 | `/drupal-verify` | `/drupal-verify` | Verify implementation using smoke tests and drush checks. |
 | `/implement` | `/implement` | Implement changes across all affected files with validation. |
 | `/verify-changes` | `/verify-changes` | Verify code changes are complete and consistent. |
-| `/drupal-bootstrap` | `/drupal-bootstrap` | Auto-detect project state and bootstrap structural index and session context. |
-| `/drupal-prime` | `/drupal-prime` | Load project context into session (feature map, business index, Logic IDs). |
-| `/drupal-refresh` | `/drupal-refresh` | Regenerate structural index and reload session context. |
+| `/drupal-bootstrap` | `/drupal-bootstrap` | Auto-detect project state, run the 3-step pipeline as needed. |
+| `/drupal-prime` | `/drupal-prime` | Load full project overview into session (~2500 tokens, debug/overview). |
+| `/drupal-refresh` | `/drupal-refresh` | Regenerate structural index and update CLAUDE.md hint. |
 | `/drupal-status` | `/drupal-status` | Check documentation, structural index, and staleness status. |
 | `/drupal-blast-radius` | `/drupal-blast-radius AUTH` | Analyze dependencies and blast radius for a feature or module. |
 | `/drupal-semantic` | `/drupal-semantic init` | Generate/manage semantic docs. Subcommands: `init`, `feature FEAT`, `index`, `schema ENTITY`, `status`, `validate [--fix]`, `inject`. |
@@ -96,7 +96,7 @@ drupal-workflow/
 │   │   └── scripts/          # 12 generator + check scripts
 │   └── ...                   # 14 other skills
 ├── agents/                   # 4 specialized agents
-├── commands/                 # 4 slash commands
+├── commands/                 # 10 slash commands
 ├── hooks/
 │   └── hooks.json            # Hook event definitions
 ├── scripts/                  # Hook + utility scripts
@@ -132,9 +132,9 @@ Step 3: /drupal-semantic inject  → CLAUDE.md hint (compact pointer that drives
 
 | Scenario | Command |
 |----------|---------|
-| Fresh project (no docs) | `/drupal-bootstrap` (runs all three steps) |
+| Fresh project (no docs) | `/drupal-bootstrap` (runs Step 1, nudges you to run Steps 2-3) |
 | Docs exist, check staleness | `/drupal-status` then `/drupal-refresh` if needed |
-| Quick session, docs are fresh | `/drupal-prime` (loads context without regenerating) |
+| Quick session, docs are fresh | CLAUDE.md hint handles it automatically. `/drupal-prime` for full debug dump. |
 | Just update CLAUDE.md counts | `/drupal-semantic inject` |
 | Validate tech spec format | `/drupal-semantic validate` (add `--fix` to auto-repair) |
 
@@ -187,7 +187,7 @@ The `semantic-docs` and `discover` skills automatically use this documentation w
 The structural index is a script-generated **Layer 2** that sits between human-authored semantic docs and raw codebase searches:
 
 ```
-Layer 3: Semantic docs       (human-authored, business "why")
+Layer 3: Semantic docs       (AI-generated, business "why")
 Layer 2: Structural index    (script-generated, Drupal-aware "what" + "how connected")
 Layer 1: Raw codebase        (Glob/Grep/Read)
 ```
@@ -339,10 +339,10 @@ The with_docs variant (docs present, agent not told) performs almost identically
 - **Blast radius with code-level gotchas**: Baseline discovered a double-discount bug risk that docs didn't capture
 - **Recent activity questions**: git log provides the same context as docs
 
-### When to prime vs. skip
+### When semantic docs help vs. when raw grep wins
 
-| Prime (`/drupal-prime`) | Skip priming |
-|------------------------|--------------|
+| Semantic docs (CLAUDE.md hint) | Raw grep (no docs needed) |
+|-------------------------------|--------------------------|
 | "What's the status of X?" | "Trace this service dependency chain" |
 | "Overview for a new dev" | "Where is function X?" |
 | "List all modules/features" | "X is broken, find it" |

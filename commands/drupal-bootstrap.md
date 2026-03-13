@@ -1,11 +1,19 @@
 ---
-description: "Auto-detect project state and bootstrap semantic docs, structural index, and session context"
+description: "Auto-detect project state and bootstrap structural index, semantic docs, and CLAUDE.md hint"
 ---
 # /drupal-bootstrap - Project Bootstrap
 
 ## Purpose
 
-Auto-detect project state and do the right thing. Generates missing documentation, builds structural index, and primes the session.
+Auto-detect project state and run the 3-step documentation pipeline as needed:
+
+```
+Step 1: Structural index   (deterministic bash scripts)
+Step 2: Semantic docs       (AI-generated tech specs + business index)
+Step 3: CLAUDE.md hint      (compact pointer injected into CLAUDE.md)
+```
+
+Only runs what's missing. Idempotent — safe to run repeatedly.
 
 ## Protocol
 
@@ -16,56 +24,67 @@ PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 ```
 
 Check in order:
-1. Does `$PROJECT_DIR/docs/semantic/` exist?
-2. Does `$PROJECT_DIR/docs/semantic/structural/` exist?
-3. Is the structural index stale? Run `$CLAUDE_PLUGIN_ROOT/skills/structural-index/scripts/check-staleness.sh "$PROJECT_DIR"`
+1. Does `$PROJECT_DIR/docs/semantic/structural/.generated-at` exist?
+2. Is the structural index stale? Run `$PLUGIN_DIR/skills/structural-index/scripts/check-staleness.sh "$PROJECT_DIR"`
+3. Do `$PROJECT_DIR/docs/semantic/tech/*.md` files exist?
+4. Does `$PROJECT_DIR/CLAUDE.md` contain `## Codebase`?
 
-### Step 2: Handle — No Semantic Docs
+### Step 2: Generate Structural Index (Layer 2)
 
-If `docs/semantic/` does not exist:
+If structural index is missing or stale:
 
-1. Create the directory: `mkdir -p docs/semantic/`
-2. Proceed to Step 3 (generate the structural index first — it's a prerequisite for semantic docs)
-3. After structural index is generated, tell the user:
+```bash
+bash "$PLUGIN_DIR/skills/structural-index/scripts/generate-all.sh" "$PROJECT_DIR"
+```
 
-> No semantic docs found. Structural index generated successfully.
-> Run `/drupal-semantic init` to generate business index, tech specs, and business schemas.
+This is deterministic — bash scripts parse `*.services.yml`, `*.routing.yml`, hooks, plugins, entities. No AI involved.
+
+### Step 3: Generate Semantic Docs (Layer 3)
+
+If `docs/semantic/tech/*.md` does not exist:
+
+> Structural index generated. No semantic docs found.
+> Run `/drupal-semantic init` to generate tech specs with Logic IDs and business index.
+> This spawns the `@semantic-architect` agent per feature (~5 min for a large project).
 
 Do NOT generate semantic docs inline — they require the `@semantic-architect` agent which the user should invoke explicitly via `/drupal-semantic init`.
 
-Then proceed to Step 3.
+Skip to Step 5.
 
-### Step 3: Handle — No Structural Index
+### Step 4: Inject CLAUDE.md Hint
 
-If `docs/semantic/structural/` does not exist or is empty:
-
-```bash
-bash "$CLAUDE_PLUGIN_ROOT/skills/structural-index/scripts/generate-all.sh" "$PROJECT_DIR"
-```
-
-Then proceed to Step 5.
-
-### Step 4: Handle — Stale Structural Index
-
-If check-staleness.sh reports staleness:
+If tech specs exist but `CLAUDE.md` has no `## Codebase` section:
 
 ```bash
-bash "$CLAUDE_PLUGIN_ROOT/skills/structural-index/scripts/generate-all.sh" "$PROJECT_DIR"
+bash "$PLUGIN_DIR/scripts/inject-claude-md.sh" "$PROJECT_DIR"
 ```
 
-Then proceed to Step 5.
+This injects the compact hint (~45 words) that drives +61% speed improvement.
 
-### Step 5: Prime Session
+### Step 5: Validate Tech Specs
 
-Everything is ready. Load context:
+If tech specs exist, run the validator:
 
 ```bash
-bash "$CLAUDE_PLUGIN_ROOT/skills/discover/scripts/prime.sh"
+bash "$PLUGIN_DIR/scripts/validate-tech-specs.sh" "$PROJECT_DIR"
 ```
 
-Output the result to give the user the full feature map, business index, entity list, Logic ID counts, and available tech specs.
+Report any non-conforming files. Suggest `/drupal-semantic validate --fix` if errors found.
 
-### Step 6: Check for Duplicate Hooks
+### Step 6: Report
+
+Summarize what was done and what the user should do next:
+
+| State | Action taken | Next step |
+|-------|-------------|-----------|
+| No structural index | Generated | `/drupal-semantic init` |
+| Stale structural index | Regenerated | Ready |
+| No semantic docs | Skipped (needs AI) | `/drupal-semantic init` |
+| No CLAUDE.md hint | Injected | Ready |
+| Validation errors | Reported | `/drupal-semantic validate --fix` |
+| Everything fresh | Nothing | Ready to work |
+
+### Step 7: Check for Duplicate Hooks
 
 Read `$PROJECT_DIR/.claude/settings.json` if it exists. Warn the user if it contains:
 - PreToolUse hooks matching `Read` or `Grep`

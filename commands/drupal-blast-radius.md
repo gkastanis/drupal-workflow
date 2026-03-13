@@ -25,7 +25,7 @@ Stop here if missing.
 ### Step 2: Get Dependency Graph
 
 ```bash
-bash "$CLAUDE_PLUGIN_ROOT/skills/discover/scripts/discover.sh" "deps:$ARGUMENTS"
+bash "$PLUGIN_DIR/skills/discover/scripts/discover.sh" "deps:$ARGUMENTS"
 ```
 
 ### Step 3: Search Structural Files

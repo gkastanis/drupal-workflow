@@ -31,7 +31,7 @@ if [[ -f "$FEATURE_MAP" ]]; then
         STALE_COUNT=$(find "$PROJECT_DIR" -newer "$STRUCTURAL_DIR/.generated-at" \( -name "*.services.yml" -o -name "*.routing.yml" -o -name "*.module" \) 2>/dev/null | wc -l)
         if [[ "$STALE_COUNT" -gt 0 ]]; then
             echo "⚠️  STALENESS WARNING: $STALE_COUNT structural source files changed since $GEN_TIME"
-            echo "   Run /structural-index to regenerate."
+            echo "   Run /drupal-refresh to regenerate."
             echo ""
         fi
     fi
@@ -41,7 +41,7 @@ if [[ ! -f "$BUSINESS_INDEX" ]]; then
     echo "⚠️  Business index not found at: $BUSINESS_INDEX"
     echo ""
     echo "To generate semantic docs:"
-    echo "  1. Run semantic-architect-agent"
+    echo "  1. Run /drupal-semantic init"
     echo "  2. Or create docs/semantic/00_BUSINESS_INDEX.md manually"
     echo ""
     echo "Expected QMD collection: $QMD_COLLECTION"
@@ -75,8 +75,7 @@ if [[ -d "$TECH_DIR" ]]; then
         if [[ -f "$tech_file" ]]; then
             # Extract feature code from filename (handles FEAT_01_Name.md and feat-01-name.md)
             feature=$(basename "$tech_file" .md | sed 's/_[0-9]*_.*$//' | sed 's/-[0-9]*-.*$//' | tr '[:lower:]' '[:upper:]')
-            count=$(grep -cE '^\| \*\*\[' "$tech_file" 2>/dev/null)
-            count=${count:-0}
+            count=$(grep -oP '^logic_id_count:\s*\K\d+' "$tech_file" 2>/dev/null || echo 0)
             if [[ -n "$count" && "$count" -gt 0 ]]; then
                 short_file=$(basename "$tech_file")
                 printf "%-7s | %-9s | %s\n" "$feature" "$count" "$short_file"
@@ -99,10 +98,10 @@ echo ""
 
 echo "💡 QUICK REFERENCE"
 echo "=================="
-echo "- /discover FEATURE    Get full technical spec"
-echo "- /discover \"query\"    Search all docs"
-echo "- /discover --status   Check docs/QMD status"
-echo "- /semantic-docs       Deep Logic ID lookup"
+echo "- /discover FEATURE          Get full technical spec"
+echo "- /discover \"query\"          Search all docs"
+echo "- /drupal-semantic status    Check doc coverage"
+echo "- /drupal-semantic inject    Update CLAUDE.md hint"
 if command -v qmd &>/dev/null; then
     echo "- qmd search \"query\" -c $QMD_COLLECTION"
 fi

@@ -76,7 +76,8 @@ check_status() {
     if [[ -d "$DOCS_DIR" ]]; then
         echo "✅ Semantic docs: $DOCS_DIR"
         if [[ -f "$BUSINESS_INDEX" ]]; then
-            FEATURE_COUNT=$(grep -cE '^\| \*\*[A-Z]+\*\*' "$BUSINESS_INDEX" 2>/dev/null || echo 0)
+            FEATURE_COUNT=$(grep -cE '^\| \*\*[A-Z]+\*\*' "$BUSINESS_INDEX" 2>/dev/null)
+            FEATURE_COUNT=${FEATURE_COUNT:-0}
             echo "   Features: $FEATURE_COUNT"
         fi
         if [[ -d "$TECH_DIR" ]]; then

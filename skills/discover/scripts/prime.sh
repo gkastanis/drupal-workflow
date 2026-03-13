@@ -75,7 +75,8 @@ if [[ -d "$TECH_DIR" ]]; then
         if [[ -f "$tech_file" ]]; then
             # Extract feature code from filename (handles FEAT_01_Name.md and feat-01-name.md)
             feature=$(basename "$tech_file" .md | sed 's/_[0-9]*_.*$//' | sed 's/-[0-9]*-.*$//' | tr '[:lower:]' '[:upper:]')
-            count=$(grep -cE '^\| \*\*\[' "$tech_file" 2>/dev/null || echo 0)
+            count=$(grep -cE '^\| \*\*\[' "$tech_file" 2>/dev/null)
+            count=${count:-0}
             if [[ -n "$count" && "$count" -gt 0 ]]; then
                 short_file=$(basename "$tech_file")
                 printf "%-7s | %-9s | %s\n" "$feature" "$count" "$short_file"

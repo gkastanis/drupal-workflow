@@ -103,7 +103,8 @@ for perm_file in "${PERM_FILES[@]}"; do
     ' "$perm_file" >> "$OUTPUT"
 
     # Count permissions in this file
-    file_perms=$(grep -cE '^[a-zA-Z_][a-zA-Z0-9_ ]*:$' "$perm_file" 2>/dev/null || echo 0)
+    file_perms=$(grep -cE '^[a-zA-Z_][a-zA-Z0-9_ ]*:$' "$perm_file" 2>/dev/null)
+    file_perms=${file_perms:-0}
     TOTAL=$((TOTAL + file_perms))
 done
 

@@ -68,6 +68,18 @@ public function __construct(
 - JSON via `\GuzzleHttp\Utils::jsonDecode/jsonEncode`
 - Exceptions for errors (not NULL/FALSE returns)
 
+## Duplicate Prevention
+
+Before creating new services, utility methods, or helper classes — check if the functionality already exists.
+
+1. **Check structural index**: Read `docs/semantic/structural/services.md` and search for services in the same domain (e.g., before writing a date utility, search for "date", "calendar", "business_day")
+2. **Check existing service classes**: If a matching service exists, read its class to see if it already has the method you need
+3. **Check base classes**: Before adding a method to a class, check its parent/trait chain for existing implementations
+4. **Search the codebase**: `Grep` for the method name or key terms — someone may have solved this already in a different module
+
+If `docs/semantic/structural/` does not exist, tell the developer:
+> No structural index found. Run `/drupal-bootstrap` to generate it — this helps prevent duplicate code by mapping all existing services, hooks, and plugins.
+
 ## Structural Awareness
 
 Before multi-file changes or cross-module work:
@@ -77,7 +89,7 @@ Before multi-file changes or cross-module work:
 3. **Verify consumers**: Before changing a service interface, check who injects it via `discover service:service_id`
 4. **Hook chain awareness**: Before modifying hooks, check `discover hook:hook_name` for all implementations
 
-If structural index is stale or missing, run `/structural-index` first.
+If structural index is stale or missing, run `/drupal-refresh` first.
 
 ## Handoff
 

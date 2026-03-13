@@ -93,6 +93,9 @@ When removing or disabling something, remove from ALL locations (controller, tem
 - Use data objects instead of arrays. Convert arrays to objects ASAP.
 - PHP 8.4+: Use property hooks for get/set methods.
 - Exception: Drupal render/form APIs can use arrays.
+- Always use `accessCheck(TRUE)` on entity queries — never omit it.
+- Always add `#cache` metadata (tags, contexts, max-age) to render arrays.
+- Always wrap user-facing strings with `->t()` or `|t` in Twig for TranslatableMarkup.
 
 ### JSON & Logging
 

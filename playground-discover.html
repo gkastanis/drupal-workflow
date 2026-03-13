@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>drupal-workflow / Discover</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --text: #1a1a2e; --text-light: #555; --text-muted: #888;
+    --bg: #fafafa; --white: #fff;
+    --border: #e5e5e5; --border-light: #f0f0f0;
+    --blue: #2563eb; --blue-light: #eff6ff; --blue-border: #bfdbfe;
+    --green: #16a34a; --green-light: #f0fdf4; --green-border: #bbf7d0;
+    --purple: #7c3aed; --purple-light: #f5f3ff; --purple-border: #ddd6fe;
+    --orange: #ea580c; --orange-light: #fff7ed; --orange-border: #fed7aa;
+    --red: #dc2626; --red-light: #fef2f2; --red-border: #fecaca;
+    --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 60px 24px 120px; }
+
+  /* Nav */
+  .nav { display: flex; gap: 24px; margin-bottom: 48px; font-size: 14px; }
+  .nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+  .nav a:hover { color: var(--text); }
+  .nav a.current { color: var(--text); font-weight: 700; }
+
+  /* Header */
+  .hero { margin-bottom: 64px; }
+  .hero h1 { font-size: 42px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .hero p { font-size: 20px; color: var(--text-light); max-width: 640px; line-height: 1.5; }
+
+  /* Section */
+  .section { margin-bottom: 64px; }
+  .section h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .section .subtitle { font-size: 16px; color: var(--text-light); margin-bottom: 32px; max-width: 640px; }
+
+  /* Try It */
+  .try-bar { display: flex; align-items: center; gap: 0; margin-bottom: 32px; }
+  .try-prefix { font-family: var(--mono); font-size: 15px; font-weight: 600; background: var(--white); border: 2px solid var(--border); border-right: none; border-radius: 10px 0 0 10px; padding: 14px 16px; color: var(--text-muted); white-space: nowrap; }
+  .try-input { font-family: var(--mono); font-size: 15px; flex: 1; border: 2px solid var(--border); border-radius: 0 10px 10px 0; padding: 14px 16px; outline: none; background: var(--white); color: var(--text); }
+  .try-input:focus { border-color: var(--blue); }
+  .try-input::placeholder { color: var(--text-muted); }
+
+  .try-result { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 28px; min-height: 200px; transition: all 0.2s; }
+  .try-result .result-route { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; padding: 4px 10px; border-radius: 4px; display: inline-block; }
+  .try-result .result-route.structural { background: var(--green-light); color: var(--green); }
+  .try-result .result-route.semantic { background: var(--purple-light); color: var(--purple); }
+  .try-result .result-route.feature { background: var(--blue-light); color: var(--blue); }
+  .try-result .result-route.cascade { background: var(--orange-light); color: var(--orange); }
+  .try-result h4 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .try-result p { font-size: 15px; color: var(--text-light); line-height: 1.7; margin-bottom: 12px; }
+  .try-result .result-file { font-family: var(--mono); font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+  .try-result .result-output { font-family: var(--mono); font-size: 13px; background: var(--bg); border: 1px solid var(--border-light); border-radius: 8px; padding: 16px; line-height: 1.8; color: var(--text-light); white-space: pre-wrap; margin-top: 12px; }
+
+  /* Query prefix grid */
+  .prefix-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+  .prefix-card { background: var(--white); border: 2px solid var(--border); border-radius: 10px; padding: 20px; cursor: pointer; transition: all 0.15s; }
+  .prefix-card:hover { border-color: var(--blue-border); box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+  .prefix-card.active { border-color: var(--green); background: var(--green-light); }
+  .prefix-card .prefix-name { font-family: var(--mono); font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .prefix-card .prefix-alias { font-family: var(--mono); font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .prefix-card .prefix-desc { font-size: 13px; color: var(--text-light); line-height: 1.4; }
+
+  /* Cascade flow */
+  .cascade { display: flex; flex-direction: column; gap: 0; }
+  .cascade-step { display: flex; align-items: stretch; gap: 0; border: 1px solid var(--border); background: var(--white); transition: all 0.3s; }
+  .cascade-step:first-child { border-radius: 12px 12px 0 0; }
+  .cascade-step:last-child { border-radius: 0 0 12px 12px; }
+  .cascade-step:not(:first-child) { border-top: none; }
+  .cascade-step.active { background: var(--blue-light); border-color: var(--blue-border); z-index: 1; }
+  .cascade-step.active + .cascade-step { border-top-color: var(--blue-border); }
+  .cascade-step.skipped { opacity: 0.4; }
+  .cascade-num { font-size: 32px; font-weight: 900; color: var(--border); min-width: 72px; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); transition: color 0.3s; }
+  .cascade-step.active .cascade-num { color: var(--blue); }
+  .cascade-body { flex: 1; padding: 16px 20px; }
+  .cascade-body h4 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .cascade-body p { font-size: 13px; color: var(--text-light); }
+  .cascade-body .cascade-file { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+  .cascade-arrow { display: flex; align-items: center; justify-content: center; min-width: 48px; color: var(--text-muted); font-size: 14px; }
+  .cascade-step.active .cascade-arrow { color: var(--blue); }
+  .cascade-arrow-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Feature code */
+  .feature-demo { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 32px; }
+  .feature-demo h3 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+  .feature-codes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .feature-code { font-family: var(--mono); font-size: 13px; font-weight: 600; padding: 6px 12px; background: var(--blue-light); border: 1px solid var(--blue-border); border-radius: 6px; cursor: pointer; transition: all 0.15s; color: var(--blue); }
+  .feature-code:hover { background: var(--blue); color: var(--white); }
+  .feature-code.active { background: var(--blue); color: var(--white); }
+  .feature-detail { margin-top: 16px; min-height: 120px; }
+  .feature-detail .fd-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+  .feature-detail .fd-file { font-family: var(--mono); font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .feature-detail .fd-desc { font-size: 15px; color: var(--text-light); margin-bottom: 12px; line-height: 1.6; }
+  .feature-detail .fd-table { font-family: var(--mono); font-size: 13px; background: var(--bg); border-radius: 8px; padding: 16px; line-height: 1.8; white-space: pre-wrap; color: var(--text-light); }
+
+  /* Summary callout */
+  .callout { background: var(--green-light); border: 1px solid var(--green-border); border-radius: 12px; padding: 24px 28px; }
+  .callout .callout-stat { font-size: 28px; font-weight: 900; color: var(--green); }
+  .callout p { font-size: 15px; color: var(--text-light); margin-top: 4px; line-height: 1.6; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Nav -->
+  <div class="nav">
+    <a href="playground-workflow.html">Pipeline</a>
+    <a href="playground-discover.html" class="current">Discover</a>
+    <a href="playground-agents.html">Agents</a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>How Discover Works</h1>
+    <p>Before the AI agent reads any source file, it asks the documentation first. Discover routes your query through the right layer and returns exactly what the agent needs.</p>
+  </div>
+
+  <!-- Try It -->
+  <div class="section">
+    <h2>Try a Query</h2>
+    <p class="subtitle">Type a query below to see how it gets routed. Use a prefix like <code style="font-family:var(--mono); background:var(--bg); padding:2px 6px; border-radius:4px;">service:</code> or just type a keyword.</p>
+
+    <div class="try-bar">
+      <span class="try-prefix">/discover</span>
+      <input class="try-input" id="try-input" type="text" placeholder="service:entity_type.manager" autocomplete="off">
+    </div>
+
+    <div class="try-result" id="try-result"></div>
+  </div>
+
+  <!-- Structural Queries -->
+  <div class="section">
+    <h2>Structural Queries</h2>
+    <p class="subtitle">Prefix your query to go straight to a specific structural index. These are instant lookups against pre-generated markdown tables.</p>
+
+    <div class="prefix-grid" id="prefix-grid"></div>
+  </div>
+
+  <!-- The Search Cascade -->
+  <div class="section">
+    <h2>The Search Cascade</h2>
+    <p class="subtitle">When you search without a prefix, Discover cascades through five layers. It stops as soon as it finds results. The deeper it goes, the broader (and slower) the search.</p>
+
+    <div class="cascade" id="cascade"></div>
+  </div>
+
+  <!-- Feature Code Lookup -->
+  <div class="section">
+    <h2>Feature Code Lookup</h2>
+    <p class="subtitle">Type a 2-5 letter feature code and get the full tech spec with every Logic ID mapped to its file and function.</p>
+
+    <div class="feature-demo">
+      <h3>Example feature codes</h3>
+      <div class="feature-codes" id="feature-codes"></div>
+      <div class="feature-detail" id="feature-detail"></div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="section">
+    <div class="callout">
+      <div class="callout-stat">70-90% fewer tokens</div>
+      <p>By querying structured documentation first, the agent avoids expensive file-by-file searches. A Logic ID lookup returns the exact file and line number in one step instead of scanning dozens of files.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var state = { query: '', activePrefix: null, activeFeature: null };
+
+/* =================== DATA =================== */
+
+var PREFIXES = [
+  { name: 'service:', alias: 'svc:', desc: 'Service classes, dependencies, and tags',
+    file: 'structural/services.md',
+    example: 'service:entity_type.manager',
+    output: '| entity_type.manager | EntityTypeManager | ConfigFactory, ModuleHandler | core | entity |' },
+  { name: 'route:', alias: 'path:', desc: 'URL paths, controllers, and access rules',
+    file: 'structural/routes.md',
+    example: 'route:/admin/config',
+    output: '| system.admin_config | /admin/config | SystemController::systemAdminMenuBlockPage | _permission: "access administration pages" | system |' },
+  { name: 'hook:', alias: '', desc: 'Hook implementations across all modules',
+    file: 'structural/hooks.md',
+    example: 'hook:node_presave',
+    output: '| hook_node_presave | timan_assignment_node_presave | Procedural | timan_assignment.module:42 | timan_assignment |' },
+  { name: 'entity:', alias: 'ent:', desc: 'Content and config entity types with handlers',
+    file: 'structural/entities.md',
+    example: 'entity:paragraph',
+    output: '| paragraph | Content | Paragraph | ListBuilder, ViewBuilder, Form, Storage | 19+8 | paragraphs | Paragraph.php |' },
+  { name: 'plugin:', alias: '', desc: 'Block, FieldType, Action, and QueueWorker plugins',
+    file: 'structural/plugins.md',
+    example: 'plugin:Block',
+    output: '| Block | project_dashboard | ProjectDashboardBlock | timan_project | src/Plugin/Block/ProjectDashboardBlock.php |' },
+  { name: 'method:', alias: '', desc: 'Public methods on Services, Controllers, and Forms',
+    file: 'structural/methods.md',
+    example: 'method:Timesheet',
+    output: '| TimesheetService | getTimesheetData | array | timan_time | src/Service/TimesheetService.php:45 |' },
+  { name: 'perm:', alias: 'permission:', desc: 'Custom permissions from *.permissions.yml',
+    file: 'structural/permissions.md',
+    example: 'perm:administer',
+    output: '| administer timan | Administer TiMan Settings | timan_core | TRUE | Full admin access |' },
+  { name: 'schema:', alias: '', desc: 'Entity field schemas as JSON (base + config fields)',
+    file: 'schemas/*.json',
+    example: 'schema:node',
+    output: '{ "entity_type": "node", "bundle": "project", "fields": { "field_client": { "type": "entity_reference", "target": "taxonomy_term", ... } } }' },
+  { name: 'deps:', alias: 'impact:', desc: 'Dependency chains and blast radius analysis',
+    file: 'DEPENDENCY_GRAPH.md',
+    example: 'deps:AUTH',
+    output: 'AUTH depends on: UserService, SessionManager, ConfigFactory\nUsed by: ADMN, TIME, LEAV, PRJV (4 features)\nHotspot: UserService (12 consumers)' }
+];
+
+var CASCADE_STEPS = [
+  { num: 1, title: 'Full-text search', desc: 'Indexed search across all semantic docs', file: 'qmd collection', badge: 'Fastest' },
+  { num: 2, title: 'Business index grep', desc: 'Scan the feature registry for matching rows', file: '00_BUSINESS_INDEX.md', badge: 'Feature names' },
+  { num: 3, title: 'Tech spec filenames', desc: 'Match query words against spec file names', file: 'tech/*.md', badge: 'File match' },
+  { num: 4, title: 'Logic ID extraction', desc: 'Search inside tech specs, extract matching Logic IDs', file: 'tech/*.md content', badge: 'Deep search' },
+  { num: 5, title: 'Structural fallthrough', desc: 'Search all structural index files as last resort', file: 'structural/*.md', badge: 'Broadest' }
+];
+
+var FEATURES = [
+  { code: 'AUTH', name: 'TwoFactorAuth', file: 'tech/AUTH_01_TwoFactorAuth.md', ids: 5,
+    desc: 'Two-factor authentication with TOTP, backup codes, and per-role enforcement.',
+    table: '| AUTH-L1 | TFA setup flow         | TfaSetupForm::buildForm         | timan_auth/src/Form/TfaSetupForm.php:28    |\n| AUTH-L2 | TOTP validation        | TotpValidator::validate          | timan_auth/src/Service/TotpValidator.php:15 |\n| AUTH-L3 | Backup code generation | BackupCodeService::generate      | timan_auth/src/Service/BackupCodeService.php:22 |\n| AUTH-L4 | Role enforcement check | TfaAccessChecker::checkAccess    | timan_auth/src/Access/TfaAccessChecker.php:18 |\n| AUTH-L5 | Login event subscriber | TfaLoginSubscriber::onLogin      | timan_auth/src/EventSubscriber/TfaLoginSubscriber.php:31 |' },
+  { code: 'TIME', name: 'TimeEntry', file: 'tech/TIME_01_TimeEntry.md', ids: 36,
+    desc: 'Time tracking with timesheets, approvals, overtime rules, and reporting integration.',
+    table: '| TIME-L1  | Create time entry       | TimeEntryService::create        | timan_time/src/Service/TimeEntryService.php:45   |\n| TIME-L2  | Validate duration       | TimeValidator::validateDuration  | timan_time/src/Service/TimeValidator.php:20      |\n| TIME-L3  | Weekly timesheet view   | TimesheetController::weekView    | timan_time/src/Controller/TimesheetController.php:38 |\n| ...      | (36 Logic IDs total)    |                                  |                                                   |' },
+  { code: 'ASGN', name: 'Assignment', file: 'tech/ASGN_01_Assignment.md', ids: 22,
+    desc: 'Resource assignment to projects with capacity checks, date ranges, and allocation percentages.',
+    table: '| ASGN-L1 | Create assignment       | AssignmentService::create       | timan_assignment/src/Service/AssignmentService.php:30 |\n| ASGN-L2 | Capacity validation     | CapacityChecker::validate       | timan_assignment/src/Service/CapacityChecker.php:18  |\n| ASGN-L3 | Overlap detection       | OverlapDetector::check          | timan_assignment/src/Service/OverlapDetector.php:25  |\n| ...     | (22 Logic IDs total)    |                                 |                                                       |' },
+  { code: 'LEAV', name: 'Leave', file: 'tech/LEAV_01_Leave.md', ids: 20,
+    desc: 'Leave management with approval workflows, balance tracking, and calendar integration.',
+    table: '| LEAV-L1 | Submit leave request    | LeaveService::submitRequest     | timan_leave/src/Service/LeaveService.php:32   |\n| LEAV-L2 | Approval workflow       | LeaveApprovalService::process   | timan_leave/src/Service/LeaveApprovalService.php:20 |\n| LEAV-L3 | Balance calculation     | LeaveBalanceService::calculate  | timan_leave/src/Service/LeaveBalanceService.php:15 |\n| ...     | (20 Logic IDs total)    |                                 |                                                    |' },
+  { code: 'ADMN', name: 'Dashboard', file: 'tech/ADMN_01_Dashboard.md', ids: 8,
+    desc: 'Admin dashboard with project stats, team overview, and recent activity feed.',
+    table: '| ADMN-L1 | Dashboard controller    | DashboardController::index      | timan_admin/src/Controller/DashboardController.php:22 |\n| ADMN-L2 | Stats aggregation      | StatsService::aggregate         | timan_admin/src/Service/StatsService.php:18          |\n| ADMN-L3 | Activity feed builder  | ActivityFeedService::build      | timan_admin/src/Service/ActivityFeedService.php:25   |\n| ...     | (8 Logic IDs total)    |                                 |                                                       |' },
+  { code: 'AI', name: 'Integration', file: 'tech/AI_01_Integration.md', ids: 12,
+    desc: 'AI-powered features including smart suggestions, auto-categorization, and natural language queries.',
+    table: '| AI-L1  | Query processing       | AiQueryService::process         | timan_ai/src/Service/AiQueryService.php:30       |\n| AI-L2  | Context builder        | ContextBuilder::build           | timan_ai/src/Service/ContextBuilder.php:22       |\n| AI-L3  | Response formatting    | ResponseFormatter::format       | timan_ai/src/Service/ResponseFormatter.php:18    |\n| ...    | (12 Logic IDs total)   |                                 |                                                   |' }
+];
+
+/* =================== ROUTING LOGIC =================== */
+
+function routeQuery(q) {
+  q = q.trim();
+  if (!q) return { type: 'empty' };
+
+  // Check structural prefixes
+  for (var i = 0; i < PREFIXES.length; i++) {
+    var p = PREFIXES[i];
+    if (q.indexOf(p.name) === 0 || (p.alias && q.indexOf(p.alias) === 0)) {
+      var term = q.replace(p.name, '').replace(p.alias || '___', '');
+      return { type: 'structural', prefix: p, term: term };
+    }
+  }
+
+  // Check feature code (2-5 uppercase letters)
+  if (/^[A-Za-z]{2,5}$/.test(q)) {
+    var upper = q.toUpperCase();
+    var feat = null;
+    for (var j = 0; j < FEATURES.length; j++) {
+      if (FEATURES[j].code === upper) { feat = FEATURES[j]; break; }
+    }
+    return { type: 'feature', code: upper, feature: feat };
+  }
+
+  // Free-text search
+  return { type: 'cascade', query: q };
+}
+
+/* =================== BUILD UI =================== */
+
+function buildPrefixGrid() {
+  var grid = document.getElementById('prefix-grid');
+  PREFIXES.forEach(function(p) {
+    var card = document.createElement('div');
+    card.className = 'prefix-card';
+
+    var name = document.createElement('div');
+    name.className = 'prefix-name';
+    name.textContent = p.name;
+
+    var alias = document.createElement('div');
+    alias.className = 'prefix-alias';
+    alias.textContent = p.alias ? 'alias: ' + p.alias : '\u00A0';
+
+    var desc = document.createElement('div');
+    desc.className = 'prefix-desc';
+    desc.textContent = p.desc;
+
+    card.appendChild(name);
+    card.appendChild(alias);
+    card.appendChild(desc);
+
+    card.addEventListener('click', function() {
+      document.getElementById('try-input').value = p.example;
+      state.query = p.example;
+      renderTryResult();
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+function buildCascade() {
+  var el = document.getElementById('cascade');
+  CASCADE_STEPS.forEach(function(s) {
+    var step = document.createElement('div');
+    step.className = 'cascade-step';
+    step.dataset.num = s.num;
+
+    var num = document.createElement('div');
+    num.className = 'cascade-num';
+    num.textContent = s.num;
+
+    var body = document.createElement('div');
+    body.className = 'cascade-body';
+
+    var h4 = document.createElement('h4');
+    h4.textContent = s.title;
+
+    var p = document.createElement('p');
+    p.textContent = s.desc;
+
+    var file = document.createElement('div');
+    file.className = 'cascade-file';
+    file.textContent = s.file;
+
+    body.appendChild(h4);
+    body.appendChild(p);
+    body.appendChild(file);
+
+    var arrow = document.createElement('div');
+    arrow.className = 'cascade-arrow';
+    var arrowLabel = document.createElement('div');
+    arrowLabel.className = 'cascade-arrow-label';
+    arrowLabel.textContent = s.num < 5 ? 'miss \u2192 next' : 'last resort';
+    arrow.appendChild(arrowLabel);
+
+    step.appendChild(num);
+    step.appendChild(body);
+    step.appendChild(arrow);
+    el.appendChild(step);
+  });
+}
+
+function buildFeatureCodes() {
+  var container = document.getElementById('feature-codes');
+  FEATURES.forEach(function(f) {
+    var btn = document.createElement('div');
+    btn.className = 'feature-code';
+    btn.textContent = f.code;
+    btn.addEventListener('click', function() {
+      state.activeFeature = state.activeFeature === f.code ? null : f.code;
+      renderFeatureDetail();
+    });
+    container.appendChild(btn);
+  });
+}
+
+/* =================== RENDER =================== */
+
+function renderTryResult() {
+  var el = document.getElementById('try-result');
+  el.textContent = '';
+  var route = routeQuery(state.query);
+
+  if (route.type === 'empty') {
+    var hint = document.createElement('p');
+    hint.style.cssText = 'color: var(--text-muted); font-size: 15px; padding: 20px 0;';
+    hint.textContent = 'Type a query above, or click a prefix card below to see an example.';
+    el.appendChild(hint);
+    // Reset cascade
+    document.querySelectorAll('.cascade-step').forEach(function(s) {
+      s.classList.remove('active', 'skipped');
+    });
+    return;
+  }
+
+  if (route.type === 'structural') {
+    var badge = document.createElement('div');
+    badge.className = 'result-route structural';
+    badge.textContent = 'Structural lookup';
+    el.appendChild(badge);
+
+    var h4 = document.createElement('h4');
+    h4.textContent = 'Direct query: ' + route.prefix.name;
+    el.appendChild(h4);
+
+    var p = document.createElement('p');
+    p.textContent = 'Goes straight to the pre-generated index file. No cascade, no AI. The structural index was built by bash scripts parsing your YAML configs and PHP annotations.';
+    el.appendChild(p);
+
+    var fileDiv = document.createElement('div');
+    fileDiv.className = 'result-file';
+    fileDiv.textContent = 'docs/semantic/' + route.prefix.file;
+    el.appendChild(fileDiv);
+
+    var output = document.createElement('div');
+    output.className = 'result-output';
+    output.textContent = route.prefix.output;
+    el.appendChild(output);
+
+    // Reset cascade (structural doesn't use it)
+    document.querySelectorAll('.cascade-step').forEach(function(s) {
+      s.classList.remove('active', 'skipped');
+    });
+
+  } else if (route.type === 'feature') {
+    var badge2 = document.createElement('div');
+    badge2.className = 'result-route feature';
+    badge2.textContent = 'Feature code lookup';
+    el.appendChild(badge2);
+
+    if (route.feature) {
+      var h42 = document.createElement('h4');
+      h42.textContent = route.code + ' \u2192 ' + route.feature.name;
+      el.appendChild(h42);
+
+      var p2 = document.createElement('p');
+      p2.textContent = route.feature.desc + ' The full tech spec is loaded with all ' + route.feature.ids + ' Logic IDs.';
+      el.appendChild(p2);
+
+      var fileDiv2 = document.createElement('div');
+      fileDiv2.className = 'result-file';
+      fileDiv2.textContent = 'docs/semantic/' + route.feature.file;
+      el.appendChild(fileDiv2);
+
+      var output2 = document.createElement('div');
+      output2.className = 'result-output';
+      output2.textContent = '| Logic ID | Description            | Implementation                  | File                                              |\n|----------|------------------------|---------------------------------|---------------------------------------------------|\n' + route.feature.table;
+      el.appendChild(output2);
+    } else {
+      var h43 = document.createElement('h4');
+      h43.textContent = route.code + ' \u2014 not found';
+      el.appendChild(h43);
+
+      var p3 = document.createElement('p');
+      p3.textContent = 'No tech spec matches this code. Discover will fall back to searching the business index and then listing available feature codes.';
+      el.appendChild(p3);
+    }
+
+    document.querySelectorAll('.cascade-step').forEach(function(s) {
+      s.classList.remove('active', 'skipped');
+    });
+
+  } else if (route.type === 'cascade') {
+    var badge3 = document.createElement('div');
+    badge3.className = 'result-route cascade';
+    badge3.textContent = 'Keyword search \u2192 cascade';
+    el.appendChild(badge3);
+
+    var h44 = document.createElement('h4');
+    h44.textContent = 'Searching: "' + route.query + '"';
+    el.appendChild(h44);
+
+    var p4 = document.createElement('p');
+    p4.textContent = 'No prefix and not a feature code. Discover will cascade through five search layers, stopping at the first one that returns results. Watch the cascade below light up.';
+    el.appendChild(p4);
+
+    // Simulate cascade: highlight step 1 as active, rest as available
+    var hitStep = Math.floor(Math.random() * 3) + 1; // simulate hitting on steps 1-3
+    document.querySelectorAll('.cascade-step').forEach(function(s) {
+      var num = parseInt(s.dataset.num, 10);
+      s.classList.remove('active', 'skipped');
+      if (num === hitStep) {
+        s.classList.add('active');
+      } else if (num < hitStep) {
+        s.classList.add('skipped');
+      }
+    });
+
+    var hitName = CASCADE_STEPS[hitStep - 1].title;
+    var hitDesc = document.createElement('p');
+    hitDesc.style.cssText = 'font-size: 14px; color: var(--green); font-weight: 600; margin-top: 8px;';
+    hitDesc.textContent = 'Found results at layer ' + hitStep + ': ' + hitName;
+    el.appendChild(hitDesc);
+  }
+}
+
+function renderFeatureDetail() {
+  var el = document.getElementById('feature-detail');
+  el.textContent = '';
+
+  document.querySelectorAll('.feature-code').forEach(function(btn) {
+    btn.classList.toggle('active', btn.textContent === state.activeFeature);
+  });
+
+  if (!state.activeFeature) return;
+
+  var feat = null;
+  for (var i = 0; i < FEATURES.length; i++) {
+    if (FEATURES[i].code === state.activeFeature) { feat = FEATURES[i]; break; }
+  }
+  if (!feat) return;
+
+  var label = document.createElement('div');
+  label.className = 'fd-label';
+  label.textContent = 'Tech spec';
+
+  var file = document.createElement('div');
+  file.className = 'fd-file';
+  file.textContent = feat.file;
+
+  var desc = document.createElement('div');
+  desc.className = 'fd-desc';
+  desc.textContent = feat.desc;
+
+  var tableLabel = document.createElement('div');
+  tableLabel.className = 'fd-label';
+  tableLabel.style.marginTop = '16px';
+  tableLabel.textContent = 'Logic IDs (' + feat.ids + ' total)';
+
+  var table = document.createElement('div');
+  table.className = 'fd-table';
+  table.textContent = '| Logic ID | Description            | Implementation                  | File                                              |\n|----------|------------------------|---------------------------------|---------------------------------------------------|\n' + feat.table;
+
+  el.appendChild(label);
+  el.appendChild(file);
+  el.appendChild(desc);
+  el.appendChild(tableLabel);
+  el.appendChild(table);
+}
+
+/* =================== INPUT HANDLER =================== */
+
+var tryInput = document.getElementById('try-input');
+tryInput.addEventListener('input', function() {
+  state.query = tryInput.value;
+  renderTryResult();
+});
+
+/* =================== INIT =================== */
+
+buildPrefixGrid();
+buildCascade();
+buildFeatureCodes();
+renderTryResult();
+</script>
+</body>
+</html>

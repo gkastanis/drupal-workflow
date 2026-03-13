@@ -14,7 +14,7 @@ Regenerate the structural index (Layer 2) from current codebase state. This is S
 
 ```bash
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-bash "$PLUGIN_DIR/skills/structural-index/scripts/generate-all.sh" "$PROJECT_DIR"
+bash "$CLAUDE_PLUGIN_ROOT/skills/structural-index/scripts/generate-all.sh" "$PROJECT_DIR"
 ```
 
 Report what was generated (service count, route count, hook count, entity count, etc.).
@@ -24,13 +24,13 @@ Report what was generated (service count, route count, hook count, entity count,
 If tech specs exist, update the CLAUDE.md Codebase section to keep counts in sync:
 
 ```bash
-bash "$PLUGIN_DIR/scripts/inject-claude-md.sh" "$PROJECT_DIR"
+bash "$CLAUDE_PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
 ```
 
 ### Step 3: Check Staleness
 
 ```bash
-bash "$PLUGIN_DIR/skills/structural-index/scripts/check-staleness.sh" "$PROJECT_DIR"
+bash "$CLAUDE_PLUGIN_ROOT/skills/structural-index/scripts/check-staleness.sh" "$PROJECT_DIR"
 ```
 
 Show any staleness warnings. If everything is fresh, confirm the index is up to date.

@@ -1,12 +1,11 @@
+---
+name: drupal-coding-standards
+description: PHPCS, PHPStan, naming conventions, and code style enforcement for Drupal 10/11. Use when checking coding standards, running static analysis, or enforcing code quality.
+---
+
 # Drupal Coding Standards
 
-name: drupal-coding-standards
-description: >
-  PHPCS, PHPStan, naming conventions, and code style enforcement for
-  Drupal 10/11. Use when checking coding standards, running static analysis,
-  or enforcing code quality.
-
----
+Always run PHPCS before committing. Never skip static analysis. Use `declare(strict_types=1)` in every PHP file. Prefer `final` classes unless explicitly designed for extension. Avoid deep nesting — use guard clauses and early returns.
 
 ## Validation Commands
 

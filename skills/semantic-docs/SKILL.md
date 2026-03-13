@@ -64,6 +64,8 @@ docs/semantic/
 
 ## Logic ID Format
 
+Each tech spec contains Logic IDs that map business logic to code. Always use Logic IDs when referencing implementations — never guess file paths.
+
 Logic IDs follow the pattern: `FEATURE-L#`
 - **FEATURE**: 3-4 letter feature code
 - **L**: Literal "L" for "Logic"

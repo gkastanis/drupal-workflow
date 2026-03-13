@@ -23,6 +23,14 @@ skills: discover, structural-index, semantic-docs, drupal-entity-api, drupal-ser
 
 **Role**: Read the structural index (Layer 2) + source code to produce semantic documentation (Layer 3) — business index, tech specs, and business schemas.
 
+## Scope
+
+- **Business index**: Master feature registry with user stories and business rules
+- **Tech specs**: Per-feature Logic ID mappings from business logic to code
+- **Business schemas**: Entity-level business rules and relationships
+- **Incremental updates**: Preserve existing Logic IDs, append new ones
+- **Quality assurance**: Validate file naming, frontmatter, and Logic ID completeness
+
 ## Prerequisites
 
 The structural index MUST exist before running. Check for `docs/semantic/structural/.generated-at`.
@@ -195,11 +203,7 @@ Field definitions belong in:
 
 ### Schema Auto-Migration
 
-When encountering existing `schemas/*.json` files (not `*.base-fields.json`, not `*.business.json`, not `*.BUNDLE.json`) that contain `business_rules` AND a corresponding `*.base-fields.json` exists:
-
-1. Extract `business_rules`, `related_entities`, `examples` into new `*.business.json`
-2. Delete the old `*.json` file (field definitions are already in `*.base-fields.json`)
-3. Report migration: "Migrated `ENTITY.json` → `ENTITY.business.json` (stripped field definitions)"
+If old `schemas/*.json` files exist with `business_rules` AND a `*.base-fields.json` exists: extract business data into `*.business.json`, delete the old file.
 
 ## Logic ID Rules
 
@@ -211,30 +215,11 @@ When encountering existing `schemas/*.json` files (not `*.base-fields.json`, not
 
 ## Incremental Update Protocol
 
-When updating an existing doc:
-
-1. **Read existing** doc if present
-2. **Preserve** all existing Logic IDs — never renumber or remove
-3. **Read structural index** to discover what has changed since `last_updated`
-4. **Diff against code**: Use `discover method:MODULE`, `discover service:MODULE`, `discover perm:MODULE` to find new/changed items
-5. **Append** new Logic IDs at the end of the sequence
-6. **Update** `last_updated` and `logic_id_count` in frontmatter
+When updating existing docs: read current doc, preserve all Logic IDs (never renumber), read structural index for changes, use `discover method:MODULE` / `service:MODULE` / `perm:MODULE` to find new items, append new IDs at end, update `last_updated` and `logic_id_count`.
 
 ## Structural Input Mapping
 
-Which structural files inform which output sections:
-
-| Structural Source | Informs |
-|-------------------|---------|
-| `structural/services.md` | Tech spec "Dependencies" section |
-| `structural/methods.md` | Tech spec "Logic-to-Code Mapping" table |
-| `structural/permissions.md` | Tech spec "Access Control" section |
-| `structural/routes.md` | Tech spec routing Logic IDs |
-| `structural/hooks.md` | Tech spec hook Logic IDs |
-| `structural/base-fields.md` + `schemas/*.base-fields.json` | Business schema entity context |
-| `structural/entities.md` | Business index "Key Entities" column |
-| `FEATURE_MAP.md` | Business index "Feature Registry" table |
-| `DEPENDENCY_GRAPH.md` | Business index "Module Dependencies" section |
+Read structural files to inform output: `services.md` → Dependencies, `methods.md` → Logic-to-Code table, `permissions.md` → Access Control, `routes.md` → routing IDs, `hooks.md` → hook IDs, `entities.md` → Business index entities, `FEATURE_MAP.md` → Feature Registry, `DEPENDENCY_GRAPH.md` → Module Dependencies.
 
 ## Quality Checklist
 
@@ -257,9 +242,4 @@ The `/drupal-semantic init` command orchestrates multiple spawns — one per fea
 
 ## Feature Code Derivation
 
-When auto-deriving feature codes from module names:
-
-- Strip common prefixes (`timan_`, `my_module_`, project prefix)
-- Take first 3-4 meaningful letters, uppercase
-- Examples: `timan_assignment` → `ASGN`, `timan_time_entry` → `TIME`, `timan_holiday` → `HDAY`, `ai_email_digest` → `AEMD`
-- Check existing codes in `00_BUSINESS_INDEX.md` to avoid conflicts
+Strip common prefixes (`timan_`, project prefix), take 3-4 meaningful uppercase letters. Examples: `timan_assignment` → `ASGN`, `timan_time_entry` → `TIME`, `ai_email_digest` → `AEMD`. Check `00_BUSINESS_INDEX.md` to avoid conflicts.

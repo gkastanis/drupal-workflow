@@ -1,12 +1,11 @@
+---
+name: drupal-hook-patterns
+description: OOP hooks (Drupal 11), form alters, entity hooks, and legacy bridges for Drupal 10/11. Use when implementing hooks, form alterations, or event subscribers.
+---
+
 # Drupal Hook Patterns
 
-name: drupal-hook-patterns
-description: >
-  OOP hooks (Drupal 11), form alters, entity hooks, and legacy bridges for
-  Drupal 10/11. Use when implementing hooks, form alterations, or event
-  subscribers.
-
----
+Always prefer OOP hooks with `#[Hook]` attribute in Drupal 11+. Never put business logic directly in `.module` files — use services. Always check existing hook implementations before adding new ones to avoid conflicts.
 
 ## OOP Hooks (Drupal 11+)
 

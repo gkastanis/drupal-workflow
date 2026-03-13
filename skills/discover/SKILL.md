@@ -122,6 +122,7 @@ This skill wraps:
 - `/semantic-docs` for tech specs
 - `qmd search` for fast full-text search
 - Business index for feature registry
+- Structural index files: `structural/services.md`, `structural/routes.md`, `structural/hooks.md`
 
 **Relationship:**
 - `/semantic-docs`: Deep lookup by specific ID

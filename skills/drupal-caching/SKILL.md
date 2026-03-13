@@ -1,12 +1,11 @@
+---
+name: drupal-caching
+description: Cache bins, tags, contexts, invalidation strategies, and external caching for Drupal 10/11. Use when implementing caching, optimizing performance, or configuring cache backends.
+---
+
 # Drupal Caching
 
-name: drupal-caching
-description: >
-  Cache bins, tags, contexts, invalidation strategies, and external caching
-  for Drupal 10/11. Use when implementing caching, optimizing performance,
-  or configuring cache backends.
-
----
+Always use cache metadata on render arrays. Never return a render array without `#cache` keys. Check for proper cache tag, cache context, and max-age on every render array you create.
 
 ## Cache Metadata (Render Arrays)
 

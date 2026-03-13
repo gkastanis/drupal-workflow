@@ -13,14 +13,14 @@ Report current state of semantic docs, structural index, and staleness. Suggest 
 ### Step 1: Check Discovery Status
 
 ```bash
-bash "$PLUGIN_DIR/skills/discover/scripts/discover.sh" --status
+bash "$CLAUDE_PLUGIN_ROOT/skills/discover/scripts/discover.sh" --status
 ```
 
 ### Step 2: Check Staleness
 
 ```bash
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-bash "$PLUGIN_DIR/skills/structural-index/scripts/check-staleness.sh" "$PROJECT_DIR"
+bash "$CLAUDE_PLUGIN_ROOT/skills/structural-index/scripts/check-staleness.sh" "$PROJECT_DIR"
 ```
 
 ### Step 3: Suggest Next Action

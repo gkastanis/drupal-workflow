@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>drupal-workflow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --text: #1a1a2e; --text-light: #555; --text-muted: #888;
+    --bg: #fafafa; --white: #fff;
+    --border: #e5e5e5; --border-light: #f0f0f0;
+    --blue: #2563eb; --blue-light: #eff6ff; --blue-border: #bfdbfe;
+    --green: #16a34a; --green-light: #f0fdf4; --green-border: #bbf7d0;
+    --purple: #7c3aed; --purple-light: #f5f3ff; --purple-border: #ddd6fe;
+    --orange: #ea580c; --orange-light: #fff7ed; --orange-border: #fed7aa;
+    --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 60px 24px 120px; }
+
+  /* Header */
+  .hero { margin-bottom: 64px; }
+  .hero h1 { font-size: 42px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .hero p { font-size: 20px; color: var(--text-light); max-width: 600px; line-height: 1.5; }
+  .hero .version { display: inline-block; font-size: 13px; font-weight: 600; color: var(--blue); background: var(--blue-light); border: 1px solid var(--blue-border); border-radius: 20px; padding: 3px 12px; margin-top: 16px; }
+
+  /* Section */
+  .section { margin-bottom: 64px; }
+  .section h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .section .subtitle { font-size: 16px; color: var(--text-light); margin-bottom: 32px; }
+
+  /* Pipeline visual */
+  .pipeline { display: flex; gap: 0; align-items: stretch; margin-bottom: 32px; }
+  .pipe-step { flex: 1; padding: 32px 24px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; position: relative; }
+  .pipe-step:first-child { border-radius: 12px 0 0 12px; }
+  .pipe-step:last-child { border-radius: 0 12px 12px 0; }
+  .pipe-step:not(:first-child) { border-left: none; }
+  .pipe-step .step-num { font-size: 48px; font-weight: 900; color: var(--border); line-height: 1; margin-bottom: 8px; transition: color 0.2s; }
+  .pipe-step .step-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .pipe-step .step-cmd { font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+  .pipe-step .step-type { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-top: 8px; }
+  .pipe-step.s1 .step-type { background: var(--green-light); color: var(--green); }
+  .pipe-step.s2 .step-type { background: var(--purple-light); color: var(--purple); }
+  .pipe-step.s3 .step-type { background: var(--blue-light); color: var(--blue); }
+
+  .pipe-step.active { background: var(--white); box-shadow: 0 4px 24px rgba(0,0,0,0.06); z-index: 1; }
+  .pipe-step.active.s1 { border-color: var(--green); }
+  .pipe-step.active.s1 .step-num { color: var(--green); }
+  .pipe-step.active.s2 { border-color: var(--purple); }
+  .pipe-step.active.s2 .step-num { color: var(--purple); }
+  .pipe-step.active.s3 { border-color: var(--blue); }
+  .pipe-step.active.s3 .step-num { color: var(--blue); }
+  .pipe-step:hover:not(.active) { background: var(--white); }
+
+  /* Arrow between steps */
+  .pipe-step:not(:last-child)::after {
+    content: '\2192'; position: absolute; right: -14px; top: 50%; transform: translateY(-50%);
+    font-size: 20px; color: var(--text-muted); z-index: 2; background: var(--bg); padding: 4px;
+  }
+  .pipe-step.active:not(:last-child)::after { background: var(--white); }
+
+  /* Step detail panel */
+  .step-detail { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 32px; min-height: 280px; }
+  .step-detail h3 { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+  .step-detail p { font-size: 16px; color: var(--text-light); margin-bottom: 16px; line-height: 1.7; }
+  .step-detail .what-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; margin-top: 24px; }
+
+  .output-list { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .output-list li { font-family: var(--mono); font-size: 13px; padding: 8px 12px; background: var(--bg); border-radius: 6px; color: var(--text-light); }
+
+  .code-block { font-family: var(--mono); font-size: 13px; background: var(--bg); border: 1px solid var(--border-light); border-radius: 8px; padding: 20px; line-height: 1.8; color: var(--text-light); white-space: pre-wrap; margin-top: 8px; }
+
+  /* Layer stack */
+  .layers { display: flex; flex-direction: column; gap: 0; margin-bottom: 32px; }
+  .layer { padding: 20px 24px; border: 1px solid var(--border); display: flex; align-items: center; gap: 16px; transition: all 0.3s; opacity: 0.35; }
+  .layer:first-child { border-radius: 12px 12px 0 0; }
+  .layer:last-child { border-radius: 0 0 12px 12px; }
+  .layer:not(:first-child) { border-top: none; }
+  .layer.visible { opacity: 1; background: var(--white); }
+  .layer .layer-badge { font-size: 11px; font-weight: 800; font-family: var(--mono); padding: 4px 10px; border-radius: 6px; min-width: 50px; text-align: center; }
+  .layer.l-hint .layer-badge { background: var(--blue-light); color: var(--blue); }
+  .layer.l-3 .layer-badge { background: var(--purple-light); color: var(--purple); }
+  .layer.l-2 .layer-badge { background: var(--green-light); color: var(--green); }
+  .layer.l-1 .layer-badge { background: var(--orange-light); color: var(--orange); }
+  .layer .layer-name { font-size: 15px; font-weight: 600; flex: 1; }
+  .layer .layer-desc { font-size: 13px; color: var(--text-muted); }
+
+  /* Commands grid */
+  .cmd-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .cmd-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 20px; cursor: pointer; transition: all 0.15s; }
+  .cmd-card:hover { border-color: var(--blue-border); box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+  .cmd-card.active { border-color: var(--blue); background: var(--blue-light); }
+  .cmd-card .cmd-name { font-family: var(--mono); font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .cmd-card .cmd-desc { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+  .cmd-card .cmd-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-top: 8px; }
+  .cmd-card .cmd-badge.ai { background: var(--purple-light); color: var(--purple); }
+  .cmd-card .cmd-badge.bash { background: var(--green-light); color: var(--green); }
+
+  .cmd-expand { background: var(--white); border: 1px solid var(--blue-border); border-radius: 10px; padding: 24px; margin-top: 12px; }
+  .cmd-expand h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .cmd-expand p { font-size: 14px; color: var(--text-light); line-height: 1.7; }
+  .cmd-expand .cmd-example { font-family: var(--mono); font-size: 13px; background: var(--bg); padding: 12px 16px; border-radius: 6px; margin-top: 12px; color: var(--text); }
+  .hidden { display: none; }
+
+  /* Eval callout */
+  .callout { background: var(--blue-light); border: 1px solid var(--blue-border); border-radius: 12px; padding: 24px 28px; }
+  .callout .callout-stat { font-size: 36px; font-weight: 900; color: var(--blue); }
+  .callout p { font-size: 15px; color: var(--text-light); margin-top: 4px; }
+
+  /* Nav */
+  .nav { display: flex; gap: 24px; margin-bottom: 48px; font-size: 14px; }
+  .nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+  .nav a:hover { color: var(--text); }
+  .nav a.current { color: var(--text); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Nav -->
+  <div class="nav">
+    <a href="playground-workflow.html" class="current">Pipeline</a>
+    <a href="playground-discover.html">Discover</a>
+    <a href="playground-agents.html">Agents</a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>drupal-workflow</h1>
+    <p>A Claude Code plugin that generates layered documentation for Drupal projects, so the AI agent understands your codebase before touching it.</p>
+    <span class="version">v1.6.0</span>
+  </div>
+
+  <!-- The Pipeline -->
+  <div class="section">
+    <h2>The Pipeline</h2>
+    <p class="subtitle">Three steps, each building on the previous one. Click a step to explore.</p>
+
+    <div class="pipeline" id="pipeline"></div>
+    <div class="step-detail" id="step-detail"></div>
+  </div>
+
+  <!-- Layers -->
+  <div class="section">
+    <h2>What Gets Built</h2>
+    <p class="subtitle">Each step adds a layer. The hint at the top is what the AI agent actually reads.</p>
+
+    <div class="layers" id="layers"></div>
+  </div>
+
+  <!-- Commands -->
+  <div class="section">
+    <h2>Commands</h2>
+    <p class="subtitle">All under <code style="font-family:var(--mono); background:var(--bg); padding:2px 6px; border-radius:4px;">/drupal-semantic</code>. Click to see details.</p>
+
+    <div class="cmd-grid" id="cmd-grid"></div>
+    <div id="cmd-expand-area"></div>
+  </div>
+
+  <!-- Why it matters -->
+  <div class="section">
+    <div class="callout">
+      <div class="callout-stat">+61% faster</div>
+      <p>AI agents with the CLAUDE.md hint respond 61% faster and 19% cheaper than without docs. The hint is ~45 words. Tested across 9 questions, 6 Drupal projects, 54 agent calls.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var state = { step: 1, cmd: null };
+
+var STEPS = [
+  { num: 1, cls: 's1', title: 'Structural Index', cmd: '/drupal-refresh', type: 'Bash scripts',
+    heading: 'Step 1: Parse the codebase',
+    desc: 'Bash scripts scan your Drupal project and extract the structure: services, routes, hooks, plugins, entities, permissions, and methods. No AI involved \u2014 just parsing YAML configs and PHP annotations.',
+    whatLabel: 'What it produces',
+    outputs: ['services.md', 'routes.md', 'hooks.md', 'plugins.md', 'entities.md', 'permissions.md', 'methods.md', 'base-fields.md', 'schemas/*.json'],
+    example: '$ /drupal-refresh\n\n  services.md     32 services\n  routes.md       47 routes\n  hooks.md        18 hooks\n  entities.md      8 entity types\n  methods.md     156 public methods\n\n  Structural index generated.' },
+  { num: 2, cls: 's2', title: 'Semantic Docs', cmd: '/drupal-semantic init', type: 'AI agent',
+    heading: 'Step 2: Understand the business logic',
+    desc: 'The @semantic-architect agent reads the structural index + your source code and writes tech specs for each feature. Each spec maps business logic to exact files and functions using Logic IDs like ASGN-L3 or TIME-L15.',
+    whatLabel: 'What it produces',
+    outputs: ['00_BUSINESS_INDEX.md', 'tech/ADMN_01_Dashboard.md', 'tech/TIME_01_TimeEntry.md', 'tech/LEAV_01_Leave.md', 'tech/RMDR_01_Reminder.md', 'schemas/*.business.json'],
+    example: '$ /drupal-semantic init\n\n  Generating ADMN (1 of 27)...   8 Logic IDs\n  Generating TIME (2 of 27)...  36 Logic IDs\n  Generating LEAV (3 of 27)...  20 Logic IDs\n  ...\n\n  27 features, 454 Logic IDs across 14 modules' },
+  { num: 3, cls: 's3', title: 'CLAUDE.md Hint', cmd: '/drupal-semantic inject', type: 'Bash script',
+    heading: 'Step 3: Tell the AI where to look',
+    desc: 'A compact ~45-word section is injected into your project\'s CLAUDE.md. This is the critical piece \u2014 it tells the AI agent "these docs exist, read them first." Without this hint, agents often ignore the documentation entirely.',
+    whatLabel: 'What gets injected',
+    outputs: [],
+    example: '## Codebase\n\n- 27 features, 454 Logic IDs across 14 custom modules\n- Read `docs/semantic/00_BUSINESS_INDEX.md` first\n- Logic ID lookup: `docs/semantic/tech/{CODE}_*.md`\n\nADMN:Dashboard|AEMD:EmailDigest|AI:Integration\nASGN:Assignment|AUTH:TwoFactorAuth|CLNT:Client\nTIME:TimeEntry|TIMR:Timer|USER:Resources ...' }
+];
+
+var LAYERS = [
+  { cls: 'l-hint', badge: 'Hint', name: 'CLAUDE.md', desc: '~45 words the AI reads automatically', step: 3 },
+  { cls: 'l-3', badge: 'L3', name: 'Semantic Docs', desc: 'Tech specs with Logic IDs, business index', step: 2 },
+  { cls: 'l-2', badge: 'L2', name: 'Structural Index', desc: 'Services, routes, hooks, entities, methods', step: 1 },
+  { cls: 'l-1', badge: 'L1', name: 'Raw Codebase', desc: '*.services.yml, *.routing.yml, *.module, src/**', step: 0 }
+];
+
+var CMDS = [
+  { id: 'init', name: 'init', desc: 'Full project generation \u2014 all three steps', type: 'ai',
+    detail: 'Runs the complete pipeline: discovers modules, derives feature codes, generates all tech specs (one agent spawn per feature), builds the business index, validates output, and injects the CLAUDE.md hint.',
+    example: '/drupal-semantic init' },
+  { id: 'feature', name: 'feature FEAT', desc: 'Generate or update one tech spec', type: 'ai',
+    detail: 'Spawns the @semantic-architect for a single feature. Updates the spec incrementally, preserving existing Logic IDs. Then validates and updates CLAUDE.md.',
+    example: '/drupal-semantic feature AEMD' },
+  { id: 'index', name: 'index', desc: 'Rebuild the business index from tech specs', type: 'ai',
+    detail: 'Regenerates 00_BUSINESS_INDEX.md from existing tech specs. Does not analyze source code \u2014 the specs are the source of truth.',
+    example: '/drupal-semantic index' },
+  { id: 'status', name: 'status', desc: 'Check doc coverage and staleness', type: 'bash',
+    detail: 'Reports which features have docs, which modules are undocumented, which specs are stale, and whether any schemas need migration.',
+    example: '/drupal-semantic status' },
+  { id: 'validate', name: 'validate [--fix]', desc: 'Check and repair tech spec format', type: 'bash',
+    detail: 'Checks that filenames match CODE_01_Name.md and frontmatter has required fields. With --fix, auto-renames files and adds missing frontmatter.',
+    example: '/drupal-semantic validate --fix' },
+  { id: 'inject', name: 'inject', desc: 'Update CLAUDE.md hint without regenerating', type: 'bash',
+    detail: 'Reads existing tech specs and refreshes the ## Codebase section in CLAUDE.md. No agent spawned. Instant.',
+    example: '/drupal-semantic inject' }
+];
+
+function buildPipeline() {
+  var el = document.getElementById('pipeline');
+  STEPS.forEach(function(s) {
+    var div = document.createElement('div');
+    div.className = 'pipe-step ' + s.cls + (s.num === 1 ? ' active' : '');
+    div.dataset.step = s.num;
+
+    var numEl = document.createElement('div');
+    numEl.className = 'step-num';
+    numEl.textContent = s.num;
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'step-title';
+    titleEl.textContent = s.title;
+
+    var cmdEl = document.createElement('div');
+    cmdEl.className = 'step-cmd';
+    cmdEl.textContent = s.cmd;
+
+    var typeEl = document.createElement('div');
+    typeEl.className = 'step-type';
+    typeEl.textContent = s.type;
+
+    div.appendChild(numEl);
+    div.appendChild(titleEl);
+    div.appendChild(cmdEl);
+    div.appendChild(typeEl);
+
+    div.addEventListener('click', function() { state.step = s.num; state.cmd = null; render(); });
+    el.appendChild(div);
+  });
+}
+
+function buildLayers() {
+  var el = document.getElementById('layers');
+  LAYERS.forEach(function(l) {
+    var div = document.createElement('div');
+    div.className = 'layer ' + l.cls + (l.step === 0 ? ' visible' : '');
+    div.dataset.step = l.step;
+
+    var badge = document.createElement('span');
+    badge.className = 'layer-badge';
+    badge.textContent = l.badge;
+
+    var name = document.createElement('span');
+    name.className = 'layer-name';
+    name.textContent = l.name;
+
+    var desc = document.createElement('span');
+    desc.className = 'layer-desc';
+    desc.textContent = l.desc;
+
+    div.appendChild(badge);
+    div.appendChild(name);
+    div.appendChild(desc);
+    el.appendChild(div);
+  });
+}
+
+function buildCommands() {
+  var grid = document.getElementById('cmd-grid');
+  CMDS.forEach(function(c) {
+    var card = document.createElement('div');
+    card.className = 'cmd-card';
+    card.dataset.cmd = c.id;
+
+    var name = document.createElement('div');
+    name.className = 'cmd-name';
+    name.textContent = c.name;
+
+    var desc = document.createElement('div');
+    desc.className = 'cmd-desc';
+    desc.textContent = c.desc;
+
+    var badge = document.createElement('div');
+    badge.className = 'cmd-badge ' + c.type;
+    badge.textContent = c.type === 'ai' ? 'AI agent' : 'Bash';
+
+    card.appendChild(name);
+    card.appendChild(desc);
+    card.appendChild(badge);
+
+    card.addEventListener('click', function() {
+      state.cmd = state.cmd === c.id ? null : c.id;
+      render();
+    });
+    grid.appendChild(card);
+  });
+}
+
+function render() {
+  var s = STEPS[state.step - 1];
+
+  // Pipeline
+  document.querySelectorAll('.pipe-step').forEach(function(el) {
+    el.classList.toggle('active', +el.dataset.step === state.step);
+  });
+
+  // Step detail
+  var detail = document.getElementById('step-detail');
+  detail.textContent = '';
+
+  var h3 = document.createElement('h3');
+  h3.textContent = s.heading;
+  detail.appendChild(h3);
+
+  var p = document.createElement('p');
+  p.textContent = s.desc;
+  detail.appendChild(p);
+
+  if (s.outputs.length > 0) {
+    var label = document.createElement('div');
+    label.className = 'what-label';
+    label.textContent = s.whatLabel;
+    detail.appendChild(label);
+
+    var ul = document.createElement('ul');
+    ul.className = 'output-list';
+    s.outputs.forEach(function(o) {
+      var li = document.createElement('li');
+      li.textContent = o;
+      ul.appendChild(li);
+    });
+    detail.appendChild(ul);
+  }
+
+  var exLabel = document.createElement('div');
+  exLabel.className = 'what-label';
+  exLabel.textContent = s.outputs.length > 0 ? 'Example output' : s.whatLabel;
+  detail.appendChild(exLabel);
+
+  var code = document.createElement('div');
+  code.className = 'code-block';
+  code.textContent = s.example;
+  detail.appendChild(code);
+
+  // Layers
+  document.querySelectorAll('.layer').forEach(function(el) {
+    var layerStep = +el.dataset.step;
+    el.classList.toggle('visible', layerStep <= state.step);
+  });
+
+  // Commands
+  document.querySelectorAll('.cmd-card').forEach(function(el) {
+    el.classList.toggle('active', el.dataset.cmd === state.cmd);
+  });
+
+  var expandArea = document.getElementById('cmd-expand-area');
+  expandArea.textContent = '';
+  if (state.cmd) {
+    var cmd = CMDS.filter(function(c) { return c.id === state.cmd; })[0];
+    var box = document.createElement('div');
+    box.className = 'cmd-expand';
+
+    var h4 = document.createElement('h4');
+    h4.textContent = '/drupal-semantic ' + cmd.name;
+    box.appendChild(h4);
+
+    var dp = document.createElement('p');
+    dp.textContent = cmd.detail;
+    box.appendChild(dp);
+
+    var ex = document.createElement('div');
+    ex.className = 'cmd-example';
+    ex.textContent = cmd.example;
+    box.appendChild(ex);
+
+    expandArea.appendChild(box);
+  }
+}
+
+buildPipeline();
+buildLayers();
+buildCommands();
+render();
+</script>
+</body>
+</html>

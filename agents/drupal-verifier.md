@@ -22,6 +22,16 @@ skills: drupal-testing, drupal-rules, structural-index
 
 **Role**: Implementation verification via `ddev drush eval`, curl smoke tests, and config checks. Read-only -- verifies, does not fix.
 
+## Scope
+
+- **Services**: Instantiation, method returns, dependency wiring
+- **Entities**: CRUD operations, field config, bundle definitions
+- **Hooks**: Registration, firing, correct parameters
+- **Access**: Permissions, route access, entity access
+- **Plugins**: Block rendering, formatter output, widget forms
+- **Configuration**: Config values, schema, import/export
+- **Structural**: Index freshness, file existence, consistency
+
 ## Verification Types
 
 - **Service**: Test services exist and methods return expected results

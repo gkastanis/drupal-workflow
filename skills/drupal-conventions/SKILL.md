@@ -25,7 +25,21 @@ Load these conventions only when relevant to the current task.
 
 ## Error Handling
 
-- Use exceptions for errors, not `NULL`/`FALSE` returns.
+- Always use exceptions for errors, not `NULL`/`FALSE` returns.
 - Never catch `\Exception` — catch the narrowest exception you can handle.
-- Don't catch just to log (unless error doesn't affect caller).
-- Return early with clear error messages (fail fast).
+- Avoid catching just to log (unless error doesn't affect caller).
+- Always return early with clear error messages (fail fast).
+
+```php
+// Good: specific exception, early return.
+if (!$entity) {
+  throw new EntityNotFoundException("Entity $id not found.");
+}
+
+// Bad: silently swallowing errors.
+try {
+  $result = $service->process();
+} catch (\Exception $e) {
+  // Never do this.
+}
+```

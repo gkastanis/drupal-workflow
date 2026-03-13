@@ -1,0 +1,189 @@
+{
+  "skill": "semantic-architect",
+  "skill_file": "agents/semantic-architect.md",
+  "description": "Binary assertions for semantic-architect tech spec output quality",
+  "test_features": ["ASGN", "HDAY"],
+  "test_project": "/home/zorz/sites/timan",
+  "assertions": [
+    {
+      "id": "A01",
+      "category": "file_naming",
+      "description": "Output file exists in docs/semantic/tech/",
+      "check": "glob_match",
+      "pattern": "docs/semantic/tech/*.md",
+      "min_count": 1
+    },
+    {
+      "id": "A02",
+      "category": "file_naming",
+      "description": "Filename matches CODE_01_Name.md pattern (2-5 uppercase, _, 2-digit number, _, PascalCase)",
+      "check": "regex_filename",
+      "pattern": "^[A-Z]{2,5}_\\d{2}_[A-Z][A-Za-z]+\\.md$"
+    },
+    {
+      "id": "A03",
+      "category": "file_naming",
+      "description": "No freeform filenames (kebab-case, snake_case without code prefix, or single-word)",
+      "check": "no_freeform_filenames",
+      "bad_patterns": ["^[a-z]", "^[A-Z]{2,5}\\.md$", "-"]
+    },
+    {
+      "id": "A04",
+      "category": "frontmatter",
+      "description": "YAML frontmatter block exists (file starts with ---)",
+      "check": "starts_with",
+      "value": "---"
+    },
+    {
+      "id": "A05",
+      "category": "frontmatter",
+      "description": "Frontmatter has type: tech_spec",
+      "check": "frontmatter_field",
+      "field": "type",
+      "expected": "tech_spec"
+    },
+    {
+      "id": "A06",
+      "category": "frontmatter",
+      "description": "Frontmatter has feature_id field matching the requested code",
+      "check": "frontmatter_field_exists",
+      "field": "feature_id"
+    },
+    {
+      "id": "A07",
+      "category": "frontmatter",
+      "description": "Frontmatter has feature_name field (non-empty string)",
+      "check": "frontmatter_field_exists",
+      "field": "feature_name"
+    },
+    {
+      "id": "A08",
+      "category": "frontmatter",
+      "description": "Frontmatter has module field (non-empty string)",
+      "check": "frontmatter_field_exists",
+      "field": "module"
+    },
+    {
+      "id": "A09",
+      "category": "frontmatter",
+      "description": "Frontmatter has related_files as a list with at least 1 entry",
+      "check": "frontmatter_list_min",
+      "field": "related_files",
+      "min_count": 1
+    },
+    {
+      "id": "A10",
+      "category": "frontmatter",
+      "description": "Frontmatter has last_updated in YYYY-MM-DD format",
+      "check": "frontmatter_date",
+      "field": "last_updated"
+    },
+    {
+      "id": "A11",
+      "category": "frontmatter",
+      "description": "Frontmatter has logic_id_count as integer > 0",
+      "check": "frontmatter_int_min",
+      "field": "logic_id_count",
+      "min_value": 1
+    },
+    {
+      "id": "A12",
+      "category": "content_sections",
+      "description": "Has ## Developer Summary section",
+      "check": "contains_heading",
+      "heading": "## Developer Summary"
+    },
+    {
+      "id": "A13",
+      "category": "content_sections",
+      "description": "Has ## Logic-to-Code Mapping section",
+      "check": "contains_heading",
+      "heading": "## Logic-to-Code Mapping"
+    },
+    {
+      "id": "A14",
+      "category": "content_sections",
+      "description": "Logic-to-Code section has a markdown table with | separators (at least 3 data rows)",
+      "check": "table_rows_min",
+      "section": "Logic-to-Code Mapping",
+      "min_rows": 3
+    },
+    {
+      "id": "A15",
+      "category": "content_sections",
+      "description": "Logic IDs in table follow FEAT-L# pattern (e.g., ASGN-L1, HDAY-L3)",
+      "check": "logic_id_pattern",
+      "pattern": "^[A-Z]{2,5}-L\\d+$"
+    },
+    {
+      "id": "A16",
+      "category": "content_sections",
+      "description": "Has ## Code Structure section",
+      "check": "contains_heading",
+      "heading": "## Code Structure"
+    },
+    {
+      "id": "A17",
+      "category": "content_sections",
+      "description": "Has ## Dependencies section",
+      "check": "contains_heading",
+      "heading": "## Dependencies"
+    },
+    {
+      "id": "A18",
+      "category": "content_sections",
+      "description": "Has ## Access Control section",
+      "check": "contains_heading",
+      "heading": "## Access Control"
+    },
+    {
+      "id": "A19",
+      "category": "content_sections",
+      "description": "Has ## Related Features section",
+      "check": "contains_heading",
+      "heading": "## Related Features"
+    },
+    {
+      "id": "A20",
+      "category": "quality",
+      "description": "logic_id_count in frontmatter matches actual count of FEAT-L# rows in the table",
+      "check": "logic_count_matches"
+    },
+    {
+      "id": "A21",
+      "category": "quality",
+      "description": "At least 50% of related_files paths reference files that exist in the project",
+      "check": "related_files_exist",
+      "min_pct": 50
+    },
+    {
+      "id": "A22",
+      "category": "quality",
+      "description": "feature_id in frontmatter matches the CODE prefix of the filename",
+      "check": "feature_id_matches_filename"
+    },
+    {
+      "id": "A23",
+      "category": "quality",
+      "description": "Has a mermaid diagram (```mermaid code block)",
+      "check": "contains_string",
+      "value": "```mermaid"
+    },
+    {
+      "id": "A24",
+      "category": "quality",
+      "description": "Developer Summary is between 50 and 500 words",
+      "check": "section_word_count",
+      "section": "Developer Summary",
+      "min_words": 50,
+      "max_words": 500
+    },
+    {
+      "id": "A25",
+      "category": "quality",
+      "description": "H1 title matches pattern FEAT_01: Feature Name",
+      "check": "h1_pattern",
+      "pattern": "^# [A-Z]{2,5}_\\d{2}: .+"
+    }
+  ]
+}

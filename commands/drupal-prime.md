@@ -15,7 +15,7 @@ For normal workflows, the CLAUDE.md `## Codebase` hint (~45 words) is sufficient
 ### Step 1: Run Prime
 
 ```bash
-bash "$PLUGIN_DIR/skills/discover/scripts/prime.sh"
+bash "$CLAUDE_PLUGIN_ROOT/skills/discover/scripts/prime.sh"
 ```
 
 ### Step 2: Output

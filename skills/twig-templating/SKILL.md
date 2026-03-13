@@ -1,12 +1,11 @@
+---
+name: twig-templating
+description: Twig template patterns, filters, theme suggestions, and component architecture for Drupal 10/11. Use when creating or modifying Twig templates, implementing theme hooks, or building front-end components.
+---
+
 # Twig Templating
 
-name: twig-templating
-description: >
-  Twig template patterns, filters, theme suggestions, and component architecture
-  for Drupal 10/11. Use when creating or modifying Twig templates, implementing
-  theme hooks, or building front-end components.
-
----
+Always use `{{ attach_library() }}` for assets — never inline CSS/JS. Always use BEM naming for custom classes. Avoid heavy logic in templates — prefer preprocess functions. Never use `|raw` on user input.
 
 ## Template Naming Conventions
 

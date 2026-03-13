@@ -1,12 +1,9 @@
-# Drupal Entity API
-
-name: drupal-entity-api
-description: >
-  Field type selection, entity CRUD operations, view modes, and content modeling
-  patterns for Drupal 10/11. Use when designing content types, selecting field types,
-  or working with the Entity API.
-
 ---
+name: drupal-entity-api
+description: Field type selection, entity CRUD operations, view modes, and content modeling patterns for Drupal 10/11. Use when designing content types, selecting field types, or working with the Entity API.
+---
+
+# Drupal Entity API
 
 ## Field Type Selection Matrix
 
@@ -31,12 +28,27 @@ description: >
 
 ## Entity Type Selection
 
-- **Nodes**: Published content (articles, pages, events).
-- **Custom entities**: Non-published data (rarely needed - prefer nodes).
+Always choose the right entity type for your data. Use `ContentEntityBase` for fieldable content, `ConfigEntityBase` for exportable config. Never create a custom entity when a node type would suffice.
+
+- **Nodes** (`ContentEntityType`): Published content (articles, pages, events).
+- **Custom entities** (`ContentEntityBase`): Non-published data (rarely needed — prefer nodes).
 - **Taxonomy terms**: Categorization and metadata.
 - **Paragraphs**: Flexible content components.
 - **Media**: Files, images, videos.
 - **Users**: User profiles (extend, don't replace).
+
+## Custom Entity Definition
+
+Always implement `baseFieldDefinitions()` to declare your entity's base fields. Always add an `AccessControlHandler` class for custom entities.
+
+```php
+// In your entity class:
+public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
+  $fields = parent::baseFieldDefinitions($entity_type);
+  // Add custom base fields here.
+  return $fields;
+}
+```
 
 ## Entity CRUD Operations
 

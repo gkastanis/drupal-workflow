@@ -1,12 +1,11 @@
+---
+name: drupal-service-di
+description: Service definitions, dependency injection patterns, and interface design for Drupal 10/11. Use when creating services, registering dependencies, or implementing the service container pattern.
+---
+
 # Drupal Service & Dependency Injection
 
-name: drupal-service-di
-description: >
-  Service definitions, dependency injection patterns, and interface design
-  for Drupal 10/11. Use when creating services, registering dependencies,
-  or implementing the service container pattern.
-
----
+Always use constructor injection — never use `\Drupal::` static calls in classes. Always check the structural index before creating new services to avoid duplicates. Prefer interface type-hints over concrete classes.
 
 ## Service Definition
 

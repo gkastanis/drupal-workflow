@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>drupal-workflow / Agents &amp; Skills</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --text: #1a1a2e; --text-light: #555; --text-muted: #888;
+    --bg: #fafafa; --white: #fff;
+    --border: #e5e5e5; --border-light: #f0f0f0;
+    --blue: #2563eb; --blue-light: #eff6ff; --blue-border: #bfdbfe;
+    --green: #16a34a; --green-light: #f0fdf4; --green-border: #bbf7d0;
+    --purple: #7c3aed; --purple-light: #f5f3ff; --purple-border: #ddd6fe;
+    --orange: #ea580c; --orange-light: #fff7ed; --orange-border: #fed7aa;
+    --magenta: #c026d3; --magenta-light: #fdf4ff; --magenta-border: #f0abfc;
+    --red: #dc2626; --red-light: #fef2f2; --red-border: #fecaca;
+    --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .page { max-width: 900px; margin: 0 auto; padding: 60px 24px 120px; }
+
+  /* Nav */
+  .nav { display: flex; gap: 24px; margin-bottom: 48px; font-size: 14px; }
+  .nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+  .nav a:hover { color: var(--text); }
+  .nav a.current { color: var(--text); font-weight: 700; }
+
+  /* Hero */
+  .hero { margin-bottom: 64px; }
+  .hero h1 { font-size: 42px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .hero p { font-size: 20px; color: var(--text-light); max-width: 640px; line-height: 1.5; }
+
+  /* Section */
+  .section { margin-bottom: 64px; }
+  .section h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .section .subtitle { font-size: 16px; color: var(--text-light); margin-bottom: 32px; max-width: 640px; }
+
+  /* Agent cards */
+  .agent-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .agent-card { background: var(--white); border: 2px solid var(--border); border-radius: 12px; padding: 24px 20px; cursor: pointer; transition: all 0.2s; position: relative; }
+  .agent-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .agent-card .agent-dot { width: 10px; height: 10px; border-radius: 50%; margin-bottom: 12px; }
+  .agent-card .agent-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .agent-card .agent-role { font-size: 13px; color: var(--text-light); line-height: 1.4; margin-bottom: 12px; min-height: 36px; }
+  .agent-card .agent-meta { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+  .agent-card .agent-meta span { display: inline-block; padding: 2px 6px; background: var(--bg); border-radius: 3px; margin-right: 4px; }
+
+  .agent-card.c-green { border-color: var(--green-border); }
+  .agent-card.c-green.active { border-color: var(--green); background: var(--green-light); }
+  .agent-card.c-green .agent-dot { background: var(--green); }
+  .agent-card.c-blue { border-color: var(--blue-border); }
+  .agent-card.c-blue.active { border-color: var(--blue); background: var(--blue-light); }
+  .agent-card.c-blue .agent-dot { background: var(--blue); }
+  .agent-card.c-magenta { border-color: var(--magenta-border); }
+  .agent-card.c-magenta.active { border-color: var(--magenta); background: var(--magenta-light); }
+  .agent-card.c-magenta .agent-dot { background: var(--magenta); }
+
+  /* Agent detail panel */
+  .agent-detail { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 36px; min-height: 240px; }
+  .agent-detail h3 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .agent-detail .ad-role { font-size: 16px; color: var(--text-light); margin-bottom: 20px; }
+  .agent-detail .ad-section-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; margin-top: 20px; }
+  .agent-detail .ad-scope-list { list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 16px; }
+  .agent-detail .ad-scope-list li { font-size: 14px; color: var(--text-light); padding-left: 16px; position: relative; }
+  .agent-detail .ad-scope-list li::before { content: '\2022'; position: absolute; left: 0; color: var(--text-muted); }
+  .agent-detail .ad-skills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .agent-detail .ad-skill { font-family: var(--mono); font-size: 12px; padding: 4px 10px; border-radius: 6px; background: var(--bg); border: 1px solid var(--border-light); color: var(--text-light); }
+  .agent-detail .ad-tools { font-family: var(--mono); font-size: 13px; color: var(--text-light); }
+  .agent-detail .ad-rules { font-size: 14px; color: var(--text-light); line-height: 1.7; }
+  .agent-detail .ad-rules strong { color: var(--text); font-weight: 600; }
+
+  /* Handoff flow */
+  .handoff { display: flex; align-items: center; gap: 0; }
+  .handoff-step { flex: 1; text-align: center; padding: 28px 16px; background: var(--white); border: 2px solid var(--border); position: relative; transition: all 0.2s; }
+  .handoff-step:first-child { border-radius: 12px 0 0 12px; }
+  .handoff-step:last-child { border-radius: 0 12px 12px 0; }
+  .handoff-step:not(:first-child) { border-left: none; }
+  .handoff-step .hs-num { font-size: 36px; font-weight: 900; color: var(--border); line-height: 1; margin-bottom: 6px; }
+  .handoff-step .hs-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .handoff-step .hs-action { font-size: 13px; color: var(--text-light); }
+  .handoff-step:not(:last-child)::after {
+    content: '\2192'; position: absolute; right: -14px; top: 50%; transform: translateY(-50%);
+    font-size: 20px; color: var(--text-muted); z-index: 2; background: var(--bg); padding: 4px;
+  }
+  .handoff-step.h-green .hs-num { color: var(--green); }
+  .handoff-step.h-green { border-color: var(--green-border); }
+  .handoff-step.h-blue .hs-num { color: var(--blue); }
+  .handoff-step.h-blue { border-color: var(--blue-border); }
+  .handoff-sep { padding: 28px 12px; text-align: center; }
+  .handoff-sep .sep-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+  .handoff-aside { margin-top: 16px; display: flex; align-items: center; gap: 12px; }
+  .handoff-aside .ha-line { flex: 1; height: 1px; background: var(--magenta-border); }
+  .handoff-aside .ha-label { font-size: 13px; color: var(--magenta); font-weight: 600; white-space: nowrap; }
+
+  /* Skills grid */
+  .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .skill-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 16px; transition: all 0.15s; cursor: default; }
+  .skill-card:hover { border-color: var(--blue-border); box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+  .skill-card .sk-name { font-family: var(--mono); font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .skill-card .sk-desc { font-size: 12px; color: var(--text-light); line-height: 1.4; margin-bottom: 8px; }
+  .skill-card .sk-agents { display: flex; gap: 4px; flex-wrap: wrap; }
+  .skill-card .sk-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .skill-card .sk-dot.d-green { background: var(--green); }
+  .skill-card .sk-dot.d-blue { background: var(--blue); }
+  .skill-card .sk-dot.d-magenta { background: var(--magenta); }
+  .skill-card .sk-agent-label { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+
+  /* Category labels */
+  .cat-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; margin-top: 28px; }
+  .cat-label:first-child { margin-top: 0; }
+
+  /* Hooks timeline */
+  .hooks-timeline { display: flex; flex-direction: column; gap: 0; }
+  .hook-item { display: flex; gap: 0; border: 1px solid var(--border); background: var(--white); }
+  .hook-item:first-child { border-radius: 12px 12px 0 0; }
+  .hook-item:last-child { border-radius: 0 0 12px 12px; }
+  .hook-item:not(:first-child) { border-top: none; }
+  .hook-event { min-width: 160px; padding: 16px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
+  .hook-event .he-name { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+  .hook-event .he-trigger { font-size: 11px; color: var(--text-muted); }
+  .hook-body { flex: 1; padding: 16px; }
+  .hook-body .hb-action { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .hook-body .hb-detail { font-size: 13px; color: var(--text-light); }
+  .hook-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
+  .hook-badge.blocks { background: var(--red-light); color: var(--red); }
+  .hook-badge.advisory { background: var(--orange-light); color: var(--orange); }
+  .hook-badge.auto { background: var(--green-light); color: var(--green); }
+
+  /* Legend */
+  .legend { display: flex; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-light); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Nav -->
+  <div class="nav">
+    <a href="playground-workflow.html">Pipeline</a>
+    <a href="playground-discover.html">Discover</a>
+    <a href="playground-agents.html" class="current">Agents</a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Agents &amp; Skills</h1>
+    <p>Four specialized agents, each with a distinct role and a set of Drupal-specific skills. They hand off work to each other, and quality gates enforce standards at every step.</p>
+  </div>
+
+  <!-- The Team -->
+  <div class="section">
+    <h2>The Team</h2>
+    <p class="subtitle">Each agent has its own model, tools, and skill set. Click an agent to see what it knows and how it works.</p>
+
+    <div class="agent-row" id="agent-row"></div>
+    <div class="agent-detail" id="agent-detail"></div>
+  </div>
+
+  <!-- The Handoff -->
+  <div class="section">
+    <h2>The Handoff</h2>
+    <p class="subtitle">Work flows from implementation to review to verification. The semantic architect runs independently to generate documentation.</p>
+
+    <div class="handoff">
+      <div class="handoff-step h-green">
+        <div class="hs-num">1</div>
+        <div class="hs-name">Builder</div>
+        <div class="hs-action">Writes the code</div>
+      </div>
+      <div class="handoff-step h-blue">
+        <div class="hs-num">2</div>
+        <div class="hs-name">Reviewer</div>
+        <div class="hs-action">Checks quality</div>
+      </div>
+      <div class="handoff-step h-green">
+        <div class="hs-num">3</div>
+        <div class="hs-name">Verifier</div>
+        <div class="hs-action">Proves it works</div>
+      </div>
+    </div>
+    <div class="handoff-aside">
+      <div class="ha-line"></div>
+      <div class="ha-label">Semantic Architect runs separately to generate docs</div>
+      <div class="ha-line"></div>
+    </div>
+  </div>
+
+  <!-- Skills -->
+  <div class="section">
+    <h2>15 Skills</h2>
+    <p class="subtitle">Domain knowledge packaged as reusable skill files. Each agent loads only the skills it needs. Dots show which agents use each skill.</p>
+
+    <div class="legend" id="legend"></div>
+    <div id="skills-area"></div>
+  </div>
+
+  <!-- Quality Gates -->
+  <div class="section">
+    <h2>Quality Gates</h2>
+    <p class="subtitle">Hooks fire automatically at key moments. Some block bad actions, some auto-fix, some just remind. No manual steps needed.</p>
+
+    <div class="hooks-timeline" id="hooks-timeline"></div>
+  </div>
+
+</div>
+
+<script>
+var state = { agent: 'builder' };
+
+/* =================== DATA =================== */
+
+var AGENTS = [
+  { id: 'builder', name: 'Builder', color: 'c-green', model: 'opus',
+    role: 'Full-stack implementation',
+    fullRole: 'Writes modules, themes, config, migrations, and performance optimizations. The primary coding agent.',
+    tools: 'Read, Write, Edit, Glob, Grep, Bash',
+    scope: [
+      'Custom modules and plugins', 'Services and dependency injection',
+      'OOP hooks (Drupal 11)', 'Controllers and forms',
+      'Twig templates and libraries', 'Config export/import',
+      'Update hooks and migrations', 'Cache metadata and optimization'
+    ],
+    skills: ['drupal-rules', 'drupal-service-di', 'drupal-hook-patterns', 'drupal-coding-standards',
+             'drupal-entity-api', 'drupal-caching', 'twig-templating', 'drupal-conventions',
+             'drupal-testing', 'verification-before-completion', 'writing-plans', 'discover', 'structural-index'],
+    rules: [
+      '<strong>Guard clauses first</strong> \u2014 return early, avoid nested conditionals.',
+      '<strong>final classes</strong> by default unless designed for extension.',
+      '<strong>No \\Drupal::</strong> static calls in classes \u2014 dependency injection only.',
+      '<strong>OOP hooks</strong> with #[Hook] attribute and LegacyHook bridge.',
+      '<strong>BEM for CSS</strong> strictly. Twig logic limits \u2014 heavy logic in preprocess.',
+      '<strong>Duplicate prevention</strong> \u2014 checks structural index before creating services, methods, or permissions.'
+    ]
+  },
+  { id: 'reviewer', name: 'Reviewer', color: 'c-blue', model: 'sonnet',
+    role: 'Architecture and security',
+    fullRole: 'Reviews code for architecture quality, security vulnerabilities, coding standards, and accessibility. Outputs a PASS/FAIL report.',
+    tools: 'Read, Write, Edit, Glob, Grep, Bash, WebSearch',
+    scope: [
+      'Content models and architecture', 'Security audit (OWASP)',
+      'PHPCS and PHPStan validation', 'Accessibility (WCAG 2.1 AA)',
+      'PHPUnit and Behat tests', 'Dependency impact analysis',
+      'Coding standards enforcement', 'Duplicate detection'
+    ],
+    skills: ['drupal-rules', 'drupal-entity-api', 'drupal-service-di', 'drupal-security-patterns',
+             'drupal-coding-standards', 'drupal-testing', 'verification-before-completion', 'discover', 'structural-index'],
+    rules: [
+      '<strong>7-step validation</strong> \u2014 PHPCS, PHPStan, security, architecture, accessibility, structural impact, report.',
+      '<strong>Red flags</strong> \u2014 \\Drupal:: in services, leaky abstractions, missing strict_types, no cache metadata.',
+      '<strong>Structural awareness</strong> \u2014 checks DEPENDENCY_GRAPH.md and service consumers before approving changes.',
+      '<strong>Duplicate detection</strong> \u2014 flags new services that reimplement existing functionality.',
+      '<strong>Report format</strong> \u2014 PASS/FAIL with severity levels (CRITICAL, HIGH, MEDIUM) and remediation steps.',
+      '<strong>Testing integrity</strong> \u2014 never manipulates assertions or skips tests to get green.'
+    ]
+  },
+  { id: 'verifier', name: 'Verifier', color: 'c-green', model: 'sonnet',
+    role: 'Runtime verification',
+    fullRole: 'Proves implementations actually work via ddev drush eval, curl smoke tests, and config checks. Read-only \u2014 verifies but never modifies code.',
+    tools: 'Bash, Read, Grep, Glob',
+    scope: [
+      'Service instantiation tests', 'Entity CRUD verification',
+      'Hook firing confirmation', 'Route and access control tests',
+      'Plugin existence checks', 'Config value verification',
+      'Structural index validation', 'JSON test output'
+    ],
+    skills: ['drupal-testing', 'drupal-rules', 'structural-index'],
+    rules: [
+      '<strong>Read-only</strong> \u2014 verifies implementations but never modifies code.',
+      '<strong>ddev drush eval</strong> for all runtime checks. One-line PHP, no use statements.',
+      '<strong>JSON output</strong> \u2014 structured test results with pass/fail/error status.',
+      '<strong>Never destructive</strong> \u2014 no DELETE, TRUNCATE, DROP operations.',
+      '<strong>Complex PHP</strong> goes in scripts/tests/, not inline in drush eval.',
+      '<strong>Edge case aware</strong> \u2014 service not found, entity missing, hook not firing, permission denied.'
+    ]
+  },
+  { id: 'architect', name: 'Semantic Architect', color: 'c-magenta', model: 'sonnet',
+    role: 'Documentation generation',
+    fullRole: 'Reads the structural index and source code to produce Layer 3 semantic documentation: business index, tech specs with Logic IDs, and business schemas.',
+    tools: 'Read, Write, Edit, Glob, Grep, Bash',
+    scope: [
+      'Business index generation', 'Tech specs with Logic IDs',
+      'Business schema creation', 'Feature code derivation',
+      'Incremental doc updates', 'Schema auto-migration',
+      'Quality checklist validation', 'Cross-feature references'
+    ],
+    skills: ['discover', 'structural-index', 'semantic-docs', 'drupal-entity-api',
+             'drupal-service-di', 'drupal-hook-patterns', 'drupal-conventions', 'writing-plans'],
+    rules: [
+      '<strong>Strict file naming</strong> \u2014 CODE_01_Name.md with YAML frontmatter. Post-generation validator rejects non-conforming files.',
+      '<strong>Logic IDs</strong> \u2014 FEAT-L# format, never renumber, append-only, deprecated items stay in table.',
+      '<strong>One feature per spawn</strong> \u2014 context window management, orchestrated by /drupal-semantic init.',
+      '<strong>Structural input first</strong> \u2014 reads structural index before source code. Requires .generated-at timestamp.',
+      '<strong>Business schemas</strong> \u2014 only business rules, related entities, examples. No field definitions.',
+      '<strong>Incremental protocol</strong> \u2014 preserves existing IDs, appends new ones, updates frontmatter counts.'
+    ]
+  }
+];
+
+var SKILL_CATEGORIES = [
+  { label: 'Core Development', skills: [
+    { name: 'drupal-rules', desc: 'Core development rules and quality standards', agents: ['builder', 'reviewer', 'verifier'] },
+    { name: 'drupal-coding-standards', desc: 'PHPCS, PHPStan, naming, and code style', agents: ['builder', 'reviewer'] },
+    { name: 'drupal-conventions', desc: 'Translations, CSS (BEM), error handling', agents: ['builder', 'architect'] }
+  ]},
+  { label: 'Architecture & Design', skills: [
+    { name: 'drupal-service-di', desc: 'Service definitions and dependency injection', agents: ['builder', 'reviewer', 'architect'] },
+    { name: 'drupal-entity-api', desc: 'Entity CRUD, field types, view modes', agents: ['builder', 'reviewer', 'architect'] },
+    { name: 'drupal-hook-patterns', desc: 'OOP hooks, form alters, entity hooks', agents: ['builder', 'architect'] }
+  ]},
+  { label: 'Quality & Security', skills: [
+    { name: 'drupal-security-patterns', desc: 'OWASP prevention, access control, XSS', agents: ['reviewer'] },
+    { name: 'drupal-testing', desc: 'Curl smoke tests, drush eval, test scripts', agents: ['builder', 'reviewer', 'verifier'] },
+    { name: 'verification-before-completion', desc: 'Mandatory 5-step verification gate', agents: ['builder', 'reviewer'] }
+  ]},
+  { label: 'Performance & Frontend', skills: [
+    { name: 'drupal-caching', desc: 'Cache bins, tags, contexts, invalidation', agents: ['builder'] },
+    { name: 'twig-templating', desc: 'Templates, filters, theme suggestions', agents: ['builder'] }
+  ]},
+  { label: 'Documentation & Discovery', skills: [
+    { name: 'discover', desc: 'Docs-first discovery with query prefixes', agents: ['builder', 'reviewer', 'architect'] },
+    { name: 'structural-index', desc: 'Auto-generated structural awareness layer', agents: ['builder', 'reviewer', 'verifier', 'architect'] },
+    { name: 'semantic-docs', desc: 'Navigate Logic ID to code mappings', agents: ['architect'] },
+    { name: 'writing-plans', desc: 'Implementation plans for complex tasks', agents: ['builder', 'architect'] }
+  ]}
+];
+
+var HOOKS = [
+  { event: 'SessionStart', trigger: 'Plugin loads',
+    action: 'Activation banner', detail: 'Displays available commands. Auto-regenerates structural index if source files changed.',
+    badge: 'auto', badgeText: 'Auto' },
+  { event: 'PreToolUse', trigger: 'Before Read/Grep',
+    action: 'Block sensitive files', detail: 'Prevents reading settings.php, .env, credentials, and private keys.',
+    badge: 'blocks', badgeText: 'Blocks' },
+  { event: 'PostToolUse', trigger: 'After Edit/Write',
+    action: 'PHP lint check', detail: 'Runs php -l on every saved .php and .module file. Fails if syntax is broken.',
+    badge: 'blocks', badgeText: 'Blocks' },
+  { event: 'PostToolUse', trigger: 'After Edit/Write',
+    action: 'Staleness warning', detail: 'Detects edits to *.services.yml, *.routing.yml, *.module, *.permissions.yml. Suggests /drupal-refresh.',
+    badge: 'advisory', badgeText: 'Advisory' },
+  { event: 'SubagentStart', trigger: 'Any agent spawns',
+    action: 'Context injection', detail: 'Injects Drupal version, agent memory paths, and project context into every subagent.',
+    badge: 'auto', badgeText: 'Auto' },
+  { event: 'TaskCompleted', trigger: 'Task marked done',
+    action: 'Verification reminder', detail: 'Checks if any verification output was detected (PASS, FAIL, curl, drush eval). Reminds if not.',
+    badge: 'advisory', badgeText: 'Advisory' }
+];
+
+var AGENT_COLORS = { builder: 'green', reviewer: 'blue', verifier: 'green', architect: 'magenta' };
+
+/* =================== BUILD =================== */
+
+function buildAgentRow() {
+  var row = document.getElementById('agent-row');
+  AGENTS.forEach(function(a) {
+    var card = document.createElement('div');
+    card.className = 'agent-card ' + a.color + (a.id === state.agent ? ' active' : '');
+    card.dataset.agent = a.id;
+
+    var dot = document.createElement('div');
+    dot.className = 'agent-dot';
+
+    var name = document.createElement('div');
+    name.className = 'agent-name';
+    name.textContent = a.name;
+
+    var role = document.createElement('div');
+    role.className = 'agent-role';
+    role.textContent = a.role;
+
+    var meta = document.createElement('div');
+    meta.className = 'agent-meta';
+    var modelSpan = document.createElement('span');
+    modelSpan.textContent = a.model;
+    var skillSpan = document.createElement('span');
+    skillSpan.textContent = a.skills.length + ' skills';
+    meta.appendChild(modelSpan);
+    meta.appendChild(skillSpan);
+
+    card.appendChild(dot);
+    card.appendChild(name);
+    card.appendChild(role);
+    card.appendChild(meta);
+
+    card.addEventListener('click', function() {
+      state.agent = a.id;
+      render();
+    });
+    row.appendChild(card);
+  });
+}
+
+function buildLegend() {
+  var legend = document.getElementById('legend');
+  var items = [
+    { color: 'var(--green)', label: 'Builder' },
+    { color: 'var(--blue)', label: 'Reviewer' },
+    { color: 'var(--green)', label: 'Verifier', border: true },
+    { color: 'var(--magenta)', label: 'Architect' }
+  ];
+  items.forEach(function(item) {
+    var el = document.createElement('div');
+    el.className = 'legend-item';
+    var dot = document.createElement('div');
+    dot.className = 'legend-dot';
+    dot.style.background = item.color;
+    if (item.border) { dot.style.border = '2px solid var(--green)'; dot.style.background = 'var(--white)'; }
+    var label = document.createElement('span');
+    label.textContent = item.label;
+    el.appendChild(dot);
+    el.appendChild(label);
+    legend.appendChild(el);
+  });
+}
+
+function buildSkills() {
+  var area = document.getElementById('skills-area');
+  SKILL_CATEGORIES.forEach(function(cat) {
+    var label = document.createElement('div');
+    label.className = 'cat-label';
+    label.textContent = cat.label;
+    area.appendChild(label);
+
+    var grid = document.createElement('div');
+    grid.className = 'skills-grid';
+
+    cat.skills.forEach(function(sk) {
+      var card = document.createElement('div');
+      card.className = 'skill-card';
+
+      var name = document.createElement('div');
+      name.className = 'sk-name';
+      name.textContent = sk.name;
+
+      var desc = document.createElement('div');
+      desc.className = 'sk-desc';
+      desc.textContent = sk.desc;
+
+      var agents = document.createElement('div');
+      agents.className = 'sk-agents';
+      sk.agents.forEach(function(aId) {
+        var dot = document.createElement('div');
+        dot.className = 'sk-dot';
+        var colorMap = { builder: 'd-green', reviewer: 'd-blue', verifier: 'd-green', architect: 'd-magenta' };
+        dot.className = 'sk-dot ' + colorMap[aId];
+        if (aId === 'verifier') { dot.style.border = '2px solid var(--green)'; dot.style.background = 'var(--white)'; dot.style.width = '8px'; dot.style.height = '8px'; }
+        agents.appendChild(dot);
+      });
+
+      card.appendChild(name);
+      card.appendChild(desc);
+      card.appendChild(agents);
+      grid.appendChild(card);
+    });
+
+    area.appendChild(grid);
+  });
+}
+
+function buildHooks() {
+  var timeline = document.getElementById('hooks-timeline');
+  HOOKS.forEach(function(h) {
+    var item = document.createElement('div');
+    item.className = 'hook-item';
+
+    var event = document.createElement('div');
+    event.className = 'hook-event';
+    var eName = document.createElement('div');
+    eName.className = 'he-name';
+    eName.textContent = h.event;
+    var eTrigger = document.createElement('div');
+    eTrigger.className = 'he-trigger';
+    eTrigger.textContent = h.trigger;
+    event.appendChild(eName);
+    event.appendChild(eTrigger);
+
+    var body = document.createElement('div');
+    body.className = 'hook-body';
+    var bAction = document.createElement('div');
+    bAction.className = 'hb-action';
+    bAction.textContent = h.action;
+    var badge = document.createElement('span');
+    badge.className = 'hook-badge ' + h.badge;
+    badge.textContent = h.badgeText;
+    bAction.appendChild(badge);
+    var bDetail = document.createElement('div');
+    bDetail.className = 'hb-detail';
+    bDetail.textContent = h.detail;
+    body.appendChild(bAction);
+    body.appendChild(bDetail);
+
+    item.appendChild(event);
+    item.appendChild(body);
+    timeline.appendChild(item);
+  });
+}
+
+/* =================== RENDER =================== */
+
+function render() {
+  // Agent cards
+  document.querySelectorAll('.agent-card').forEach(function(el) {
+    el.classList.toggle('active', el.dataset.agent === state.agent);
+  });
+
+  // Agent detail
+  var a = null;
+  for (var i = 0; i < AGENTS.length; i++) {
+    if (AGENTS[i].id === state.agent) { a = AGENTS[i]; break; }
+  }
+  if (!a) return;
+
+  var detail = document.getElementById('agent-detail');
+  detail.textContent = '';
+
+  var h3 = document.createElement('h3');
+  h3.textContent = '@' + a.id.replace('architect', 'semantic-architect').replace('builder', 'drupal-builder').replace('reviewer', 'drupal-reviewer').replace('verifier', 'drupal-verifier');
+  detail.appendChild(h3);
+
+  var role = document.createElement('div');
+  role.className = 'ad-role';
+  role.textContent = a.fullRole;
+  detail.appendChild(role);
+
+  // Scope
+  var scopeLabel = document.createElement('div');
+  scopeLabel.className = 'ad-section-label';
+  scopeLabel.textContent = 'Scope';
+  detail.appendChild(scopeLabel);
+
+  var scopeList = document.createElement('ul');
+  scopeList.className = 'ad-scope-list';
+  a.scope.forEach(function(s) {
+    var li = document.createElement('li');
+    li.textContent = s;
+    scopeList.appendChild(li);
+  });
+  detail.appendChild(scopeList);
+
+  // Key rules
+  var rulesLabel = document.createElement('div');
+  rulesLabel.className = 'ad-section-label';
+  rulesLabel.textContent = 'Key rules';
+  detail.appendChild(rulesLabel);
+
+  var rulesDiv = document.createElement('div');
+  rulesDiv.className = 'ad-rules';
+  a.rules.forEach(function(r) {
+    var p = document.createElement('p');
+    p.style.marginBottom = '4px';
+    // parse bold markers
+    var parts = r.split(/<\/?strong>/g);
+    var tags = r.match(/<\/?strong>/g) || [];
+    var inBold = false;
+    for (var j = 0; j < parts.length; j++) {
+      if (inBold) {
+        var b = document.createElement('strong');
+        b.textContent = parts[j];
+        p.appendChild(b);
+      } else {
+        p.appendChild(document.createTextNode(parts[j]));
+      }
+      if (j < tags.length) {
+        inBold = tags[j] === '<strong>';
+      }
+    }
+    rulesDiv.appendChild(p);
+  });
+  detail.appendChild(rulesDiv);
+
+  // Tools
+  var toolsLabel = document.createElement('div');
+  toolsLabel.className = 'ad-section-label';
+  toolsLabel.textContent = 'Tools';
+  detail.appendChild(toolsLabel);
+
+  var toolsDiv = document.createElement('div');
+  toolsDiv.className = 'ad-tools';
+  toolsDiv.textContent = a.tools;
+  detail.appendChild(toolsDiv);
+
+  // Skills
+  var skillsLabel = document.createElement('div');
+  skillsLabel.className = 'ad-section-label';
+  skillsLabel.textContent = 'Skills (' + a.skills.length + ')';
+  detail.appendChild(skillsLabel);
+
+  var skillsDiv = document.createElement('div');
+  skillsDiv.className = 'ad-skills';
+  a.skills.forEach(function(sk) {
+    var span = document.createElement('span');
+    span.className = 'ad-skill';
+    span.textContent = sk;
+    skillsDiv.appendChild(span);
+  });
+  detail.appendChild(skillsDiv);
+}
+
+/* =================== INIT =================== */
+
+buildAgentRow();
+buildLegend();
+buildSkills();
+buildHooks();
+render();
+</script>
+</body>
+</html>

@@ -32,6 +32,32 @@ If missing, tell the user:
 
 Stop immediately if the structural index is absent.
 
+## File Naming (MUST follow exactly)
+
+Tech spec filenames MUST be: `CODE_01_Name.md`
+- `CODE`: 2-5 uppercase letters (e.g., `AI`, `ASGN`, `TIME`, `CONT`)
+- `01`: two-digit sequential number, zero-padded
+- `Name`: PascalCase, no spaces, no hyphens, no underscores
+
+**Examples**: `ASGN_01_Assignment.md`, `CONT_01_ContentTypes.md`, `PWA_01_OfflineSupport.md`
+**NEVER**: `content-types.md`, `page_builder.md`, `CONT.md`, `assignment.md`
+
+YAML frontmatter MUST be present with ALL of these fields:
+```yaml
+---
+type: tech_spec
+feature_id: CODE
+feature_name: Name
+module: drupal_module_name
+related_files:
+  - path/to/file.php
+last_updated: YYYY-MM-DD
+logic_id_count: N
+---
+```
+
+A post-generation validator will reject files that don't match this format. Get it right the first time.
+
 ## Output Specifications
 
 ### 1. Business Index — `docs/semantic/00_BUSINESS_INDEX.md`

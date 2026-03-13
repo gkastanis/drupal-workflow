@@ -1,6 +1,6 @@
 ---
 description: "Generate and manage semantic documentation (business index, tech specs, business schemas)"
-argument-hint: "<init|feature FEAT|index|schema ENTITY|status>"
+argument-hint: "<init|feature FEAT|index|schema ENTITY|status|validate [--fix]|inject>"
 ---
 # /drupal-semantic - Semantic Documentation Manager
 
@@ -17,6 +17,8 @@ Read subcommand from `$ARGUMENTS`. Supported subcommands:
 - `index` — Generate/update the business index
 - `schema ENTITY` — Generate/update a business schema
 - `init` — Full project semantic doc generation
+- `validate [--fix]` — Check tech spec filenames and frontmatter; --fix auto-renames
+- `inject` — Update CLAUDE.md Codebase section from current tech specs (no regeneration)
 
 If no argument given, default to `status`.
 
@@ -89,7 +91,17 @@ Spawn `@semantic-architect` with task:
 > - If this feature includes entity types, also generate `docs/semantic/schemas/<entity>.business.json`
 > - Run schema auto-migration if needed (see agent instructions)
 
-### Step 3: Update CLAUDE.md
+### Step 3: Validate Output
+
+Run validator to check naming and frontmatter. Auto-fix if possible:
+
+```bash
+"$PLUGIN_DIR/scripts/validate-tech-specs.sh" "$PROJECT_DIR" --fix
+```
+
+If errors remain after --fix, warn the user about non-conforming files.
+
+### Step 4: Update CLAUDE.md
 
 Run inject script to keep Codebase section counts in sync:
 
@@ -97,7 +109,7 @@ Run inject script to keep Codebase section counts in sync:
 "$PLUGIN_DIR/scripts/inject-claude-md.sh" "$PROJECT_DIR"
 ```
 
-### Step 4: Report
+### Step 5: Report
 
 Show the generated/updated file paths and Logic ID count.
 
@@ -226,7 +238,17 @@ Create `docs/semantic/GENERATION_SUMMARY.md`:
 - Migrated schemas: W
 ```
 
-### Step 7: Inject CLAUDE.md Pointer
+### Step 7: Validate All Tech Specs
+
+Run validator across all generated specs. Auto-fix naming and frontmatter issues:
+
+```bash
+"$PLUGIN_DIR/scripts/validate-tech-specs.sh" "$PROJECT_DIR" --fix
+```
+
+If errors remain after --fix, list them in the report.
+
+### Step 8: Inject CLAUDE.md Pointer
 
 Run the inject script to add/update the `## Codebase` section in the project's CLAUDE.md:
 
@@ -236,8 +258,53 @@ Run the inject script to add/update the `## Codebase` section in the project's C
 
 This is the hint that drives +61% speed improvement. If no CLAUDE.md exists, creates one.
 
-### Step 8: Report
+### Step 9: Report
 
 Output the full summary to the user.
+
+---
+
+## Subcommand: `validate [--fix]`
+
+No agent needed. Runs the validation script directly.
+
+### Step 1: Run Validator
+
+```bash
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+```
+
+If `$ARGUMENTS` contains `--fix`:
+
+```bash
+"$PLUGIN_DIR/scripts/validate-tech-specs.sh" "$PROJECT_DIR" --fix
+```
+
+Otherwise report-only:
+
+```bash
+"$PLUGIN_DIR/scripts/validate-tech-specs.sh" "$PROJECT_DIR"
+```
+
+### Step 2: Report
+
+Show results. If errors remain, suggest `--fix` or manual intervention for unfixable files.
+
+---
+
+## Subcommand: `inject`
+
+No agent needed. Updates CLAUDE.md without regenerating any docs.
+
+### Step 1: Run Inject
+
+```bash
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+"$PLUGIN_DIR/scripts/inject-claude-md.sh" "$PROJECT_DIR"
+```
+
+### Step 2: Report
+
+Show what was done (created/updated/appended) and the feature/Logic ID counts.
 
 $ARGUMENTS

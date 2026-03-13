@@ -71,7 +71,7 @@ Slash commands for common development workflows.
 | `/drupal-refresh` | `/drupal-refresh` | Regenerate structural index and reload session context. |
 | `/drupal-status` | `/drupal-status` | Check documentation, structural index, and staleness status. |
 | `/drupal-blast-radius` | `/drupal-blast-radius AUTH` | Analyze dependencies and blast radius for a feature or module. |
-| `/drupal-semantic` | `/drupal-semantic init` | Generate/manage semantic docs (business index, tech specs, business schemas). |
+| `/drupal-semantic` | `/drupal-semantic init` | Generate/manage semantic docs. Subcommands: `init`, `feature FEAT`, `index`, `schema ENTITY`, `status`, `validate [--fix]`, `inject`. |
 
 ## Hooks
 
@@ -99,38 +99,44 @@ drupal-workflow/
 ├── commands/                 # 4 slash commands
 ├── hooks/
 │   └── hooks.json            # Hook event definitions
-├── scripts/                  # Hook implementation scripts
+├── scripts/                  # Hook + utility scripts
 │   ├── block-sensitive-files.sh
 │   ├── php-lint-on-save.sh
 │   ├── staleness-check.sh    # PostToolUse structural staleness advisory
 │   ├── subagent-context-inject.sh
 │   ├── teammate-quality-gate.sh
+│   ├── inject-claude-md.sh   # Add/update ## Codebase section in CLAUDE.md
+│   ├── validate-tech-specs.sh # Check/fix tech spec filenames and frontmatter
 │   └── lib/
 │       └── hook-utils.sh
 └── README.md
 ```
 
-## Getting Started — Suggested Prompts
+## Workflow
 
-Copy-paste these prompts when starting a Claude Code session in a Drupal project.
+Documentation is generated in three layers. Each layer builds on the previous one.
 
-### Fresh project (no docs/semantic/)
+```
+Step 1: /drupal-refresh          → Structural index (Layer 2, deterministic bash scripts)
+Step 2: /drupal-semantic init    → Semantic docs (Layer 3, AI-generated tech specs + business index)
+Step 3: /drupal-semantic inject  → CLAUDE.md hint (compact pointer that drives +61% speed improvement)
+```
 
-> Run `/drupal-bootstrap`
+**Step 1** parses `*.services.yml`, `*.routing.yml`, hooks, plugins, and entities via bash scripts. No AI involved. Produces `docs/semantic/structural/`.
 
-This auto-detects project state and bootstraps semantic docs, structural index, and session context in one step.
+**Step 2** spawns the `@semantic-architect` agent per feature to read structural data + source code and produce tech specs with Logic IDs. Produces `docs/semantic/tech/` and `docs/semantic/00_BUSINESS_INDEX.md`.
 
-### Existing project (docs/semantic/ exists)
+**Step 3** reads the generated tech specs and injects a compact `## Codebase` section into the project's CLAUDE.md — feature counts, Logic ID totals, and CODE:Name pairs. This is the prompt hint that tells the agent "these docs exist, read them first." Step 3 runs automatically at the end of Step 2, but can also be run standalone.
 
-> Run `/drupal-status` then `/drupal-refresh` if needed.
+### Getting started
 
-This checks documentation and structural index staleness, then regenerates and re-primes if anything is out of date.
-
-### Quick session (skip generation, just prime)
-
-> Run `/drupal-prime`
-
-This loads the feature map, business index, and Logic ID counts in one shot. Best when the structural index is already up to date.
+| Scenario | Command |
+|----------|---------|
+| Fresh project (no docs) | `/drupal-bootstrap` (runs all three steps) |
+| Docs exist, check staleness | `/drupal-status` then `/drupal-refresh` if needed |
+| Quick session, docs are fresh | `/drupal-prime` (loads context without regenerating) |
+| Just update CLAUDE.md counts | `/drupal-semantic inject` |
+| Validate tech spec format | `/drupal-semantic validate` (add `--fix` to auto-repair) |
 
 ### Context efficiency
 
@@ -262,69 +268,92 @@ The generators automatically detect `web/`, `www/`, and top-level `modules/` dir
 <details>
 <summary><strong>Evaluation</strong> — semantic docs impact on AI agent performance</summary>
 
-### Setup
+### Setup (v4)
 
-Tested how a one-line prompt hint ("read `docs/semantic/00_BUSINESS_INDEX.md` before exploring code") affects AI agent response quality, speed, and cost on real developer questions.
+Branch-based eval comparing three variants to measure whether semantic docs improve AI agent responses — and whether the agent discovers them on its own or needs a hint.
 
-- **Model**: Claude Sonnet
-- **Method**: Same question asked twice per project — once without hint, once with
-- **Scope**: 8 questions across 6 Drupal projects (D9/D10/D11, 6-43 custom modules each)
-- **Agent**: Read-only with file exploration tools, two runs to measure variance
+- **Model**: Claude Sonnet (agent) + Haiku (automated judge) + Sonnet & Opus (manual quality review)
+- **Variants**: 3 — baseline (no docs), with_docs (docs present, no hint), with_hint (docs + prompt guidance)
+- **Scope**: 9 questions across 6 Drupal projects (D9/D10/D11, 6-43 custom modules each)
+- **Agent**: Read-only with file exploration tools, 2 runs per variant (54 total agent calls)
+- **Bias control**: Randomized variant order per question, prompt caching disabled
+- **Quality**: LLM-as-judge scoring (completeness, accuracy, business context, actionability) + manual side-by-side review by Sonnet and Opus
 
 ### Results
 
-| # | Question Type | Without | With | Speed Delta | Cost Delta |
-|---|--------------|---------|------|-------------|------------|
-| 1 | Status overview | 20.2s | 35.0s | +73% slower | +23% |
-| 2 | Hook/service tracing | 86.0s | 85.4s | ~same | ~same |
-| 3 | Debugging (find function) | 25.5s | 28.1s | ~same | +45% |
-| 4 | Scope new feature | 53.2s | 58.4s | ~same | ~same |
-| 5 | Feature status check | 78.3s | 24.1s | **69% faster** | **53% cheaper** |
-| 6 | Module inventory | 64.6s | 88.8s | +37% slower | +8% |
-| 7 | Impact analysis | 37.2s | 31.2s | 16% faster | +12% |
-| 8 | Onboarding overview | 60.4s | 19.3s | **68% faster** | **69% cheaper** |
+| # | Question Type | Project | Baseline | +Docs | +Hint | Hint Speed | Hint Cost |
+|---|--------------|---------|----------|-------|-------|-----------|----------|
+| 1 | Onboarding overview | technocan | 71.5s | 73.9s | 31.4s | **+56%** | **+35%** |
+| 2 | Status overview | elvial | 41.0s | 42.0s | 24.0s | **+42%** | **+49%** |
+| 3 | Commerce feature inventory | candia-b2b | 128.9s | 105.2s | 56.8s | **+56%** | **+23%** |
+| 4 | Cross-module impact | candia-b2b | 107.5s | 126.8s | 38.9s | **+64%** | -10% |
+| 5 | Scope new feature | elvial | 148.3s | 98.8s | 33.0s | **+78%** | **+29%** |
+| 6 | Architecture / data model | hellasfin | 127.2s | 113.7s | 37.2s | **+71%** | +5% |
+| 7 | Architecture overview | istolab | 113.8s | 62.8s | 29.3s | **+74%** | **+40%** |
+| 8 | Service dependency chain | candia-b2b | 104.9s | 84.3s | 108.1s | -3% | +5% |
+| 9 | Access control mapping | technocan | 164.3s | 178.7s | 34.6s | **+79%** | **+17%** |
 
-**Totals across 2 runs:**
+**Totals (averaged across 2 runs):**
 
-| Metric | Without | With | Delta |
-|--------|---------|------|-------|
-| Time (Run 1) | 509.5s | 272.9s | **-46% faster** |
-| Time (Run 2) | 425.4s | 370.3s | **-13% faster** |
-| Cost (Run 2) | $1.033 | $0.891 | **-14% cheaper** |
-| Output tokens | 7,074 | 8,196 | +16% more detail |
+| Metric | Baseline | +Docs | +Hint | Docs Δ | Hint Δ |
+|--------|----------|-------|-------|--------|--------|
+| Time | 1007.5s | 886.1s | 393.3s | +12% faster | **+61% faster** |
+| Cost | $2.19 | $1.99 | $1.77 | +9% cheaper | **+19% cheaper** |
+| Quality | 3.38/5 | 3.47/5 | 3.49/5 | +0.09 | +0.11 |
+
+### Quality (manual review by Sonnet + Opus)
+
+Both reviewers evaluated all 9 questions side-by-side across all 3 variants:
+
+| Question Type | Winner | Notes |
+|--------------|--------|-------|
+| Onboarding overview | **with_hint** | Baseline mischaracterizes project; hint provides audience mapping, DB-only roles |
+| Status overview | baseline (weak) | All similar; baseline has recent ticket detail |
+| Commerce features | **with_hint** | Finds edge cases: disabled VAT, ERP limits, min-order qty |
+| Cross-module impact | baseline | Baseline discovers double-discount gotcha from code |
+| Scope new feature | **with_hint** | Adds path processor insight, structured checklist |
+| Architecture / data model | tie | All three strong |
+| Architecture overview | **with_hint** | Best dependency tree, domain context |
+| Service dependency chain | **baseline** | Finds 8 consumers vs 5-6; raw code tracing wins |
+| Access control mapping | **with_hint** | Role matrix is superior to narrative lists |
+
+**Tally**: with_hint wins 5/9, baseline wins 2/9, ties 2/9. with_docs wins 0/9.
+
+### Key finding: docs without hint are nearly useless
+
+The with_docs variant (docs present, agent not told) performs almost identically to baseline:
+- Only +12% faster, +9% cheaper
+- Agent sometimes discovers docs, sometimes doesn't — making results unpredictable
+- **The hint does all the heavy lifting** (+61% speed, +19% cost, +0.11 quality)
 
 ### Where semantic docs help most
 
-- **Broad questions**: "what features exist?", "project overview", "feature status" — 30-80s saved
+- **Onboarding / overview**: 56-74% faster, eliminates project mischaracterization
+- **Architecture**: Clean dependency trees from docs vs grep-discovered spaghetti
+- **Feature inventory / scoping**: Surfaces edge cases, operational constraints, business context
 - Agent reads the business index once instead of grep-exploring dozens of files
-- Answers include business context, known limitations, and architecture details that grep can't surface
 
-**Quality examples:**
-- Onboarding question found 4 content types without hint, **7 with hint** (including role-gated private types)
-- Feature status question included "Known Limitations" and "What's Not Built Yet" sections
+### Where baseline still wins
 
-### Where they don't help
-
-- **Narrow grep-friendly questions**: "where is function X?" — grep finds it in seconds regardless
-- **Deep source-code tracing**: "what hooks touch X?" — agent must read actual PHP regardless
-- **Small-surface-area questions**: theme with 5 preprocess functions — no index needed
-- **Debugging**: "X is broken, find it" — needs code-level tracing, not docs
+- **Deep code tracing** (service dependency chains): Baseline found 8 consumers including \Drupal::service() anti-patterns; docs-based variants found 5-6
+- **Blast radius with code-level gotchas**: Baseline discovered a double-discount bug risk that docs didn't capture
+- **Recent activity questions**: git log provides the same context as docs
 
 ### When to prime vs. skip
 
 | Prime (`/drupal-prime`) | Skip priming |
 |------------------------|--------------|
-| "What's the status of X?" | "Where is function X?" |
-| "Overview for a new dev" | "What hooks touch X?" |
+| "What's the status of X?" | "Trace this service dependency chain" |
+| "Overview for a new dev" | "Where is function X?" |
 | "List all modules/features" | "X is broken, find it" |
-| "What would I need to change?" | Theme/template questions |
-| "Scope a new feature" | "Trace this execution flow" |
+| "Scope a new feature" | "What hooks touch X?" |
+| "What's the access control model?" | "Find all callers of this service" |
 
-**Rule of thumb**: If the answer requires knowing about things across many files, semantic docs win big. If the answer lives in one specific file, grep is just as fast.
+**Rule of thumb**: If the answer spans many files, semantic docs win big (+61% speed). If it requires exhaustive code-level tracing, raw grep is irreplaceable.
 
-### Cost analysis
+### Variance
 
-With hint is 14% cheaper despite reading 41% more total tokens, because fewer tool-use turns (reads index then answers, vs. grep-read-grep-read-answer cycles) and cache reads replace expensive cache creation.
+with_hint produces the most consistent results across runs (avg stddev 4.5s vs 15.6s for baseline), making it more predictable for automated use (e.g., Slack bots answering developer questions).
 
 </details>
 

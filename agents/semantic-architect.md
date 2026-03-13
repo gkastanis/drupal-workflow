@@ -13,7 +13,7 @@ assistant: "I'll use the semantic-architect to regenerate 00_BUSINESS_INDEX.md f
 </example>
 
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: opus
+model: sonnet
 color: magenta
 memory: project
 skills: discover, structural-index, semantic-docs, drupal-entity-api, drupal-service-di, drupal-hook-patterns, drupal-conventions, writing-plans

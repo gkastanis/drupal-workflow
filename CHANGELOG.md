@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.5] - 2026-03-13
+
+### Added
+
+- **CLAUDE.md auto-injection** (`scripts/inject-claude-md.sh`): After semantic doc generation, injects a compact `## Codebase` section into the project's CLAUDE.md with feature counts, Logic ID totals, and CODE:Name pairs. This is the prompt hint that drives +61% speed improvement from the v4 eval.
+  - Creates CLAUDE.md if missing, replaces existing `## Codebase` section, or appends. Idempotent.
+  - Wired into `/drupal-semantic init` (Step 7), `feature` (Step 3), and `index` (Step 3).
+
 ## [1.5.0] - 2026-03-13
 
 ### Added

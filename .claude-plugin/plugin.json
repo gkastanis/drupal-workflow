@@ -1,6 +1,6 @@
 {
   "name": "drupal-workflow",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Comprehensive Drupal development workflow: 15 skills, 4 agents, 10 commands, and quality hooks for testing, DI, entity API, caching, security, and verification.",
   "author": { "name": "Zorz" },
   "license": "MIT",

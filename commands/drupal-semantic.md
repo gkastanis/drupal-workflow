@@ -89,7 +89,15 @@ Spawn `@semantic-architect` with task:
 > - If this feature includes entity types, also generate `docs/semantic/schemas/<entity>.business.json`
 > - Run schema auto-migration if needed (see agent instructions)
 
-### Step 3: Report
+### Step 3: Update CLAUDE.md
+
+Run inject script to keep Codebase section counts in sync:
+
+```bash
+"$PLUGIN_DIR/scripts/inject-claude-md.sh" "$PROJECT_DIR"
+```
+
+### Step 4: Report
 
 Show the generated/updated file paths and Logic ID count.
 
@@ -114,7 +122,15 @@ Spawn `@semantic-architect` with task:
 > - If business index exists, update incrementally (preserve user stories and business rules)
 > - Output: `docs/semantic/00_BUSINESS_INDEX.md`
 
-### Step 3: Report
+### Step 3: Update CLAUDE.md
+
+Run inject script to keep Codebase section counts in sync:
+
+```bash
+"$PLUGIN_DIR/scripts/inject-claude-md.sh" "$PROJECT_DIR"
+```
+
+### Step 4: Report
 
 Show feature count and any new/updated entries.
 
@@ -210,7 +226,17 @@ Create `docs/semantic/GENERATION_SUMMARY.md`:
 - Migrated schemas: W
 ```
 
-### Step 7: Report
+### Step 7: Inject CLAUDE.md Pointer
+
+Run the inject script to add/update the `## Codebase` section in the project's CLAUDE.md:
+
+```bash
+"$PLUGIN_DIR/scripts/inject-claude-md.sh" "$PROJECT_DIR"
+```
+
+This is the hint that drives +61% speed improvement. If no CLAUDE.md exists, creates one.
+
+### Step 8: Report
 
 Output the full summary to the user.
 

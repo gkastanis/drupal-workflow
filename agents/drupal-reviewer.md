@@ -21,7 +21,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch
 model: sonnet
 color: blue
 memory: project
-skills: drupal-entity-api, drupal-service-di, drupal-security-patterns, drupal-coding-standards, drupal-testing, verification-before-completion, discover, structural-index, drupal-rules, drupal-caching, drupal-hook-patterns, twig-templating, drupal-conventions
+skills: drupal-entity-api, drupal-service-di, drupal-security-patterns, drupal-coding-standards, drupal-testing, verification-before-completion, discover, structural-index, drupal-rules, drupal-caching, drupal-config-management, drupal-hook-patterns, twig-templating, drupal-conventions
 ---
 
 # Drupal Reviewer

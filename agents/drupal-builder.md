@@ -16,7 +16,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch
 model: opus
 color: green
 memory: project
-skills: drupal-service-di, drupal-hook-patterns, drupal-coding-standards, drupal-entity-api, drupal-caching, twig-templating, drupal-conventions, drupal-testing, verification-before-completion, writing-plans, discover, structural-index, drupal-rules
+skills: drupal-service-di, drupal-hook-patterns, drupal-coding-standards, drupal-entity-api, drupal-caching, drupal-config-management, twig-templating, drupal-conventions, drupal-testing, verification-before-completion, writing-plans, discover, structural-index, drupal-rules
 ---
 
 # Drupal Builder

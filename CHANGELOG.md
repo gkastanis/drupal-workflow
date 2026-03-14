@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.8.0] - 2026-03-14
+
+### Added
+
+- **`drupal-config-management` skill**: Config split, config ignore, config readonly, environments, import/export workflows, config schema, and config translation patterns.
+- **Entity API skill**: AccessControlHandler example, `integer`/`decimal`/`float` field types.
+- **Caching skill**: `CacheableMetadata` class (OOP cache API) and `#lazy_builder` patterns.
+- **Hook patterns skill**: Install/update/post-update hooks (`hook_install`, `hook_update_N`, `hook_post_update_NAME`) with batch processing example. Fixed `$this->t()` by adding `StringTranslationTrait`.
+- **Testing skill**: Environment detection snippet (DDEV/Lando/bare drush fallback).
+- **Method index generator**: Scans `src/EventSubscriber/`, `src/Access/`, `src/Manager/`, `src/Builder/` in addition to Service/Controller/Form.
+- **Route map generator**: Captures `_entity_access` requirement type. Accumulates multiple access requirements per route (was overwriting).
+- **Hook registry generator**: Scans `.install` and `.profile` files for `hook_install`, `hook_update_N`, `hook_schema`, `hook_requirements`, etc.
+- **Staleness check**: Watches `.install`, `.info.yml`, `.permissions.yml` files and PHP method changes.
+- **Builder agent**: `WebSearch` tool added for API lookup.
+- **Feature map generator**: Infrastructure module detection — modules referenced by >50% of features excluded from per-feature counts (listed separately). Feature code deduplication in cross-cutting concerns.
+
+### Fixed
+
+- **Feature map**: entities.md column index was wrong (col 6 → col 7) after Fields column was added in v1.3.0. Field counts like "6", "8", "9" were being treated as module names in cross-cutting concerns.
+- **Entity API skill**: CRUD examples replaced `\Drupal::` static calls with dependency injection patterns.
+- **Caching skill**: Cache invalidation examples replaced `\Drupal::service()` with injected `CacheTagsInvalidatorInterface`.
+- **Writing-plans skill**: Wrong cache tag `node_list:article` → `node_list` (no bundle qualifier in core).
+- **verify-changes command**: Replaced removed `db_select`/`db_query` (Drupal 9) with `$this->database->select()`.
+- **block-sensitive-files.sh**: Now blocks `sites/default/services.yml` (was only blocking dev/local variants).
+
+### Changed
+
+- **Reviewer agent**: Loads 14 skills (added `drupal-caching`, `drupal-config-management`, `drupal-hook-patterns`, `twig-templating`, `drupal-conventions`).
+- **Builder agent**: Loads 14 skills (added `drupal-config-management`).
+- **Verifier agent**: Loads `verification-before-completion` skill (was missing from the verification agent).
+
 ## [1.7.0] - 2026-03-14
 
 ### Added

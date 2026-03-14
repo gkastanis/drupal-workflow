@@ -1,6 +1,6 @@
 # drupal-workflow
 
-A comprehensive Claude Code plugin for Drupal development. Provides 15 skills, 4 specialized agents, 10 commands, and quality-gate hooks for testing, dependency injection, entity API, caching, security, and verification.
+A comprehensive Claude Code plugin for Drupal development. Provides 16 skills, 4 specialized agents, 10 commands, and quality-gate hooks for testing, dependency injection, entity API, caching, config management, security, and verification.
 
 ## Installation
 
@@ -23,7 +23,7 @@ npm install drupal-workflow
 - Drupal 10+ or 11+ project
 - PHP 8.2+
 
-## Skills (15)
+## Skills (16)
 
 Skills provide domain knowledge that Claude can consult during development.
 
@@ -32,12 +32,13 @@ Skills provide domain knowledge that Claude can consult during development.
 | **drupal-rules** | Core development rules: code quality, security, services, testing. Auto-consulted when writing Drupal code. |
 | **drupal-testing** | Practical testing patterns: curl smoke tests, drush eval, test scripts. Verifies implementations actually work. |
 | **drupal-service-di** | Service definitions, dependency injection patterns, and interface design. |
-| **drupal-entity-api** | Field types, entity CRUD, view modes, and content modeling. |
-| **drupal-caching** | Cache bins, tags, contexts, invalidation strategies, and external caching. |
-| **drupal-hook-patterns** | OOP hooks (Drupal 11), form alters, entity hooks, and legacy bridges. |
+| **drupal-entity-api** | Field types, entity CRUD, view modes, access control handlers, and content modeling. |
+| **drupal-caching** | Cache bins, tags, contexts, CacheableMetadata, lazy builders, invalidation, and external caching. |
+| **drupal-hook-patterns** | OOP hooks (Drupal 11), form alters, entity hooks, install/update hooks, and legacy bridges. |
 | **drupal-security-patterns** | OWASP prevention patterns, access control, input sanitization, XSS protection. |
 | **drupal-coding-standards** | PHPCS, PHPStan, naming conventions, and code style enforcement. |
 | **drupal-conventions** | Translations, CSS conventions, error handling patterns. |
+| **drupal-config-management** | Config split, config ignore, config readonly, environments, import/export workflows. |
 | **twig-templating** | Twig template patterns, filters, theme suggestions, and component architecture. |
 | **verification-before-completion** | Gate function preventing untested claims. Validates work before marking complete. |
 | **semantic-docs** | Navigate business-logic-to-code mappings in `docs/semantic/`. Search by Logic ID, feature code, or entity schema. |
@@ -91,10 +92,10 @@ The plugin registers hooks for quality gates:
 drupal-workflow/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin metadata
-├── skills/                   # 15 Drupal development skills
+├── skills/                   # 16 Drupal development skills
 │   ├── structural-index/     # Auto-generated structural awareness
-│   │   └── scripts/          # 12 generator + check scripts
-│   └── ...                   # 14 other skills
+│   │   └── scripts/          # 13 generator + check scripts
+│   └── ...                   # 15 other skills
 ├── agents/                   # 4 specialized agents
 ├── commands/                 # 10 slash commands
 ├── hooks/

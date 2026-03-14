@@ -41,12 +41,12 @@ echo "| Code | Name | Services | Hooks | Routes | Plugins | Entities | Hotspots 
 echo "|------|------|----------|-------|--------|---------|----------|----------|------|" >> "$OUTPUT"
 
 # Build list of known module names from the structural index.
-# Each table has Module in a specific column:
+# Each table has Module in a specific column (awk -F'|' counts from $1="" before first pipe):
 #   services.md: col 5 (| SvcID | Class | Deps | Module | Tags |)
 #   hooks.md: col 6 (| Hook | Impl | Type | File | Module |)
 #   routes.md: col 6 (| Route | Path | Ctrl | Access | Module |)
 #   plugins.md: col 5 (| Type | ID | Class | Module | File |)
-#   entities.md: col 6 (| Type | ID | Class | Handlers | Module | File |)
+#   entities.md: col 7 (| Type | ID | Class | Handlers | Fields | Module | File |)
 KNOWN_MODULES=()
 extract_module_col() {
     local file="$1" col="$2"
@@ -57,7 +57,7 @@ for km in $(extract_module_col "$SERVICES_MD" 5) \
           $(extract_module_col "$HOOKS_MD" 6) \
           $(extract_module_col "$ROUTES_MD" 6) \
           $(extract_module_col "$PLUGINS_MD" 5) \
-          $(extract_module_col "$ENTITIES_MD" 6); do
+          $(extract_module_col "$ENTITIES_MD" 7); do
     if [[ -n "$km" && "$km" != "-" ]] && ! printf '%s\n' "${KNOWN_MODULES[@]}" | grep -qxF "$km" 2>/dev/null; then
         KNOWN_MODULES+=("$km")
     fi

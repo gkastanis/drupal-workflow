@@ -169,9 +169,13 @@ check_other_sensitive_files() {
 
     # services.yml with database connection details
     if echo "$path" | grep -qE "services\.yml$"; then
-        # Allow sites/default/services.yml but not development.services.yml with DB credentials
+        # Block development services.yml variants
         if echo "$path" | grep -qE "(local|dev|development)\.services\.yml$"; then
             block_access "development services.yml may contain sensitive configuration" "$path"
+        fi
+        # Block sites/default/services.yml (may contain DB connection overrides)
+        if echo "$path" | grep -qE "sites/default/services\.yml$"; then
+            block_access "sites/default/services.yml may contain sensitive service overrides" "$path"
         fi
     fi
 

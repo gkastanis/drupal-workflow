@@ -172,7 +172,7 @@ final class ArticleManager implements ArticleManagerInterface {
       ->execute();
 
     $articles = $storage->loadMultiple($ids);
-    $this->cache->set($cid, $articles, time() + 3600, ['node_list:article']);
+    $this->cache->set($cid, $articles, time() + 3600, ['node_list']);
 
     return $articles;
   }

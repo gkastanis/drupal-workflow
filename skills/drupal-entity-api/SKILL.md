@@ -24,7 +24,10 @@ description: Field type selection, entity CRUD operations, view modes, and conte
 | Content reference | `entity_reference` (node) | `entity_reference_autocomplete` | Links to nodes |
 | Term reference | `entity_reference` (taxonomy_term) | `entity_reference_autocomplete` | Categories |
 | Yes/No flag | `boolean` | `boolean_checkbox` | True/false |
-| Flexible components | `entity_reference_revisions` (paragraphs) | `paragraphs` | Nested content |
+| Whole number | `integer` | `number` | Integer values |
+| Decimal number | `decimal` | `number` | Precise decimals (financial) |
+| Float number | `float` | `number` | Approximate decimals |
+| Flexible components | `entity_reference_revisions` (paragraphs) | `paragraphs` | Contrib: requires `entity_reference_revisions` storage |
 
 ## Entity Type Selection
 
@@ -52,29 +55,67 @@ public static function baseFieldDefinitions(EntityTypeInterface $entity_type): a
 
 ## Entity CRUD Operations
 
+Use dependency injection — inject `EntityTypeManagerInterface` via constructor, never use `\Drupal::` static calls in classes.
+
 ```php
+// In a service or controller with injected $entityTypeManager:
+
 // Load single entity.
-$node = \Drupal::entityTypeManager()->getStorage('node')->load($nid);
+$node = $this->entityTypeManager->getStorage('node')->load($nid);
 
 // Load multiple entities (avoids N+1).
-$nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
+$nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
 
 // Create entity.
-$node = Node::create([
+$node = $this->entityTypeManager->getStorage('node')->create([
   'type' => 'article',
   'title' => 'My Article',
   'field_tags' => [['target_id' => $tid]],
 ]);
 $node->save();
 
-// Query entities.
-$nids = \Drupal::entityQuery('node')
+// Query entities (inject EntityTypeManagerInterface, not entityQuery directly).
+$nids = $this->entityTypeManager->getStorage('node')->getQuery()
   ->condition('type', 'article')
   ->condition('status', 1)
   ->accessCheck(TRUE)
   ->range(0, 10)
   ->execute();
 ```
+
+## Entity Access Control Handler
+
+Custom entities need an `AccessControlHandler`. Without one, all access defaults to denied.
+
+```php
+declare(strict_types=1);
+
+namespace Drupal\my_module\Access;
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityAccessControlHandler;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Session\AccountInterface;
+
+final class MyEntityAccessControlHandler extends EntityAccessControlHandler {
+
+  protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account): AccessResult {
+    return match ($operation) {
+      'view' => AccessResult::allowedIfHasPermission($account, 'view my_entity'),
+      'update' => AccessResult::allowedIfHasPermission($account, 'edit my_entity'),
+      'delete' => AccessResult::allowedIfHasPermission($account, 'delete my_entity'),
+      default => AccessResult::neutral(),
+    };
+  }
+
+  protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL): AccessResult {
+    return AccessResult::allowedIfHasPermission($account, 'create my_entity');
+  }
+
+}
+```
+
+Register in the entity annotation: `handlers = {"access" = "Drupal\my_module\Access\MyEntityAccessControlHandler"}`
 
 ## Field Storage Reusability
 

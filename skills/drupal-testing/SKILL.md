@@ -5,7 +5,27 @@ description: Practical Drupal testing patterns using curl smoke tests, drush eva
 
 # Drupal Testing Skill
 
-Practical verification patterns for Drupal implementations in DDEV environments.
+Practical verification patterns for Drupal implementations.
+
+## Environment Detection
+
+The testing patterns default to DDEV but support other environments. Detect and adapt:
+
+```bash
+# Auto-detect environment and set the execution prefix.
+if command -v ddev >/dev/null 2>&1 && ddev describe >/dev/null 2>&1; then
+  DRUSH="ddev drush"
+  EXEC="ddev exec"
+elif command -v lando >/dev/null 2>&1; then
+  DRUSH="lando drush"
+  EXEC="lando ssh -c"
+else
+  DRUSH="drush"
+  EXEC="bash -c"
+fi
+```
+
+All patterns below use `ddev drush` and `ddev exec`. Substitute with `$DRUSH` and `$EXEC` for non-DDEV environments.
 
 ## Curl Smoke Test Patterns
 

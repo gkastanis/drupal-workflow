@@ -79,7 +79,7 @@ For every PHP class whose `__construct()` was modified:
 If any `.install` file was modified or any code references database tables:
 
 1. Read `hook_schema()` definitions
-2. Grep for all `db_select`, `db_query`, `$database->select()`, `$database->query()`, `$connection->select()`, `$connection->query()` calls
+2. Grep for all `$this->database->select()`, `$this->database->query()`, `$this->connection->select()`, `$this->connection->query()`, `$database->select()`, `$database->query()` calls (note: `db_select()` and `db_query()` were removed in Drupal 9 — flag any remaining usage as deprecated)
 3. Verify:
    - Table names in queries match schema definitions
    - Column names in queries exist in the schema

@@ -32,12 +32,15 @@ case "$FILE_PATH" in
     *.md|*.sh|*.json|*.txt|*.css|*.js|*.twig|*.html) exit 0 ;;
 esac
 
-# Check if file is a structural source (services.yml, routing.yml, .module, plugin PHP)
+# Check if file is a structural source (services.yml, routing.yml, .module, .install, etc.)
 STALE_TYPE=""
 case "$FILE_PATH" in
     *.services.yml)  STALE_TYPE="services" ;;
     *.routing.yml)   STALE_TYPE="routes" ;;
     *.module)         STALE_TYPE="hooks" ;;
+    *.install)        STALE_TYPE="hooks" ;;
+    *.permissions.yml) STALE_TYPE="permissions" ;;
+    *.info.yml)       STALE_TYPE="dependencies" ;;
     *.links.menu.yml|*.links.task.yml) STALE_TYPE="routes" ;;
 esac
 
@@ -48,6 +51,12 @@ if [[ -z "$STALE_TYPE" ]] && [[ "$FILE_PATH" == *.php ]]; then
     fi
     if grep -qE '#\[Hook\(' "$FILE_PATH" 2>/dev/null; then
         STALE_TYPE="hooks"
+    fi
+    # Public method changes affect the method index
+    if grep -qE '^\s*public\s+(static\s+)?function\s+' "$FILE_PATH" 2>/dev/null; then
+        if echo "$FILE_PATH" | grep -qE '/src/(Service|Controller|Form|EventSubscriber|Access|Manager|Builder)/'; then
+            STALE_TYPE="${STALE_TYPE:+$STALE_TYPE+}methods"
+        fi
     fi
 fi
 

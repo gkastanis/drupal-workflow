@@ -51,18 +51,60 @@ $build = [
 'tags' => ['my_module:feature_x']
 ```
 
-## Cache Invalidation
+## CacheableMetadata (Object-Oriented API)
+
+Use `CacheableMetadata` to merge cache metadata from multiple sources. This is cleaner than manually assembling `#cache` arrays, especially in complex render pipelines.
 
 ```php
-// Invalidate by tags.
-\Drupal::service('cache_tags.invalidator')
-  ->invalidateTags(['node:42', 'my_module:feature_x']);
+use Drupal\Core\Cache\CacheableMetadata;
 
-// Clear specific cache bin.
-\Drupal::cache('render')->invalidateAll();
+// Build cache metadata from multiple sources.
+$cache = new CacheableMetadata();
+$cache->addCacheableDependency($node);
+$cache->addCacheableDependency($user);
+$cache->addCacheContexts(['url.query_args']);
+$cache->addCacheTags(['my_module:feature_x']);
+$cache->setCacheMaxAge(3600);
 
-// Delete specific cache item.
-\Drupal::cache('default')->delete('my_module:cache_key');
+// Apply to a render array.
+$cache->applyTo($build);
+
+// Merge metadata from an access result into the render array.
+$access = $entity->access('view', $account, TRUE);
+$cache->addCacheableDependency($access);
+```
+
+## Lazy Builders
+
+Use `#lazy_builder` for fragments that vary per user inside otherwise cacheable pages. Lazy builders defer rendering until after the page cache is resolved, so the rest of the page can still be cached.
+
+```php
+$build['user_greeting'] = [
+  '#lazy_builder' => [
+    'my_module.greeting_builder:build', // Service::method
+    [$user_id],                         // Arguments (scalars only)
+  ],
+  '#create_placeholder' => TRUE,
+];
+```
+
+The service must implement a `build()` method returning a render array:
+
+```php
+final class GreetingBuilder {
+  public function build(int $user_id): array {
+    return ['#markup' => 'Hello, ' . $this->loadUserName($user_id)];
+  }
+}
+```
+
+## Cache Invalidation
+
+In services, inject `CacheTagsInvalidatorInterface` — never use `\Drupal::service()` calls.
+
+```php
+// In a service with injected $cacheInvalidator:
+$this->cacheInvalidator->invalidateTags(['node:42', 'my_module:feature_x']);
 ```
 
 ## Cache Bins

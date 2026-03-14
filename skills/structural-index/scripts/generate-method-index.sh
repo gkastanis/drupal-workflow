@@ -33,11 +33,12 @@ HEADER
 fi
 
 # Associative arrays for results per category
-declare -a SERVICE_LINES CONTROLLER_LINES FORM_LINES
+declare -a SERVICE_LINES CONTROLLER_LINES FORM_LINES OTHER_LINES
 
 SERVICE_COUNT=0
 CONTROLLER_COUNT=0
 FORM_COUNT=0
+OTHER_COUNT=0
 FILES_SCANNED=0
 
 # Process a single PHP file
@@ -123,20 +124,36 @@ process_php_file() {
                 FORM_LINES+=("$table_line")
                 ((FORM_COUNT++)) || true
                 ;;
+            *)
+                OTHER_LINES+=("$table_line")
+                ((OTHER_COUNT++)) || true
+                ;;
         esac
 
     done < <(grep -nE '^\s*public\s+(static\s+)?function\s+[a-zA-Z_]' "$php_file" 2>/dev/null)
 }
 
 # Find and process files by category
-for category_dir in "Service" "Controller" "Form"; do
+# Primary categories: Service, Controller, Form
+# Extended categories: EventSubscriber, Access, Manager, Builder (mapped to "Other")
+for category_dir in "Service" "Controller" "Form" "EventSubscriber" "Access" "Manager" "Builder"; do
+    local_category="$category_dir"
+    # Map extended categories to the "Other" bucket for output
+    case "$category_dir" in
+        EventSubscriber|Access|Manager|Builder) local_category="$category_dir" ;;
+    esac
+
     while IFS= read -r php_file; do
         bn=$(basename "$php_file")
         # Skip interfaces and traits
         [[ "$bn" == *Interface.php ]] && continue
         [[ "$bn" == *Trait.php ]] && continue
 
-        process_php_file "$php_file" "$category_dir"
+        # Map extended dirs to Other for output grouping
+        case "$category_dir" in
+            Service|Controller|Form) process_php_file "$php_file" "$category_dir" ;;
+            *) process_php_file "$php_file" "$category_dir" ;;
+        esac
     done < <(find "$MODULES_DIR" -path "*/src/${category_dir}/*.php" 2>/dev/null | sort)
 done
 
@@ -183,20 +200,33 @@ for line in "${FORM_LINES[@]}"; do
     echo "$line" >> "$OUTPUT"
 done
 
+# Other section (EventSubscriber, Access, Manager, Builder)
+if [[ ${#OTHER_LINES[@]} -gt 0 ]]; then
+    {
+        echo ""
+        echo "## Other (EventSubscriber, Access, Manager, Builder)"
+        echo ""
+        echo "| Class | Method | Return Type | Module | File | Line |"
+        echo "|-------|--------|-------------|--------|------|------|"
+    } >> "$OUTPUT"
+    for line in "${OTHER_LINES[@]}"; do
+        echo "$line" >> "$OUTPUT"
+    done
+fi
+
 # Footer
-TOTAL=$((SERVICE_COUNT + CONTROLLER_COUNT + FORM_COUNT))
+TOTAL=$((SERVICE_COUNT + CONTROLLER_COUNT + FORM_COUNT + OTHER_COUNT))
 {
     echo ""
     echo "---"
-    echo "**Total methods**: $TOTAL (Services: $SERVICE_COUNT, Controllers: $CONTROLLER_COUNT, Forms: $FORM_COUNT)"
+    echo "**Total methods**: $TOTAL (Services: $SERVICE_COUNT, Controllers: $CONTROLLER_COUNT, Forms: $FORM_COUNT, Other: $OTHER_COUNT)"
     echo "**PHP files scanned**: $FILES_SCANNED"
     echo "**Generated**: $(date -Iseconds)"
     echo ""
     echo "**Known limitations:**"
-    echo "- Class identification by directory path convention only (\`src/Service/\`, \`src/Controller/\`, \`src/Form/\`)."
     echo "- Private and protected methods excluded by design."
     echo "- Magic methods (\`__construct\`, etc.) excluded."
     echo "- Interface and Trait files excluded."
 } >> "$OUTPUT"
 
-echo "  methods.md: $TOTAL methods (svc:$SERVICE_COUNT ctrl:$CONTROLLER_COUNT form:$FORM_COUNT) from $FILES_SCANNED files"
+echo "  methods.md: $TOTAL methods (svc:$SERVICE_COUNT ctrl:$CONTROLLER_COUNT form:$FORM_COUNT other:$OTHER_COUNT) from $FILES_SCANNED files"

@@ -17,11 +17,14 @@ declare(strict_types=1);
 namespace Drupal\my_module\Hook;
 
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Hook implementations for my_module.
  */
 final class MyModuleHooks {
+
+  use StringTranslationTrait;
 
   #[Hook('form_alter')]
   public function formAlter(array &$form, FormStateInterface $form_state, string $form_id): void {
@@ -159,6 +162,72 @@ final class MyEventSubscriber implements EventSubscriberInterface {
     // Handle incoming request.
   }
 
+}
+```
+
+## Install and Update Hooks
+
+These hooks live in `.install` files, not `.module` files. They handle module lifecycle and database schema migrations.
+
+```php
+/**
+ * Implements hook_install().
+ */
+function my_module_install(): void {
+  // Runs once when module is first enabled.
+  // Set initial state, create default content, grant permissions.
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function my_module_uninstall(): void {
+  // Clean up state, delete variables, remove custom tables.
+  \Drupal::state()->delete('my_module.last_run');
+}
+```
+
+### Update Hooks (Database Migrations)
+
+Number update hooks sequentially. Each runs exactly once per environment. Keep them idempotent — safe to run on databases in any state.
+
+```php
+/**
+ * Add the 'priority' base field to my_entity.
+ */
+function my_module_update_10001(): void {
+  $field = BaseFieldDefinition::create('integer')
+    ->setLabel(t('Priority'))
+    ->setDefaultValue(0);
+  \Drupal::entityDefinitionUpdateManager()
+    ->installFieldStorageDefinition('priority', 'my_entity', 'my_module', $field);
+}
+```
+
+### Post-Update Hooks (Data Migrations)
+
+Use `hook_post_update_NAME()` for data changes that require the entity system to be fully updated. These run after all `hook_update_N()` hooks.
+
+```php
+/**
+ * Populate priority field with default values for existing entities.
+ */
+function my_module_post_update_set_default_priority(array &$sandbox): void {
+  // Use batch processing for large datasets.
+  if (!isset($sandbox['total'])) {
+    $sandbox['ids'] = \Drupal::entityQuery('my_entity')->accessCheck(FALSE)->execute();
+    $sandbox['total'] = count($sandbox['ids']);
+    $sandbox['current'] = 0;
+  }
+
+  $batch = array_splice($sandbox['ids'], 0, 50);
+  $storage = \Drupal::entityTypeManager()->getStorage('my_entity');
+  foreach ($storage->loadMultiple($batch) as $entity) {
+    $entity->set('priority', 0)->save();
+    $sandbox['current']++;
+  }
+
+  $sandbox['#finished'] = $sandbox['total'] ? $sandbox['current'] / $sandbox['total'] : 1;
 }
 ```
 

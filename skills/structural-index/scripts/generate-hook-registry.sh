@@ -21,22 +21,29 @@ HEADER
 
 TOTAL=0
 
-# --- Procedural hooks from *.module files ---
+# --- Procedural hooks from *.module and *.install files ---
 
 MODULE_FILES=()
 for search_dir in "$PROJECT_DIR/web/modules/custom" "$PROJECT_DIR/www/modules/custom" "$PROJECT_DIR/modules/custom" "$PROJECT_DIR/web/modules/contrib" "$PROJECT_DIR/www/modules/contrib"; do
     while IFS= read -r f; do
         MODULE_FILES+=("$f")
-    done < <(find "$search_dir" -name "*.module" 2>/dev/null)
+    done < <(find "$search_dir" \( -name "*.module" -o -name "*.install" -o -name "*.profile" \) 2>/dev/null)
     if [[ ${#MODULE_FILES[@]} -gt 0 && "$search_dir" == *"/custom" ]]; then
         break
     fi
 done
 
 for mod_file in "${MODULE_FILES[@]}"; do
-    # Derive module name from filename
-    MODULE=$(basename "$mod_file" .module)
+    # Derive module name from filename (strip .module, .install, or .profile)
+    MODULE=$(basename "$mod_file" | sed -E 's/\.(module|install|profile)$//')
     REL_PATH="${mod_file#$PROJECT_DIR/}"
+
+    # Determine file type for the Type column
+    FILE_TYPE="procedural"
+    case "$mod_file" in
+        *.install) FILE_TYPE="install" ;;
+        *.profile) FILE_TYPE="profile" ;;
+    esac
 
     # Find function declarations that match MODULENAME_hookname pattern
     # Drupal convention: function modulename_hook_name(
@@ -46,7 +53,7 @@ for mod_file in "${MODULE_FILES[@]}"; do
         if [[ -n "$FUNC_NAME" ]]; then
             # Derive hook name by removing module prefix
             HOOK_NAME=$(echo "$FUNC_NAME" | sed "s/^${MODULE}_//")
-            echo "| \`$HOOK_NAME\` | \`$FUNC_NAME()\` | procedural | \`$REL_PATH\` | $MODULE |" >> "$OUTPUT"
+            echo "| \`$HOOK_NAME\` | \`$FUNC_NAME()\` | $FILE_TYPE | \`$REL_PATH\` | $MODULE |" >> "$OUTPUT"
             ((TOTAL++)) || true
         fi
     done < <(grep -nE "^function ${MODULE}_[a-zA-Z0-9_]+\(" "$mod_file" 2>/dev/null)
@@ -93,4 +100,4 @@ echo "**Module files scanned**: ${#MODULE_FILES[@]}" >> "$OUTPUT"
 echo "**PHP files scanned for attributes**: ${#PHP_FILES[@]}" >> "$OUTPUT"
 echo "**Generated**: $(date -Iseconds)" >> "$OUTPUT"
 
-echo "  hooks.md: $TOTAL hooks from ${#MODULE_FILES[@]} .module + ${#PHP_FILES[@]} .php files"
+echo "  hooks.md: $TOTAL hooks from ${#MODULE_FILES[@]} .module/.install/.profile + ${#PHP_FILES[@]} .php files"

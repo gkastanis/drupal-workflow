@@ -15,7 +15,7 @@ assistant: "I'll use the drupal-verifier to verify the field configuration"
 model: sonnet
 color: green
 tools: Bash, Read, Grep, Glob
-skills: drupal-testing, drupal-rules, structural-index
+skills: drupal-testing, drupal-rules, structural-index, verification-before-completion
 ---
 
 # Drupal Verifier

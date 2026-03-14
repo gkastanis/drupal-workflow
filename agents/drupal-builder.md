@@ -12,7 +12,7 @@ user: "Write an update hook to enable the new module and export config"
 assistant: "I'll use the drupal-builder to write the update hook and handle config export"
 </example>
 
-tools: Read, Write, Edit, Glob, Grep, Bash
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch
 model: opus
 color: green
 memory: project

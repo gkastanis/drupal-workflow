@@ -54,6 +54,15 @@ for route_file in "${ROUTE_FILES[@]}"; do
         CURRENT_ACCESS=""
     }
 
+    # Helper: append access requirement (accumulate multiple)
+    add_access() {
+        if [[ -z "$CURRENT_ACCESS" ]]; then
+            CURRENT_ACCESS="$1"
+        else
+            CURRENT_ACCESS="$CURRENT_ACCESS + $1"
+        fi
+    }
+
     while IFS= read -r line; do
         # Skip comments and empty lines
         [[ "$line" =~ ^[[:space:]]*# ]] && continue
@@ -99,25 +108,31 @@ for route_file in "${ROUTE_FILES[@]}"; do
 
             # Permission requirement
             if [[ "$line" =~ ^[[:space:]]+_permission:[[:space:]]*(.*) ]]; then
-                CURRENT_ACCESS="permission: $(echo "${BASH_REMATCH[1]}" | sed "s/['\"]//g" | sed 's/[[:space:]]*$//')"
+                add_access "permission: $(echo "${BASH_REMATCH[1]}" | sed "s/['\"]//g" | sed 's/[[:space:]]*$//')"
                 continue
             fi
 
             # Role requirement
             if [[ "$line" =~ ^[[:space:]]+_role:[[:space:]]*(.*) ]]; then
-                CURRENT_ACCESS="role: $(echo "${BASH_REMATCH[1]}" | sed "s/['\"]//g" | sed 's/[[:space:]]*$//')"
+                add_access "role: $(echo "${BASH_REMATCH[1]}" | sed "s/['\"]//g" | sed 's/[[:space:]]*$//')"
                 continue
             fi
 
             # Custom access check
             if [[ "$line" =~ ^[[:space:]]+_custom_access:[[:space:]]*(.*) ]]; then
-                CURRENT_ACCESS="custom: $(echo "${BASH_REMATCH[1]}" | sed "s/['\"]//g" | sed 's/[[:space:]]*$//')"
+                add_access "custom: $(echo "${BASH_REMATCH[1]}" | sed "s/['\"]//g" | sed 's/[[:space:]]*$//')"
+                continue
+            fi
+
+            # Entity access check
+            if [[ "$line" =~ ^[[:space:]]+_entity_access:[[:space:]]*(.*) ]]; then
+                add_access "entity_access: $(echo "${BASH_REMATCH[1]}" | sed "s/['\"]//g" | sed 's/[[:space:]]*$//')"
                 continue
             fi
 
             # Access TRUE (open route)
             if [[ "$line" =~ ^[[:space:]]+_access:[[:space:]]*[\'\"]*TRUE ]]; then
-                CURRENT_ACCESS="public"
+                add_access "public"
                 continue
             fi
         fi

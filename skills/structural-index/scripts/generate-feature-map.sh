@@ -66,6 +66,26 @@ done
 # Track all modules referenced per feature for hotspot detection
 declare -A MODULE_FEATURE_MAP
 
+# Pre-scan: detect "infrastructure" modules referenced by >50% of features.
+# These inflate per-feature counts identically and should be excluded from artifact counting
+# (but still shown in cross-cutting concerns).
+declare -A MODULE_REF_COUNT
+declare -A INFRA_MODULES
+for tech_file in "$TECH_DIR"/*.md; do
+    [[ -f "$tech_file" ]] || continue
+    for km in "${KNOWN_MODULES[@]}"; do
+        if grep -qF "$km" "$tech_file" 2>/dev/null; then
+            MODULE_REF_COUNT[$km]=$(( ${MODULE_REF_COUNT[$km]:-0} + 1 ))
+        fi
+    done
+done
+HALF_FEATURES=$(( FEATURE_COUNT / 2 ))
+for km in "${!MODULE_REF_COUNT[@]}"; do
+    if [[ ${MODULE_REF_COUNT[$km]} -gt $HALF_FEATURES ]]; then
+        INFRA_MODULES[$km]=1
+    fi
+done
+
 for tech_file in "$TECH_DIR"/*.md; do
     [[ -f "$tech_file" ]] || continue
 
@@ -93,15 +113,22 @@ for tech_file in "$TECH_DIR"/*.md; do
     done < <(grep -oE '[a-z][a-z_]+_module\b' "$tech_file" 2>/dev/null | sort -u)
 
     # Track module-to-feature mapping for cross-cutting detection
+    # Deduplicate: multiple specs with the same feature code (e.g., SCHD_01, SCHD_02)
+    # should only appear once per module.
     for mod in "${FEATURE_MODULES[@]}"; do
         if [[ -n "${MODULE_FEATURE_MAP[$mod]}" ]]; then
-            MODULE_FEATURE_MAP[$mod]="${MODULE_FEATURE_MAP[$mod]}, $FEATURE_CODE"
+            # Check if this feature code is already listed for this module
+            if ! echo ", ${MODULE_FEATURE_MAP[$mod]}," | grep -qF ", $FEATURE_CODE,"; then
+                MODULE_FEATURE_MAP[$mod]="${MODULE_FEATURE_MAP[$mod]}, $FEATURE_CODE"
+            fi
         else
             MODULE_FEATURE_MAP[$mod]="$FEATURE_CODE"
         fi
     done
 
-    # Count structural artifacts matching this feature's modules
+    # Count structural artifacts matching this feature's modules.
+    # Exclude "infrastructure" modules referenced by >50% of features —
+    # they inflate counts identically across features, making the table useless.
     SVC_COUNT=0
     HOOK_COUNT=0
     ROUTE_COUNT=0
@@ -109,6 +136,10 @@ for tech_file in "$TECH_DIR"/*.md; do
     ENTITY_COUNT=0
 
     for mod in "${FEATURE_MODULES[@]}"; do
+        # Skip modules that appear in most features (counted separately in cross-cutting)
+        if [[ -n "${INFRA_MODULES[$mod]+x}" ]]; then
+            continue
+        fi
         if [[ -f "$SERVICES_MD" ]]; then
             n=$(grep -cF "| $mod |" "$SERVICES_MD" 2>/dev/null) || true; SVC_COUNT=$((SVC_COUNT + ${n:-0}))
         fi
@@ -164,6 +195,15 @@ if [[ "$CROSS_CUTTING" -eq 0 ]]; then
     echo "_No cross-cutting modules detected._" >> "$OUTPUT"
 fi
 echo "" >> "$OUTPUT"
+
+# List infrastructure modules excluded from per-feature counts
+if [[ ${#INFRA_MODULES[@]} -gt 0 ]]; then
+    echo "**Infrastructure modules** (excluded from per-feature counts, referenced by >50% of features):" >> "$OUTPUT"
+    for km in "${!INFRA_MODULES[@]}"; do
+        echo "- \`$km\` (${MODULE_REF_COUNT[$km]}/$FEATURE_COUNT features)" >> "$OUTPUT"
+    done
+    echo "" >> "$OUTPUT"
+fi
 
 # Staleness Section
 echo "## Staleness" >> "$OUTPUT"

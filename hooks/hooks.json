@@ -16,6 +16,14 @@
           "timeout": 15000,
           "once": true
         }]
+      },
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/validate-semantic-docs.sh\" \"${CLAUDE_PROJECT_DIR:-$(pwd)}\" 2>/dev/null; exit 0",
+          "timeout": 10000,
+          "once": true
+        }]
       }
     ],
     "PreToolUse": [

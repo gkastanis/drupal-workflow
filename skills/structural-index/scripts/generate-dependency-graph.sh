@@ -143,17 +143,46 @@ echo "" >> "$OUTPUT"
 echo "Services that inject external-facing dependencies:" >> "$OUTPUT"
 echo "" >> "$OUTPUT"
 
+EXTERNAL_COUNT=0
 if [[ -f "$SERVICES_MD" ]]; then
-    EXTERNAL_PATTERNS="http_client\|guzzle\|mailer\|mail_manager\|queue\|cache\|database\|messenger\|event_dispatcher\|logger"
-    grep -iE "$EXTERNAL_PATTERNS" "$SERVICES_MD" 2>/dev/null | head -20 | \
-        while IFS= read -r line; do
-            echo "- $line" >> "$OUTPUT"
-        done
-    echo "" >> "$OUTPUT"
-else
-    echo "_No services.md available._" >> "$OUTPUT"
-    echo "" >> "$OUTPUT"
+    # External-facing dependency patterns (network, mail, queue — not cache/logger which are internal)
+    # Note: grep -E uses | for alternation, not \|
+    while IFS='|' read -r _ svc_id _ deps _ _ _; do
+        svc_id=$(echo "$svc_id" | sed 's/`//g' | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+        deps=$(echo "$deps" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+
+        [[ -z "$svc_id" || "$svc_id" == "Service ID" || "$svc_id" =~ ^-+$ ]] && continue
+        [[ "$deps" == "-" || -z "$deps" ]] && continue
+
+        # Check for external-facing dependencies
+        EXT_DEPS=""
+        if echo "$deps" | grep -qE '@http_client|@guzzle'; then
+            EXT_DEPS="${EXT_DEPS:+$EXT_DEPS, }HTTP client"
+        fi
+        if echo "$deps" | grep -qE '@plugin\.manager\.mail|@mailer|@mail_manager'; then
+            EXT_DEPS="${EXT_DEPS:+$EXT_DEPS, }mail"
+        fi
+        if echo "$deps" | grep -qE '@queue|@queue_factory'; then
+            EXT_DEPS="${EXT_DEPS:+$EXT_DEPS, }queue"
+        fi
+        if echo "$deps" | grep -qE '@key\.repository'; then
+            EXT_DEPS="${EXT_DEPS:+$EXT_DEPS, }key storage"
+        fi
+        if echo "$deps" | grep -qE '@messenger|@event_dispatcher'; then
+            EXT_DEPS="${EXT_DEPS:+$EXT_DEPS, }messaging"
+        fi
+
+        if [[ -n "$EXT_DEPS" ]]; then
+            echo "- **\`$svc_id\`**: $EXT_DEPS" >> "$OUTPUT"
+            ((EXTERNAL_COUNT++)) || true
+        fi
+    done < <(grep '^|' "$SERVICES_MD" 2>/dev/null | tail -n +3)
 fi
+
+if [[ "$EXTERNAL_COUNT" -eq 0 ]]; then
+    echo "_No external-facing services detected._" >> "$OUTPUT"
+fi
+echo "" >> "$OUTPUT"
 
 # --- Feature Adjacency Matrix ---
 echo "## Feature Adjacency" >> "$OUTPUT"

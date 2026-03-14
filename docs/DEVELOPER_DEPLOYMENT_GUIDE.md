@@ -1,6 +1,6 @@
 # Developer Deployment Guide
 
-**Plugin:** drupal-workflow v1.7.0
+**Plugin:** drupal-workflow v1.8.0
 **Last Updated:** 2026-03-14
 
 ---
@@ -244,7 +244,8 @@ drupal-workflow/
 │   │   └── scripts/             # 13 generator + check scripts
 │   ├── twig-templating/         # Twig patterns, components
 │   ├── verification-before-completion/ # Gate function
-│   └── writing-plans/           # Implementation plan templates
+│   ├── writing-plans/           # Implementation plan templates
+│   └── drupal-config-management/ # Config split, ignore, readonly, environments
 ├── hooks/
 │   └── hooks.json               # 5 hook event definitions
 ├── scripts/                     # Hook scripts + utilities
@@ -460,7 +461,7 @@ The eval suite has 315 assertions across 7 scripts:
 cd /path/to/drupal-workflow
 
 # Run all evaluations
-python3 eval/eval-skills.py            # 165 assertions — skill content quality
+python3 eval/eval-skills.py            # 172 assertions — skill content quality
 python3 eval/eval-agents.py            # 60 assertions — agent structure + frontmatter
 python3 eval/eval-hooks.py             # 20 assertions — hooks system integrity
 python3 eval/eval-semantic-architect.py # 25 assertions — tech spec output (behavioral)

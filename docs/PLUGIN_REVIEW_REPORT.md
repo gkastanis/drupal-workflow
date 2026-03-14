@@ -1,6 +1,6 @@
 # drupal-workflow Plugin Review Report
 
-**Plugin:** drupal-workflow v1.7.0
+**Plugin:** drupal-workflow v1.8.0
 **Author:** Zorz
 **License:** MIT
 **Review Date:** 2026-03-14
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The drupal-workflow plugin is a mature, production-ready Claude Code plugin for Drupal 10/11 development. It delivers 15 skills, 4 agents, 10 commands, and 5 hook events with 28+ supporting scripts. The architecture is built on a novel three-layer documentation system (raw code, structural index, semantic docs) that has been evaluated on 6 real-world Drupal projects and shown to deliver a **+61% speed improvement** and **+19% cost reduction** compared to baseline AI-assisted development.
+The drupal-workflow plugin is a mature, production-ready Claude Code plugin for Drupal 10/11 development. It delivers 16 skills, 4 agents, 10 commands, and 5 hook events with 28+ supporting scripts. The architecture is built on a novel three-layer documentation system (raw code, structural index, semantic docs) that has been evaluated on 6 real-world Drupal projects and shown to deliver a **+61% speed improvement** and **+19% cost reduction** compared to baseline AI-assisted development.
 
 **Overall Rating: A+ (Production-Ready)**
 
@@ -48,32 +48,33 @@ Layer 1: Raw codebase        (Glob/Grep/Read)
 
 ## 2. Component Inventory
 
-### 2.1 Skills (15)
+### 2.1 Skills (16)
 
 | # | Skill | Type | Description |
 |---|-------|------|-------------|
 | 1 | `drupal-rules` | Core | Code quality, security, services, testing verification rules |
 | 2 | `drupal-testing` | Core | Practical testing: curl smoke tests, drush eval, test scripts |
 | 3 | `drupal-service-di` | Knowledge | Service definitions, dependency injection patterns |
-| 4 | `drupal-entity-api` | Knowledge | Field types, entity CRUD, view modes, content modeling |
-| 5 | `drupal-caching` | Knowledge | Cache bins, tags, contexts, invalidation, external caching |
-| 6 | `drupal-hook-patterns` | Knowledge | OOP hooks (D11), form alters, entity hooks, legacy bridges |
+| 4 | `drupal-entity-api` | Knowledge | Field types, entity CRUD, view modes, access control handlers |
+| 5 | `drupal-caching` | Knowledge | Cache bins, tags, CacheableMetadata, lazy builders, invalidation |
+| 6 | `drupal-hook-patterns` | Knowledge | OOP hooks (D11), form alters, install/update hooks, legacy bridges |
 | 7 | `drupal-security-patterns` | Knowledge | OWASP prevention, access control, input sanitization, XSS |
 | 8 | `drupal-coding-standards` | Knowledge | PHPCS, PHPStan, naming conventions, code style |
 | 9 | `drupal-conventions` | Knowledge | Translations, CSS conventions, error handling |
-| 10 | `twig-templating` | Knowledge | Twig patterns, filters, theme suggestions, components |
-| 11 | `verification-before-completion` | Gate | Prevents untested claims; validates work before marking done |
-| 12 | `semantic-docs` | Navigation | Business-logic-to-code mappings via Logic IDs and feature codes |
-| 13 | `discover` | Navigation | Docs-first discovery with structural query prefixes |
-| 14 | `structural-index` | Generation | Auto-generated structural awareness from Drupal declarative configs |
-| 15 | `writing-plans` | Workflow | Comprehensive implementation plans for sub-agents |
+| 10 | `drupal-config-management` | Knowledge | Config split, config ignore, config readonly, environments |
+| 11 | `twig-templating` | Knowledge | Twig patterns, filters, theme suggestions, components |
+| 12 | `verification-before-completion` | Gate | Prevents untested claims; validates work before marking done |
+| 13 | `semantic-docs` | Navigation | Business-logic-to-code mappings via Logic IDs and feature codes |
+| 14 | `discover` | Navigation | Docs-first discovery with structural query prefixes |
+| 15 | `structural-index` | Generation | Auto-generated structural awareness from Drupal declarative configs |
+| 16 | `writing-plans` | Workflow | Comprehensive implementation plans for sub-agents |
 
 ### 2.2 Agents (4)
 
 | Agent | Model | Purpose | Skills Loaded |
 |-------|-------|---------|---------------|
-| `drupal-builder` | (default) | Full-stack implementation: modules, themes, config, migrations | All knowledge skills + structural-index |
-| `drupal-reviewer` | (default) | Architecture review, security audit, coding standards | All knowledge skills + structural-index |
+| `drupal-builder` | opus | Full-stack implementation: modules, themes, config, migrations | 14 skills including config-management |
+| `drupal-reviewer` | sonnet | Architecture review, security audit, coding standards | 14 skills including config-management |
 | `drupal-verifier` | sonnet | Implementation verification via drush eval, curl, config checks | drupal-testing + structural-index |
 | `semantic-architect` | (default) | Generates Layer 3 semantic docs from Layer 2 + source code | semantic-docs + structural-index |
 
@@ -135,7 +136,7 @@ Layer 1: Raw codebase        (Glob/Grep/Read)
 
 | Script | Assertions | Scope |
 |--------|-----------|-------|
-| `eval-skills.py` | 165 | Content quality, key terms, imperatives across 15 skills |
+| `eval-skills.py` | 172 | Content quality, key terms, imperatives across 16 skills |
 | `eval-agents.py` | 60 | Structure, frontmatter, skills across 4 agents |
 | `eval-hooks.py` | 20 | Hooks system integrity |
 | `eval-semantic-architect.py` | 25 | Tech spec output quality (behavioral) |
@@ -256,7 +257,7 @@ Layer 1: Raw codebase        (Glob/Grep/Read)
 |--------------|--------|-------|
 | `plugin.json` with name, version, description | Present | Clean, minimal metadata |
 | `marketplace.json` with owner, source | Present | Correctly located in `.claude-plugin/` |
-| Skills with YAML frontmatter | All 15 present | Fixed in v1.7.0 (7 had format issues) |
+| Skills with YAML frontmatter | All 16 present | Fixed in v1.7.0 (7 had format issues) |
 | Agent definitions with frontmatter | All 4 present | Model, tools, skills properly declared |
 | Commands with description + allowed-tools | All 10 present | Clear purpose and tool scoping |
 | Hooks with proper matchers | Present | `once` flags, matchers, timeouts all correct |
@@ -283,6 +284,7 @@ Layer 1: Raw codebase        (Glob/Grep/Read)
 | 1.5.0 | 2026-03-13 | Semantic architect agent, `/drupal-semantic` with 5 subcommands |
 | 1.6.0 | 2026-03-13 | CLAUDE.md auto-injection, tech spec validator, +61% speed eval |
 | 1.7.0 | 2026-03-14 | Eval framework (315 assertions), fix `$PLUGIN_DIR`, skill improvements |
+| 1.8.0 | 2026-03-14 | 16 skills (+config-management), P1/P2 architecture fixes, feature map fixes |
 
 ---
 

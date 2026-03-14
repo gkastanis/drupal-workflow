@@ -260,7 +260,29 @@ def run_assertions() -> list[AssertionResult]:
         detail="Covers both" if passed else f"settings.php={blocks_settings if block_script.exists() else 'N/A'}, .env={blocks_env if block_script.exists() else 'N/A'}"
     ))
 
-    # H20: php-lint-on-save.sh runs php -l
+    # H20: All SessionStart hooks guarantee exit 0 (CRITICAL: non-zero kills entire hook registry)
+    # Discovered 2026-03-14: A SessionStart hook that exits non-zero causes Claude Code
+    # to clear the hook registry, silently disabling ALL Pre/PostToolUse hooks for the session.
+    session_exit_safe = True
+    unsafe_hooks = []
+    for i, hg in enumerate(session_start):
+        for hook in hg.get("hooks", []):
+            cmd = hook.get("command", "")
+            # Check that command ends with "exit 0", has error fallback, or is a simple safe command
+            has_exit_0 = cmd.rstrip().endswith("exit 0")
+            has_error_fallback = "|| echo" in cmd or "|| true" in cmd
+            # Simple echo/true commands always exit 0 and are inherently safe
+            is_simple_safe = cmd.strip().startswith("echo ") or cmd.strip() == "true"
+            if not has_exit_0 and not has_error_fallback and not is_simple_safe:
+                session_exit_safe = False
+                unsafe_hooks.append(f"SessionStart[{i}]: missing exit 0 or error fallback")
+    results.append(AssertionResult(
+        id="H20", description="All SessionStart hooks guarantee exit 0 (non-zero kills hook registry)",
+        passed=session_exit_safe,
+        detail="All safe" if session_exit_safe else f"Unsafe: {unsafe_hooks}"
+    ))
+
+    # H21: php-lint-on-save.sh runs php -l
     lint_script = PLUGIN_DIR / "scripts" / "php-lint-on-save.sh"
     if lint_script.exists():
         content = lint_script.read_text()
@@ -268,7 +290,7 @@ def run_assertions() -> list[AssertionResult]:
     else:
         has_php_l = False
     results.append(AssertionResult(
-        id="H20", description="PHP lint script runs php -l",
+        id="H21", description="PHP lint script runs php -l",
         passed=has_php_l,
         detail="php -l found" if has_php_l else "Missing php -l"
     ))

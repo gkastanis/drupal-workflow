@@ -3,6 +3,28 @@
 # Runs real claude -p sessions against a Drupal project and verifies hook output
 # via stream-json format which captures hook_response system messages.
 # Usage: bash eval/eval-hooks-integration.sh [project_dir]
+#
+# CRITICAL KNOWLEDGE (discovered 2026-03-14):
+#   A SessionStart hook that exits non-zero KILLS THE ENTIRE HOOK REGISTRY
+#   for the rest of the session. This means all PreToolUse, PostToolUse,
+#   SubagentStart, and TaskCompleted hooks silently stop working.
+#
+#   Root cause: Claude Code clears the hook registry after a SessionStart error.
+#   Fix: Every SessionStart hook MUST end with "exit 0" or use "|| true" to
+#   swallow errors. Never let generate-all.sh or any script propagate a
+#   non-zero exit code from a SessionStart hook.
+#
+#   This bug was masked for weeks because:
+#   - SessionStart hooks still appeared to work (they fire before the error)
+#   - Pre/PostToolUse hooks fail silently (no error message, just don't fire)
+#   - The structural regen hook exited 1 whenever generate-all.sh encountered
+#     a project with edge-case YAML, silently disabling all quality gates
+#
+# Testing approach:
+#   - SessionStart hooks: captured via stream-json hook_response events
+#   - PreToolUse: verified via assistant text (blocked file = mentions "security")
+#   - PostToolUse: verified via file modification check (Edit tool modifies file)
+#   - stream-json does NOT emit Pre/PostToolUse hook events, only SessionStart
 set -e
 
 PROJECT_DIR="${1:-/home/zorz/sites/timan}"

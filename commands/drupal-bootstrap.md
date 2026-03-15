@@ -17,15 +17,18 @@ Only runs what's missing. Idempotent — safe to run repeatedly.
 
 ## Protocol
 
-### Step 1: Detect Project State
+### Step 0: Resolve Environment
 
 ```bash
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+PLUGIN_ROOT=$(cat /tmp/drupal-workflow-plugin-root 2>/dev/null || echo "${CLAUDE_PLUGIN_ROOT:-}")
 ```
+
+### Step 1: Detect Project State
 
 Check in order:
 1. Does `$PROJECT_DIR/docs/semantic/structural/.generated-at` exist?
-2. Is the structural index stale? Run `$CLAUDE_PLUGIN_ROOT/skills/structural-index/scripts/check-staleness.sh "$PROJECT_DIR"`
+2. Is the structural index stale? Run `$PLUGIN_ROOT/skills/structural-index/scripts/check-staleness.sh "$PROJECT_DIR"`
 3. Do `$PROJECT_DIR/docs/semantic/tech/*.md` files exist?
 4. Does `$PROJECT_DIR/CLAUDE.md` contain `## Codebase`?
 
@@ -34,7 +37,7 @@ Check in order:
 If structural index is missing or stale:
 
 ```bash
-bash "$CLAUDE_PLUGIN_ROOT/skills/structural-index/scripts/generate-all.sh" "$PROJECT_DIR"
+bash "$PLUGIN_ROOT/skills/structural-index/scripts/generate-all.sh" "$PROJECT_DIR"
 ```
 
 This is deterministic — bash scripts parse `*.services.yml`, `*.routing.yml`, hooks, plugins, entities. No AI involved.
@@ -56,7 +59,7 @@ Skip to Step 5.
 If tech specs exist but `CLAUDE.md` has no `## Codebase` section:
 
 ```bash
-bash "$CLAUDE_PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
+bash "$PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
 ```
 
 This injects the compact hint (~45 words) that drives +61% speed improvement.
@@ -66,7 +69,7 @@ This injects the compact hint (~45 words) that drives +61% speed improvement.
 If tech specs exist, run the validator:
 
 ```bash
-bash "$CLAUDE_PLUGIN_ROOT/scripts/validate-tech-specs.sh" "$PROJECT_DIR"
+bash "$PLUGIN_ROOT/scripts/validate-tech-specs.sh" "$PROJECT_DIR"
 ```
 
 Report any non-conforming files. Suggest `/drupal-semantic validate --fix` if errors found.

@@ -8,9 +8,11 @@
 # Tool output from the triggering event
 TOOL_OUTPUT="${CLAUDE_TOOL_OUTPUT:-}"
 
-# Check for common verification patterns in recent output
+# Check for verification patterns matching the verification-before-completion skill's output format.
+# Looks for: test result keywords, verification report markers, test framework invocations,
+# and HTTP status codes in context (not bare numbers that match prose like "200 lines").
 has_verification() {
-  echo "$TOOL_OUTPUT" | grep -qiE "(PASS|FAIL|OK|ERROR|200|301|302|404|500|drush eval|phpunit|behat|vitest|jest|curl|smoke.test|assert)" 2>/dev/null
+  echo "$TOOL_OUTPUT" | grep -qiE "(PASS|FAIL|VERIFIED|NEEDS ATTENTION|Verification Results|drush eval|phpunit|behat|vitest|jest|curl -[sS]|smoke.test|assert|HTTP[/ ][0-9]{3}|status_code)" 2>/dev/null
 }
 
 # If verification patterns found, nothing to do

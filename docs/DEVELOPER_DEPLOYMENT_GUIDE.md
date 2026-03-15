@@ -228,7 +228,7 @@ drupal-workflow/
 │   ├── drupal-blast-radius.md
 │   ├── implement.md
 │   └── verify-changes.md
-├── skills/                      # 15 domain knowledge skills
+├── skills/                      # 16 domain knowledge skills
 │   ├── discover/                # Docs-first codebase discovery
 │   ├── drupal-caching/          # Cache bins, tags, contexts
 │   ├── drupal-coding-standards/ # PHPCS, PHPStan, naming

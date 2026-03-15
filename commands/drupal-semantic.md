@@ -24,15 +24,20 @@ If no argument given, default to `status`.
 
 ---
 
+## Resolve Environment (all subcommands)
+
+```bash
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+PLUGIN_ROOT=$(cat /tmp/drupal-workflow-plugin-root 2>/dev/null || echo "${CLAUDE_PLUGIN_ROOT:-}")
+```
+
+---
+
 ## Subcommand: `status`
 
 No agent needed. Inline check.
 
 ### Step 1: Check Prerequisites
-
-```bash
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-```
 
 Verify `docs/semantic/structural/.generated-at` exists. If not:
 > Structural index not found. Run `/drupal-refresh` first.
@@ -96,7 +101,7 @@ Spawn `@semantic-architect` with task:
 Run validator to check naming and frontmatter. Auto-fix if possible:
 
 ```bash
-"$CLAUDE_PLUGIN_ROOT/scripts/validate-tech-specs.sh" "$PROJECT_DIR" --fix
+"$PLUGIN_ROOT/scripts/validate-tech-specs.sh" "$PROJECT_DIR" --fix
 ```
 
 If errors remain after --fix, warn the user about non-conforming files.
@@ -106,7 +111,7 @@ If errors remain after --fix, warn the user about non-conforming files.
 Run inject script to keep Codebase section counts in sync:
 
 ```bash
-"$CLAUDE_PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
+"$PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
 ```
 
 ### Step 5: Report
@@ -139,7 +144,7 @@ Spawn `@semantic-architect` with task:
 Run inject script to keep Codebase section counts in sync:
 
 ```bash
-"$CLAUDE_PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
+"$PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
 ```
 
 ### Step 4: Report
@@ -243,7 +248,7 @@ Create `docs/semantic/GENERATION_SUMMARY.md`:
 Run validator across all generated specs. Auto-fix naming and frontmatter issues:
 
 ```bash
-"$CLAUDE_PLUGIN_ROOT/scripts/validate-tech-specs.sh" "$PROJECT_DIR" --fix
+"$PLUGIN_ROOT/scripts/validate-tech-specs.sh" "$PROJECT_DIR" --fix
 ```
 
 If errors remain after --fix, list them in the report.
@@ -253,7 +258,7 @@ If errors remain after --fix, list them in the report.
 Run the inject script to add/update the `## Codebase` section in the project's CLAUDE.md:
 
 ```bash
-"$CLAUDE_PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
+"$PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
 ```
 
 This is the hint that drives +61% speed improvement. If no CLAUDE.md exists, creates one.
@@ -277,13 +282,13 @@ PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 If `$ARGUMENTS` contains `--fix`:
 
 ```bash
-"$CLAUDE_PLUGIN_ROOT/scripts/validate-tech-specs.sh" "$PROJECT_DIR" --fix
+"$PLUGIN_ROOT/scripts/validate-tech-specs.sh" "$PROJECT_DIR" --fix
 ```
 
 Otherwise report-only:
 
 ```bash
-"$CLAUDE_PLUGIN_ROOT/scripts/validate-tech-specs.sh" "$PROJECT_DIR"
+"$PLUGIN_ROOT/scripts/validate-tech-specs.sh" "$PROJECT_DIR"
 ```
 
 ### Step 2: Report
@@ -300,7 +305,7 @@ No agent needed. Updates CLAUDE.md without regenerating any docs.
 
 ```bash
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-"$CLAUDE_PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
+"$PLUGIN_ROOT/scripts/inject-claude-md.sh" "$PROJECT_DIR"
 ```
 
 ### Step 2: Report

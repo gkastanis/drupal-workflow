@@ -10,17 +10,23 @@ Report current state of semantic docs, structural index, and staleness. Suggest 
 
 ## Protocol
 
+### Step 0: Resolve Environment
+
+```bash
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+PLUGIN_ROOT=$(cat /tmp/drupal-workflow-plugin-root 2>/dev/null || echo "${CLAUDE_PLUGIN_ROOT:-}")
+```
+
 ### Step 1: Check Discovery Status
 
 ```bash
-bash "$CLAUDE_PLUGIN_ROOT/skills/discover/scripts/discover.sh" --status
+bash "$PLUGIN_ROOT/skills/discover/scripts/discover.sh" --status
 ```
 
 ### Step 2: Check Staleness
 
 ```bash
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-bash "$CLAUDE_PLUGIN_ROOT/skills/structural-index/scripts/check-staleness.sh" "$PROJECT_DIR"
+bash "$PLUGIN_ROOT/skills/structural-index/scripts/check-staleness.sh" "$PROJECT_DIR"
 ```
 
 ### Step 3: Suggest Next Action

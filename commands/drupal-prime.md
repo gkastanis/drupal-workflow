@@ -12,10 +12,16 @@ For normal workflows, the CLAUDE.md `## Codebase` hint (~45 words) is sufficient
 
 ## Protocol
 
+### Step 0: Resolve Environment
+
+```bash
+PLUGIN_ROOT=$(cat /tmp/drupal-workflow-plugin-root 2>/dev/null || echo "${CLAUDE_PLUGIN_ROOT:-}")
+```
+
 ### Step 1: Run Prime
 
 ```bash
-bash "$CLAUDE_PLUGIN_ROOT/skills/discover/scripts/prime.sh"
+bash "$PLUGIN_ROOT/skills/discover/scripts/prime.sh"
 ```
 
 ### Step 2: Output

@@ -46,13 +46,11 @@ git -C ~/.claude/plugins/marketplaces/drupal-workflow pull origin main
 
 Or copy all files: `rsync -a --exclude=.git ~/.claude/plugins/marketplaces/drupal-workflow/ ~/.claude/plugins/cache/drupal-workflow/drupal-workflow/VERSION/`
 
-### Column Indices in Generators
+### Column Parsing in Generators
 
-Structural index generators use `awk -F'|'` to parse markdown tables. Column numbers are off-by-one from visual columns because `$1` is empty (before first `|`).
+Downstream consumers (generate-feature-map.sh, generate-dependency-graph.sh) use named column parsing — they find the "Module" column by scanning the header row, not by hardcoded positional index. This eliminates silent column mismatch bugs when generators add or remove columns (e.g., the Fields column in entities.md).
 
-When a generator adds a column to a table (like the Fields column in entities.md), ALL downstream consumers must update their column index. The feature map generator, dependency graph, and any script using `awk -F'|'` on that table will silently read the wrong column.
-
-Enforced by: compare `head -1` of each structural file against the column index comments in `generate-feature-map.sh` lines 43-49.
+If you add a new structural table consumed by feature-map, ensure it has a "Module" column header.
 
 ## Architecture
 
@@ -61,7 +59,7 @@ skills/                          # 16 SKILL.md files (auto-detected by Claude Co
   structural-index/scripts/      # 13 bash generators (Layer 2 — deterministic)
 agents/                          # 4 agent .md files (frontmatter: name, tools, skills, model)
 commands/                        # 10 slash command .md files
-hooks/hooks.json                 # 5 event types, 7 hook entries
+hooks/hooks.json                 # 5 event types, 8 hook entries
 scripts/                         # 7 hook scripts + lib/
   validate-semantic-docs.sh      # SessionStart: checks tech specs vs codebase
   block-sensitive-files.sh       # PreToolUse: blocks settings.php, .env, credentials

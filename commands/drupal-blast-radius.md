@@ -22,10 +22,16 @@ Check that `docs/semantic/structural/` exists and is populated. If not, tell the
 
 Stop here if missing.
 
+### Step 1.5: Resolve Environment
+
+```bash
+PLUGIN_ROOT=$(cat /tmp/drupal-workflow-plugin-root 2>/dev/null || echo "${CLAUDE_PLUGIN_ROOT:-}")
+```
+
 ### Step 2: Get Dependency Graph
 
 ```bash
-bash "$CLAUDE_PLUGIN_ROOT/skills/discover/scripts/discover.sh" "deps:$ARGUMENTS"
+bash "$PLUGIN_ROOT/skills/discover/scripts/discover.sh" "deps:$ARGUMENTS"
 ```
 
 ### Step 3: Search Structural Files

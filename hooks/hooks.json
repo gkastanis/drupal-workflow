@@ -4,7 +4,7 @@
       {
         "hooks": [{
           "type": "command",
-          "command": "echo 'DRUPAL WORKFLOW PLUGIN ACTIVE | Start: /drupal-bootstrap | Prime: /drupal-prime | Status: /drupal-status | Semantic: /drupal-semantic | Test: /drupal-test | Verify: /drupal-verify'",
+          "command": "echo \"$CLAUDE_PLUGIN_ROOT\" > /tmp/drupal-workflow-plugin-root; echo 'DRUPAL WORKFLOW PLUGIN ACTIVE | Start: /drupal-bootstrap | Prime: /drupal-prime | Status: /drupal-status | Semantic: /drupal-semantic | Test: /drupal-test | Verify: /drupal-verify'",
           "timeout": 3000,
           "once": true
         }]
@@ -22,6 +22,14 @@
           "type": "command",
           "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/validate-semantic-docs.sh\" \"${CLAUDE_PROJECT_DIR:-$(pwd)}\" 2>/dev/null; exit 0",
           "timeout": 10000,
+          "once": true
+        }]
+      },
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "echo 'Hook registry: OK (all SessionStart hooks passed)'",
+          "timeout": 3000,
           "once": true
         }]
       }

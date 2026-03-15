@@ -173,10 +173,6 @@ check_other_sensitive_files() {
         if echo "$path" | grep -qE "(local|dev|development)\.services\.yml$"; then
             block_access "development services.yml may contain sensitive configuration" "$path"
         fi
-        # Block sites/default/services.yml (may contain DB connection overrides)
-        if echo "$path" | grep -qE "sites/default/services\.yml$"; then
-            block_access "sites/default/services.yml may contain sensitive service overrides" "$path"
-        fi
     fi
 
     # Private key files

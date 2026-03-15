@@ -41,23 +41,34 @@ echo "| Code | Name | Services | Hooks | Routes | Plugins | Entities | Hotspots 
 echo "|------|------|----------|-------|--------|---------|----------|----------|------|" >> "$OUTPUT"
 
 # Build list of known module names from the structural index.
-# Each table has Module in a specific column (awk -F'|' counts from $1="" before first pipe):
-#   services.md: col 5 (| SvcID | Class | Deps | Module | Tags |)
-#   hooks.md: col 6 (| Hook | Impl | Type | File | Module |)
-#   routes.md: col 6 (| Route | Path | Ctrl | Access | Module |)
-#   plugins.md: col 5 (| Type | ID | Class | Module | File |)
-#   entities.md: col 7 (| Type | ID | Class | Handlers | Fields | Module | File |)
+# Each table has a "Module" column — find it by header name, not hardcoded position.
+# This prevents silent column mismatch bugs when generators add/remove columns.
 KNOWN_MODULES=()
+find_col_index() {
+    local file="$1" col_name="$2"
+    [[ -f "$file" ]] || { echo 0; return; }
+    grep '^|' "$file" 2>/dev/null | head -1 | awk -F'|' -v name="$col_name" '{
+        for(i=1; i<=NF; i++) {
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", $i)
+            if ($i == name) { print i; exit }
+        }
+        print 0
+    }'
+}
 extract_module_col() {
-    local file="$1" col="$2"
+    local file="$1"
+    [[ -f "$file" ]] || return
+    local col
+    col=$(find_col_index "$file" "Module")
+    [[ "$col" -eq 0 || "$col" == "0" ]] && return
     grep '^|' "$file" 2>/dev/null | tail -n +3 | awk -F'|' -v c="$col" '{print $c}' | \
         sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//' | sort -u
 }
-for km in $(extract_module_col "$SERVICES_MD" 5) \
-          $(extract_module_col "$HOOKS_MD" 6) \
-          $(extract_module_col "$ROUTES_MD" 6) \
-          $(extract_module_col "$PLUGINS_MD" 5) \
-          $(extract_module_col "$ENTITIES_MD" 7); do
+for km in $(extract_module_col "$SERVICES_MD") \
+          $(extract_module_col "$HOOKS_MD") \
+          $(extract_module_col "$ROUTES_MD") \
+          $(extract_module_col "$PLUGINS_MD") \
+          $(extract_module_col "$ENTITIES_MD"); do
     if [[ -n "$km" && "$km" != "-" ]] && ! printf '%s\n' "${KNOWN_MODULES[@]}" | grep -qxF "$km" 2>/dev/null; then
         KNOWN_MODULES+=("$km")
     fi

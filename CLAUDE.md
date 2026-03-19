@@ -34,6 +34,14 @@ Every SessionStart hook command MUST either:
 
 Enforced by eval assertion H20. Discovered 2026-03-14 after weeks of silent quality gate failure.
 
+### Hook Timeouts (CRITICAL)
+
+**A SessionStart hook that exceeds its timeout is killed by Claude Code and reports exit_code=1, which kills the hook registry** (same effect as exiting non-zero). The `; exit 0` wrapper does NOT save you from a timeout kill.
+
+Never run slow operations (e.g., `generate-all.sh` — 74s on timan) inside a SessionStart hook. Use a staleness warning instead and let the user run `/drupal-refresh` explicitly.
+
+Discovered 2026-03-19 when the auto-regen hook caused 6/6 integration test failures.
+
 ### Plugin Cache Sync
 
 The plugin runs from `~/.claude/plugins/cache/drupal-workflow/drupal-workflow/VERSION/`, NOT from `~/.claude/plugins/marketplaces/drupal-workflow/`. After `git push`, you must sync the cache:
@@ -59,12 +67,15 @@ skills/                          # 16 SKILL.md files (auto-detected by Claude Co
   structural-index/scripts/      # 13 bash generators (Layer 2 — deterministic)
 agents/                          # 4 agent .md files (frontmatter: name, tools, skills, model)
 commands/                        # 10 slash command .md files
-hooks/hooks.json                 # 5 event types, 8 hook entries
-scripts/                         # 7 hook scripts + lib/
-  validate-semantic-docs.sh      # SessionStart: checks tech specs vs codebase
-  block-sensitive-files.sh       # PreToolUse: blocks settings.php, .env, credentials
+hooks/hooks.json                 # 7 event types, 10 hook entries
+scripts/                         # 10 hook scripts + lib/
+  project-state-check.sh         # SessionStart: progressive doc state + staleness warning
+  validate-semantic-docs.sh      # Called by project-state-check, validates tech specs
+  block-sensitive-files.sh       # PreToolUse (Read|Grep|Edit|Write): blocks sensitive files
+  plan-mode-inject.sh            # PreToolUse (EnterPlanMode): injects todo/agent instructions
   php-lint-on-save.sh            # PostToolUse: php -l on PHP file edits
   staleness-check.sh             # PostToolUse: warns when structural source files change
+  stop-verification-gate.sh      # Stop: advisory nudge when Drupal code edited without verification
   subagent-context-inject.sh     # SubagentStart: injects Drupal context
   teammate-quality-gate.sh       # TaskCompleted: checks for verification evidence
   inject-claude-md.sh            # Called by commands, not hooks
@@ -90,10 +101,12 @@ eval/                            # 7 static evals + 1 integration test
 
 ### New Hook
 
-1. Add entry to `hooks/hooks.json` (must have `type`, `command`, `timeout`)
-2. If SessionStart: MUST guarantee exit 0 (see Critical Rules above)
-3. Create script in `scripts/` if needed, make executable
-4. Run `python3 eval/eval-hooks.py`
+1. Add entry to `hooks/hooks.json` (must have `type`, `timeout`)
+2. Valid types: `command`, `prompt`, `agent`, `http`
+3. If SessionStart: MUST guarantee exit 0 and stay under timeout (see Critical Rules)
+4. For `command` hooks: create script in `scripts/`, make executable
+5. For `prompt` hooks: inline the prompt in hooks.json (no script needed)
+6. Run `python3 eval/eval-hooks.py`
 
 ### New Generator Script
 
@@ -140,13 +153,23 @@ skills/structural-index/scripts/generate-all.sh /path/to/project
 # Validate semantic docs
 scripts/validate-semantic-docs.sh /path/to/project
 
-# Test sensitive file blocking
-echo '{"tool_input":{"file_path":"/path/to/project/web/sites/default/settings.php"}}' | \
+# Test sensitive file blocking (Read, Grep, Edit, Write)
+echo '{"tool_input":{"file_path":"/path/to/project/web/sites/default/settings.php"},"tool_name":"Read"}' | \
   bash scripts/block-sensitive-files.sh
 
 # Test staleness detection
 echo '{"tool_input":{"file_path":"/path/to/project/web/modules/custom/mod/mod.services.yml"}}' | \
   CLAUDE_PROJECT_DIR=/path/to/project bash scripts/staleness-check.sh
+
+# Test plan mode injection
+bash scripts/plan-mode-inject.sh | python3 -m json.tool
+
+# Test stop verification gate
+echo '{"last_assistant_message":"I edited Foo.php","stop_hook_active":""}' | \
+  bash scripts/stop-verification-gate.sh
+
+# Test project state check
+CLAUDE_PROJECT_DIR=/path/to/project CLAUDE_PLUGIN_ROOT=. bash scripts/project-state-check.sh
 ```
 
 ## stream-json Behavior in claude -p

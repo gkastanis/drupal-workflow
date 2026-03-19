@@ -3,7 +3,6 @@
 # Validates that semantic docs (Layer 3) are consistent with the codebase and structural index.
 # Can run standalone or as a SessionStart hook.
 # Exit code 0 always (advisory only). Warnings printed to stdout.
-set -e
 
 PROJECT_DIR="${1:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
 DOCS_DIR="$PROJECT_DIR/docs/semantic"

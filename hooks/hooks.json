@@ -6,23 +6,18 @@
           "type": "command",
           "command": "echo \"$CLAUDE_PLUGIN_ROOT\" > /tmp/drupal-workflow-plugin-root; echo 'DRUPAL WORKFLOW PLUGIN ACTIVE | Start: /drupal-bootstrap | Prime: /drupal-prime | Status: /drupal-status | Semantic: /drupal-semantic | Test: /drupal-test | Verify: /drupal-verify'",
           "timeout": 3000,
-          "once": true
+          "once": true,
+          "statusMessage": "Drupal workflow init"
         }]
       },
       {
+        "matcher": "startup",
         "hooks": [{
           "type": "command",
-          "command": "PROJECT_DIR=\"${CLAUDE_PROJECT_DIR:-$(pwd)}\"; TIMESTAMP=\"$PROJECT_DIR/docs/semantic/structural/.generated-at\"; if [ -f \"$TIMESTAMP\" ]; then STALE=$(find \"$PROJECT_DIR\" -newer \"$TIMESTAMP\" \\( -name '*.services.yml' -o -name '*.routing.yml' -o -name '*.module' -o -name '*.permissions.yml' \\) -path '*/modules/*' 2>/dev/null | head -1); if [ -n \"$STALE\" ]; then bash \"${CLAUDE_PLUGIN_ROOT}/skills/structural-index/scripts/generate-all.sh\" \"$PROJECT_DIR\" >/dev/null 2>&1 && echo 'STRUCTURAL INDEX: Auto-regenerated (source files changed since last generation).' || echo 'STRUCTURAL INDEX: Auto-regeneration failed (non-critical).'; fi; fi; exit 0",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/project-state-check.sh\" 2>/dev/null; exit 0",
           "timeout": 15000,
-          "once": true
-        }]
-      },
-      {
-        "hooks": [{
-          "type": "command",
-          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/validate-semantic-docs.sh\" \"${CLAUDE_PROJECT_DIR:-$(pwd)}\" 2>/dev/null; exit 0",
-          "timeout": 10000,
-          "once": true
+          "once": true,
+          "statusMessage": "Checking project docs"
         }]
       },
       {
@@ -36,11 +31,12 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Read|Grep",
+        "matcher": "Read|Grep|Edit|Write",
         "hooks": [{
           "type": "command",
           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/block-sensitive-files.sh",
-          "timeout": 5000
+          "timeout": 5000,
+          "statusMessage": "Checking sensitive files"
         }]
       }
     ],
@@ -51,7 +47,8 @@
           "type": "command",
           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/php-lint-on-save.sh",
           "timeout": 10000,
-          "once": false
+          "once": false,
+          "statusMessage": "PHP lint check"
         }]
       },
       {
@@ -60,7 +57,8 @@
           "type": "command",
           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/staleness-check.sh",
           "timeout": 5000,
-          "once": false
+          "once": false,
+          "statusMessage": "Staleness check"
         }]
       }
     ],
@@ -70,7 +68,8 @@
         "hooks": [{
           "type": "command",
           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/subagent-context-inject.sh",
-          "timeout": 5000
+          "timeout": 5000,
+          "statusMessage": "Injecting Drupal context"
         }]
       }
     ],
@@ -80,7 +79,8 @@
         "hooks": [{
           "type": "command",
           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/teammate-quality-gate.sh",
-          "timeout": 10000
+          "timeout": 10000,
+          "statusMessage": "Verification check"
         }]
       }
     ]

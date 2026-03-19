@@ -59,11 +59,14 @@ if [ -z "$PATH_PARAM" ] || [ "$PATH_PARAM" = "null" ]; then
     PATH_PARAM=$(echo "$INPUT_JSON" | grep -o '"path":"[^"]*"' | sed 's/.*"path":"\([^"]*\)".*/\1/')
 fi
 
-# Only check Read and Grep tools
-if [ "$TOOL_NAME" != "Read" ] && [ "$TOOL_NAME" != "Grep" ]; then
-    log "Skipping non-Read/Grep tool: $TOOL_NAME"
-    exit 0
-fi
+# Only check file-accessing tools
+case "$TOOL_NAME" in
+    Read|Grep|Edit|Write) ;;
+    *)
+        log "Skipping non-file tool: $TOOL_NAME"
+        exit 0
+        ;;
+esac
 
 # Determine which path to check
 CHECK_PATH="$FILE_PATH"

@@ -19,8 +19,20 @@ source "$PLUGIN_ROOT/scripts/lib/hook-utils.sh" 2>/dev/null || {
 }
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-AGENT_NAME="${SUBAGENT_NAME:-unknown}"
 LOG_FILE="${LOG_FILE:-/tmp/subagent-context-inject.log}"
+
+# Read JSON input from stdin (SubagentStart provides agent_id, agent_type).
+INPUT_JSON=$(cat)
+AGENT_NAME=""
+if command -v jq >/dev/null 2>&1; then
+    AGENT_NAME=$(echo "$INPUT_JSON" | jq -r '.agent_type // ""' 2>/dev/null)
+fi
+# Fallback to grep extraction if jq unavailable or returned empty.
+if [[ -z "$AGENT_NAME" || "$AGENT_NAME" == "null" ]]; then
+    AGENT_NAME=$(echo "$INPUT_JSON" | grep -o '"agent_type":"[^"]*"' | head -1 | cut -d'"' -f4)
+fi
+# Final fallback to env var for backward compatibility.
+AGENT_NAME="${AGENT_NAME:-${SUBAGENT_NAME:-unknown}}"
 
 log "SubagentStart hook triggered for agent: $AGENT_NAME"
 

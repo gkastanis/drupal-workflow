@@ -113,6 +113,22 @@ When adding skills/agents/commands, update ALL of these:
 
 The static eval catches skill/agent/hook structural issues but does NOT check that README counts match reality. Verify manually.
 
+## Version Bumping
+
+When releasing a new version:
+
+1. Update version in `.claude-plugin/plugin.json` (`"version"` field)
+2. Update version in `.claude-plugin/marketplace.json` (two places: `metadata.version` and `plugins[0].version`)
+3. Update GitHub repo description if counts changed: `gh repo edit --description "..."`
+4. Commit, tag (`git tag vX.Y.Z`), push with tags (`git push origin main --tags`)
+5. Sync the plugin cache:
+   ```bash
+   git -C ~/.claude/plugins/marketplaces/drupal-workflow pull origin main
+   rsync -a --delete --exclude=.git ~/.claude/plugins/marketplaces/drupal-workflow/ \
+         ~/.claude/plugins/cache/drupal-workflow/drupal-workflow/X.Y.Z/
+   ```
+6. Remove old cache versions: `rm -rf ~/.claude/plugins/cache/drupal-workflow/drupal-workflow/OLD_VERSION/`
+
 ## Testing on a Drupal Project
 
 The generators and hooks are tested against real Drupal projects. The default test project is timan at `/home/zorz/sites/timan`.

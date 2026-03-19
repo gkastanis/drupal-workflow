@@ -115,14 +115,15 @@ def run_assertions() -> list[AssertionResult]:
         detail=f"Events: {list(hooks.keys())}"
     ))
 
-    # H09: PreToolUse has matcher for Read|Grep (sensitive file blocking)
+    # H09: PreToolUse has matcher covering Read, Grep, Edit, Write (sensitive file blocking)
     pre_tool = hooks.get("PreToolUse", [])
-    has_read_grep_matcher = any(
-        hg.get("matcher") == "Read|Grep" for hg in pre_tool
+    required_tools = {"Read", "Grep", "Edit", "Write"}
+    has_file_tool_matcher = any(
+        required_tools.issubset(set(hg.get("matcher", "").split("|"))) for hg in pre_tool
     )
     results.append(AssertionResult(
-        id="H09", description="PreToolUse blocks Read|Grep for sensitive files",
-        passed=has_read_grep_matcher,
+        id="H09", description="PreToolUse blocks Read|Grep|Edit|Write for sensitive files",
+        passed=has_file_tool_matcher,
         detail=f"Matchers: {[hg.get('matcher') for hg in pre_tool]}"
     ))
 
@@ -206,9 +207,9 @@ def run_assertions() -> list[AssertionResult]:
         detail="Banner found" if has_banner else "No banner"
     ))
 
-    # H16: SessionStart has structural index auto-regen
+    # H16: SessionStart has structural index auto-regen (inline or via project-state-check.sh)
     has_auto_regen = any(
-        "generate-all.sh" in h.get("command", "") or ".generated-at" in h.get("command", "")
+        "generate-all.sh" in h.get("command", "") or ".generated-at" in h.get("command", "") or "project-state-check.sh" in h.get("command", "")
         for hg in session_start
         for h in hg.get("hooks", [])
     )

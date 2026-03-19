@@ -514,17 +514,28 @@ ls /path/to/drupal-project/docs/semantic/structural/
 
 ### Making a Release
 
-1. Update version in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
-2. Update `CHANGELOG.md` with new entries
-3. Run the full evaluation suite
-4. Commit, tag, and push:
-
-```bash
-git add -A
-git commit -m "chore: bump version to X.Y.Z, update changelog"
-git tag -a vX.Y.Z -m "Version X.Y.Z: brief description"
-git push origin main --tags
-```
+1. Update `"version"` in `.claude-plugin/plugin.json`
+2. Update `"version"` in `.claude-plugin/marketplace.json` (two places: `metadata.version` and `plugins[0].version`)
+3. Update `CHANGELOG.md` with new entries
+4. Update GitHub repo description if counts changed: `gh repo edit --description "..."`
+5. Run the full evaluation suite:
+   ```bash
+   python3 eval/eval-skills.py && python3 eval/eval-agents.py && python3 eval/eval-hooks.py
+   ```
+6. Commit, tag, and push:
+   ```bash
+   git add .claude-plugin/plugin.json .claude-plugin/marketplace.json CHANGELOG.md
+   git commit -m "chore: bump version to X.Y.Z"
+   git tag vX.Y.Z
+   git push origin main --tags
+   ```
+7. Sync the plugin cache:
+   ```bash
+   git -C ~/.claude/plugins/marketplaces/drupal-workflow pull origin main
+   rm -rf ~/.claude/plugins/cache/drupal-workflow/drupal-workflow/OLD_VERSION/
+   rsync -a --delete --exclude=.git ~/.claude/plugins/marketplaces/drupal-workflow/ \
+         ~/.claude/plugins/cache/drupal-workflow/drupal-workflow/X.Y.Z/
+   ```
 
 ---
 

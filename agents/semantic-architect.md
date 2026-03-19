@@ -40,17 +40,26 @@ If missing, tell the user:
 
 Stop immediately if the structural index is absent.
 
-## File Naming (MUST follow exactly)
+## File Naming (CRITICAL — validator rejects non-conforming files)
 
-Tech spec filenames MUST be: `CODE_01_Name.md`
-- `CODE`: 2-5 uppercase letters (e.g., `AI`, `ASGN`, `TIME`, `CONT`)
-- `01`: two-digit sequential number, zero-padded
-- `Name`: PascalCase, no spaces, no hyphens, no underscores
+Every tech spec file MUST follow this exact pattern: `CODE_01_Name.md`
 
-**Examples**: `ASGN_01_Assignment.md`, `CONT_01_ContentTypes.md`, `PWA_01_OfflineSupport.md`
-**NEVER**: `content-types.md`, `page_builder.md`, `CONT.md`, `assignment.md`
+| Part | Rule | Example |
+|------|------|---------|
+| `CODE` | 2-5 uppercase letters | `ASGN`, `TIME`, `AI`, `CONT` |
+| `_01_` | two-digit sequence, zero-padded | `_01_`, `_02_` |
+| `Name` | PascalCase, letters only, no spaces/hyphens/underscores | `Assignment`, `ContentTypes`, `OfflineSupport` |
 
-YAML frontmatter MUST be present with ALL of these fields:
+**Correct**: `ASGN_01_Assignment.md`, `CONT_01_ContentTypes.md`, `PWA_01_OfflineSupport.md`, `DYN_01_DynamicPricing.md`
+
+**WRONG — rejected**: `content-types.md`, `page_builder.md`, `CONT.md`, `assignment.md`, `access_control.md`, `theme_design_system.md`
+
+Write tool file_path MUST match: `docs/semantic/tech/CODE_01_Name.md`
+
+### YAML Frontmatter (REQUIRED — file is invalid without it)
+
+ALL fields below are mandatory. No exceptions.
+
 ```yaml
 ---
 type: tech_spec
@@ -64,7 +73,9 @@ logic_id_count: N
 ---
 ```
 
-A post-generation validator will reject files that don't match this format. Get it right the first time.
+Rules: feature_id must match filename CODE, feature_name must match filename Name, logic_id_count must equal actual Logic ID rows, related_files must be real paths (verify with Glob), last_updated must be today (YYYY-MM-DD).
+
+Validator runs automatically. Files without frontmatter CANNOT be auto-fixed. Get it right the first time.
 
 ## Output Specifications
 
@@ -169,39 +180,7 @@ sequenceDiagram
 
 ### 3. Business Schema — `docs/semantic/schemas/ENTITY.business.json`
 
-Contains ONLY business-level metadata. NO field definitions, NO `$schema`, NO `properties`, NO `required`.
-
-```json
-{
-  "entity_type": "<entity_type_id>",
-  "business_rules": {
-    "<rule_key>": {
-      "description": "<what the rule enforces>",
-      "severity": "error|warning|info",
-      "logic_id": "FEAT-L#"
-    }
-  },
-  "related_entities": {
-    "<relation_key>": {
-      "entity_type": "<related_entity_type>",
-      "relationship": "one-to-many|many-to-one|many-to-many",
-      "foreign_key": "<field_name>"
-    }
-  },
-  "examples": {
-    "<scenario>": {
-      "description": "<what this example demonstrates>",
-      "data": {}
-    }
-  }
-}
-```
-
-Field definitions belong in:
-- `*.base-fields.json` — base fields from PHP `baseFieldDefinitions()`
-- `*.BUNDLE.json` — config fields from YAML
-
-### Schema Auto-Migration
+Contains ONLY business-level metadata (business_rules, related_entities, examples). NO field definitions, NO `$schema`, NO `properties`, NO `required`. Field definitions belong in `*.base-fields.json` (from PHP) and `*.BUNDLE.json` (from YAML config).
 
 If old `schemas/*.json` files exist with `business_rules` AND a `*.base-fields.json` exists: extract business data into `*.business.json`, delete the old file.
 

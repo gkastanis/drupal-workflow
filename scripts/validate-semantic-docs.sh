@@ -26,11 +26,13 @@ pass() {
 
 # --- Guard: skip if no semantic docs exist ---
 if [[ ! -d "$TECH_DIR" ]]; then
+    echo "SEMANTIC DOCS: No tech specs found (run /drupal-bootstrap to set up)"
     exit 0
 fi
 
 TECH_SPECS=("$TECH_DIR"/*.md)
 if [[ ! -f "${TECH_SPECS[0]}" ]]; then
+    echo "SEMANTIC DOCS: No tech specs found (run /drupal-bootstrap to set up)"
     exit 0
 fi
 

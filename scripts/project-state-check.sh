@@ -17,14 +17,12 @@ if [[ ! -f "$STRUCTURAL_DIR/.generated-at" ]]; then
     exit 0
 fi
 
-# Auto-regenerate if stale.
+# Warn if stale (auto-regen is too slow for a SessionStart hook timeout).
 STALE=$(find "$PROJECT_DIR" -newer "$STRUCTURAL_DIR/.generated-at" \
     \( -name '*.services.yml' -o -name '*.routing.yml' -o -name '*.module' -o -name '*.permissions.yml' \) \
     -path '*/modules/*' 2>/dev/null | head -1)
 if [[ -n "$STALE" ]]; then
-    bash "$PLUGIN_ROOT/skills/structural-index/scripts/generate-all.sh" "$PROJECT_DIR" >/dev/null 2>&1 \
-        && echo "STRUCTURAL INDEX: Auto-regenerated (source files changed)." \
-        || echo "STRUCTURAL INDEX: Auto-regeneration failed (non-critical)."
+    echo "STRUCTURAL INDEX: Stale (source files changed). Run /drupal-refresh to regenerate."
 fi
 
 # --- Step 2: Semantic docs (@semantic-architect agent) ---

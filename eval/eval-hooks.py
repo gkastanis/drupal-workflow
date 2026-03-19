@@ -208,16 +208,16 @@ def run_assertions() -> list[AssertionResult]:
         detail="Banner found" if has_banner else "No banner"
     ))
 
-    # H16: SessionStart has structural index auto-regen (inline or via project-state-check.sh)
-    has_auto_regen = any(
-        "generate-all.sh" in h.get("command", "") or ".generated-at" in h.get("command", "") or "project-state-check.sh" in h.get("command", "")
+    # H16: SessionStart checks structural index staleness (via project-state-check.sh)
+    has_state_check = any(
+        "project-state-check.sh" in h.get("command", "")
         for hg in session_start
         for h in hg.get("hooks", [])
     )
     results.append(AssertionResult(
-        id="H16", description="SessionStart auto-regenerates stale structural index",
-        passed=has_auto_regen,
-        detail="Auto-regen found" if has_auto_regen else "No auto-regen"
+        id="H16", description="SessionStart checks structural index staleness",
+        passed=has_state_check,
+        detail="State check found" if has_state_check else "No state check"
     ))
 
     # H17: No hook has timeout > 30000ms (30s safety limit)

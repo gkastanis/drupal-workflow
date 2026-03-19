@@ -38,6 +38,15 @@
           "timeout": 5000,
           "statusMessage": "Checking sensitive files"
         }]
+      },
+      {
+        "matcher": "EnterPlanMode",
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/plan-mode-inject.sh",
+          "timeout": 3000,
+          "statusMessage": "Injecting plan instructions"
+        }]
       }
     ],
     "PostToolUse": [
@@ -59,6 +68,16 @@
           "timeout": 5000,
           "once": false,
           "statusMessage": "Staleness check"
+        }]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/stop-verification-gate.sh",
+          "timeout": 5000,
+          "statusMessage": "Verification gate"
         }]
       }
     ],

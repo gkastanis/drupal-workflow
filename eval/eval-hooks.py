@@ -138,19 +138,20 @@ def run_assertions() -> list[AssertionResult]:
         detail=f"Matchers: {[hg.get('matcher') for hg in post_tool]}"
     ))
 
-    # H11: All hook entries have "type": "command"
-    all_command_type = True
+    # H11: All hook entries have a valid type (command, prompt, agent, http)
+    valid_types = {"command", "prompt", "agent", "http"}
+    all_valid_type = True
     bad_types = []
     for event, hook_list in hooks.items():
         for hg in hook_list:
             for hook in hg.get("hooks", []):
-                if hook.get("type") != "command":
-                    all_command_type = False
+                if hook.get("type") not in valid_types:
+                    all_valid_type = False
                     bad_types.append(f"{event}: {hook.get('type')}")
     results.append(AssertionResult(
-        id="H11", description="All hooks have type: command",
-        passed=all_command_type,
-        detail="All command" if all_command_type else f"Non-command: {bad_types}"
+        id="H11", description="All hooks have valid type (command|prompt|agent|http)",
+        passed=all_valid_type,
+        detail="All valid" if all_valid_type else f"Invalid: {bad_types}"
     ))
 
     # H12: All hook entries have timeout

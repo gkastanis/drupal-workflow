@@ -27,7 +27,7 @@ MODULE_FILES=()
 for search_dir in "$PROJECT_DIR/web/modules/custom" "$PROJECT_DIR/www/modules/custom" "$PROJECT_DIR/modules/custom" "$PROJECT_DIR/web/modules/contrib" "$PROJECT_DIR/www/modules/contrib"; do
     while IFS= read -r f; do
         MODULE_FILES+=("$f")
-    done < <(find "$search_dir" \( -name "*.module" -o -name "*.install" -o -name "*.profile" \) 2>/dev/null)
+    done < <(find -L "$search_dir" \( -name "*.module" -o -name "*.install" -o -name "*.profile" \) 2>/dev/null)
     if [[ ${#MODULE_FILES[@]} -gt 0 && "$search_dir" == *"/custom" ]]; then
         break
     fi
@@ -65,7 +65,7 @@ PHP_FILES=()
 for search_dir in "$PROJECT_DIR/web/modules/custom" "$PROJECT_DIR/www/modules/custom" "$PROJECT_DIR/modules/custom"; do
     while IFS= read -r f; do
         PHP_FILES+=("$f")
-    done < <(find "$search_dir" -name "*.php" 2>/dev/null)
+    done < <(find -L "$search_dir" -name "*.php" 2>/dev/null)
     if [[ ${#PHP_FILES[@]} -gt 0 ]]; then
         break
     fi

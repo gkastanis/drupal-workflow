@@ -61,7 +61,7 @@ while IFS= read -r f; do
        grep -q 'baseFieldDefinitions' "$f" 2>/dev/null; then
         ENTITY_FILES+=("$f")
     fi
-done < <(find "$MODULES_DIR" -name "*.php" -path "*/Entity/*" 2>/dev/null | sort)
+done < <(find -L "$MODULES_DIR" -name "*.php" -path "*/Entity/*" 2>/dev/null | sort)
 
 if [[ ${#ENTITY_FILES[@]} -eq 0 ]]; then
     echo "  base-fields: No entity files with baseFieldDefinitions found"

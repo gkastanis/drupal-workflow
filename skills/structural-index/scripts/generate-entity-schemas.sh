@@ -48,7 +48,7 @@ if [[ ${#CONFIG_DIRS[@]} -eq 0 ]]; then
         if [[ -d "$search_dir" ]]; then
             while IFS= read -r d; do
                 CONFIG_DIRS+=("$d")
-            done < <(find "$search_dir" -type d -name "install" -path "*/config/install" 2>/dev/null)
+            done < <(find -L "$search_dir" -type d -name "install" -path "*/config/install" 2>/dev/null)
             if [[ ${#CONFIG_DIRS[@]} -gt 0 ]]; then break; fi
         fi
     done

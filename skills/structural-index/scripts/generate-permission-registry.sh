@@ -27,7 +27,7 @@ PERM_FILES=()
 for search_dir in "$PROJECT_DIR/web/modules/custom" "$PROJECT_DIR/www/modules/custom" "$PROJECT_DIR/modules/custom"; do
     while IFS= read -r f; do
         PERM_FILES+=("$f")
-    done < <(find "$search_dir" -name "*.permissions.yml" 2>/dev/null)
+    done < <(find -L "$search_dir" -name "*.permissions.yml" 2>/dev/null)
     if [[ ${#PERM_FILES[@]} -gt 0 ]]; then
         break
     fi
@@ -103,7 +103,7 @@ for perm_file in "${PERM_FILES[@]}"; do
     ' "$perm_file" >> "$OUTPUT"
 
     # Count permissions in this file
-    file_perms=$(grep -cE '^[a-zA-Z_][a-zA-Z0-9_ ]*:$' "$perm_file" 2>/dev/null)
+    file_perms=$(grep -cE '^[a-zA-Z_][a-zA-Z0-9_ ]*:$' "$perm_file" 2>/dev/null || true)
     file_perms=${file_perms:-0}
     TOTAL=$((TOTAL + file_perms))
 done

@@ -225,7 +225,7 @@ if [[ -f "$STRUCTURAL_DIR/.generated-at" ]]; then
     echo "Last generated: $GEN_TIME" >> "$OUTPUT"
     echo "" >> "$OUTPUT"
 
-    STALE_COUNT=$(find "$PROJECT_DIR" -newer "$STRUCTURAL_DIR/.generated-at" \
+    STALE_COUNT=$(find -L "$PROJECT_DIR" -newer "$STRUCTURAL_DIR/.generated-at" \
         \( -name "*.services.yml" -o -name "*.routing.yml" -o -name "*.module" -o -name "*.php" \) \
         2>/dev/null | wc -l)
 

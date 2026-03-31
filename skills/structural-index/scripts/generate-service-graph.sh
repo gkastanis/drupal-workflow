@@ -16,7 +16,7 @@ SERVICE_FILES=()
 for search_dir in "$PROJECT_DIR/web/modules/custom" "$PROJECT_DIR/www/modules/custom" "$PROJECT_DIR/modules/custom"; do
     while IFS= read -r f; do
         SERVICE_FILES+=("$f")
-    done < <(find "$search_dir" -name "*.services.yml" 2>/dev/null)
+    done < <(find -L "$search_dir" -name "*.services.yml" 2>/dev/null)
     if [[ ${#SERVICE_FILES[@]} -gt 0 ]]; then
         break
     fi
@@ -27,7 +27,7 @@ if [[ ${#SERVICE_FILES[@]} -eq 0 ]]; then
     for search_dir in "$PROJECT_DIR/web/modules/contrib" "$PROJECT_DIR/www/modules/contrib"; do
         while IFS= read -r f; do
             SERVICE_FILES+=("$f")
-        done < <(find "$search_dir" -name "*.services.yml" 2>/dev/null)
+        done < <(find -L "$search_dir" -name "*.services.yml" 2>/dev/null)
         if [[ ${#SERVICE_FILES[@]} -gt 0 ]]; then
             break
         fi

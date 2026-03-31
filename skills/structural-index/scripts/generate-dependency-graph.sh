@@ -125,7 +125,7 @@ if [[ -f "$ENTITIES_MD" ]]; then
                 echo "- \`$REL_PATH\`: $ref_line" >> "$OUTPUT"
                 ((REF_COUNT++)) || true
             done < <(grep -i "entity_reference\|target_type" "$config_file" 2>/dev/null | head -5)
-        done < <(find "${FIND_DIRS[@]}" -name "*.yml" 2>/dev/null | head -100)
+        done < <(find -L "${FIND_DIRS[@]}" -name "*.yml" 2>/dev/null | head -100)
     fi
 
     if [[ "$REF_COUNT" -eq 0 ]]; then

@@ -154,7 +154,7 @@ for category_dir in "Service" "Controller" "Form" "EventSubscriber" "Access" "Ma
             Service|Controller|Form) process_php_file "$php_file" "$category_dir" ;;
             *) process_php_file "$php_file" "$category_dir" ;;
         esac
-    done < <(find "$MODULES_DIR" -path "*/src/${category_dir}/*.php" 2>/dev/null | sort)
+    done < <(find -L "$MODULES_DIR" -path "*/src/${category_dir}/*.php" 2>/dev/null | sort)
 done
 
 # --- Write output ---

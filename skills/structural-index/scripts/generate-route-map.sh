@@ -15,7 +15,7 @@ ROUTE_FILES=()
 for search_dir in "$PROJECT_DIR/web/modules/custom" "$PROJECT_DIR/www/modules/custom" "$PROJECT_DIR/modules/custom" "$PROJECT_DIR/web/modules/contrib" "$PROJECT_DIR/www/modules/contrib"; do
     while IFS= read -r f; do
         ROUTE_FILES+=("$f")
-    done < <(find "$search_dir" -name "*.routing.yml" 2>/dev/null)
+    done < <(find -L "$search_dir" -name "*.routing.yml" 2>/dev/null)
     # Stop after custom modules if we found any
     if [[ ${#ROUTE_FILES[@]} -gt 0 && "$search_dir" == *"/custom" ]]; then
         break

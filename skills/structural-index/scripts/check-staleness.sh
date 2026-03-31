@@ -23,7 +23,7 @@ echo ""
 STALE=0
 
 # Check services.yml files
-STALE_SERVICES=$(find "$PROJECT_DIR" -newer "$TIMESTAMP_FILE" -name "*.services.yml" 2>/dev/null)
+STALE_SERVICES=$(find -L "$PROJECT_DIR" -newer "$TIMESTAMP_FILE" -name "*.services.yml" 2>/dev/null)
 if [[ -n "$STALE_SERVICES" ]]; then
     echo "STALE: services.md (modified *.services.yml files):"
     echo "$STALE_SERVICES" | while read -r f; do echo "  - ${f#$PROJECT_DIR/}"; done
@@ -31,7 +31,7 @@ if [[ -n "$STALE_SERVICES" ]]; then
 fi
 
 # Check routing.yml files
-STALE_ROUTES=$(find "$PROJECT_DIR" -newer "$TIMESTAMP_FILE" -name "*.routing.yml" 2>/dev/null)
+STALE_ROUTES=$(find -L "$PROJECT_DIR" -newer "$TIMESTAMP_FILE" -name "*.routing.yml" 2>/dev/null)
 if [[ -n "$STALE_ROUTES" ]]; then
     echo "STALE: routes.md (modified *.routing.yml files):"
     echo "$STALE_ROUTES" | while read -r f; do echo "  - ${f#$PROJECT_DIR/}"; done
@@ -39,7 +39,7 @@ if [[ -n "$STALE_ROUTES" ]]; then
 fi
 
 # Check .module files
-STALE_MODULES=$(find "$PROJECT_DIR" -newer "$TIMESTAMP_FILE" -name "*.module" 2>/dev/null)
+STALE_MODULES=$(find -L "$PROJECT_DIR" -newer "$TIMESTAMP_FILE" -name "*.module" 2>/dev/null)
 if [[ -n "$STALE_MODULES" ]]; then
     echo "STALE: hooks.md (modified *.module files):"
     echo "$STALE_MODULES" | while read -r f; do echo "  - ${f#$PROJECT_DIR/}"; done
@@ -47,7 +47,7 @@ if [[ -n "$STALE_MODULES" ]]; then
 fi
 
 # Check PHP files with plugin/entity annotations
-STALE_PHP=$(find "$PROJECT_DIR" -newer "$TIMESTAMP_FILE" -name "*.php" \
+STALE_PHP=$(find -L "$PROJECT_DIR" -newer "$TIMESTAMP_FILE" -name "*.php" \
     -path "*/modules/*" 2>/dev/null | head -50)
 if [[ -n "$STALE_PHP" ]]; then
     # Only flag if they contain plugin/entity patterns
@@ -66,7 +66,7 @@ if [[ -n "$STALE_PHP" ]]; then
 fi
 
 # Check menu/task link files
-STALE_LINKS=$(find "$PROJECT_DIR" -newer "$TIMESTAMP_FILE" \( -name "*.links.menu.yml" -o -name "*.links.task.yml" \) 2>/dev/null)
+STALE_LINKS=$(find -L "$PROJECT_DIR" -newer "$TIMESTAMP_FILE" \( -name "*.links.menu.yml" -o -name "*.links.task.yml" \) 2>/dev/null)
 if [[ -n "$STALE_LINKS" ]]; then
     echo "STALE: routes.md (modified link definition files):"
     echo "$STALE_LINKS" | while read -r f; do echo "  - ${f#$PROJECT_DIR/}"; done

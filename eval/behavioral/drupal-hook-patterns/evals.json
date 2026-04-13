@@ -1,0 +1,50 @@
+{
+  "skill_name": "drupal-hook-patterns",
+  "skill_file": "skills/drupal-hook-patterns/SKILL.md",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Drupal 11 hook implementation that alters the node article edit form to make the 'field_category' field required and adds a custom description to the title field. Use OOP hook style. Include the complete PHP file.",
+      "expected_output": "A hook class using the #[Hook('form_alter')] or #[Hook('form_node_article_form_alter')] PHP 8 attribute, not a procedural function in .module file.",
+      "expectations": [
+        "Uses #[Hook(...)] PHP 8 attribute on the method",
+        "Class is in a proper namespace under src/Hook/",
+        "Does NOT define hook as a standalone function in .module file",
+        "Uses declare(strict_types=1)",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["#[Hook("],
+      "must_not_contain": ["function my_module_form_alter("],
+      "check_php_lint": true
+    },
+    {
+      "id": 2,
+      "prompt": "Write a Drupal hook_form_alter implementation (either OOP or procedural) that adds a custom validation handler to the user login form and hides the 'name' field description. Show the complete function or method signature.",
+      "expected_output": "A form alter hook where the $form parameter is passed by reference (&$form), as required by Drupal's form alter API.",
+      "expectations": [
+        "Form parameter uses pass-by-reference: array &$form",
+        "Includes FormStateInterface $form_state parameter",
+        "Adds validation via $form['#validate'][] pattern",
+        "Modifies form elements through the $form array reference"
+      ],
+      "must_contain_any": ["&$form"],
+      "must_not_contain": [],
+      "check_php_lint": false
+    },
+    {
+      "id": 3,
+      "prompt": "Write a Drupal 11 OOP hook implementation for hook_entity_presave that sets a 'changed_by' field on node entities of type 'document' before they are saved. The hook should check the entity type using proper type hints. Include the complete PHP file.",
+      "expected_output": "An entity hook using EntityInterface type hint on the parameter and checking entity type/bundle before acting, with the #[Hook] attribute.",
+      "expectations": [
+        "Uses EntityInterface type hint for the entity parameter",
+        "Checks entity type with getEntityTypeId() or instanceof NodeInterface",
+        "Checks bundle with bundle() method before modifying",
+        "Uses #[Hook('entity_presave')] attribute",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["EntityInterface"],
+      "must_not_contain": [],
+      "check_php_lint": true
+    }
+  ]
+}

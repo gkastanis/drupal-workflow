@@ -1,0 +1,77 @@
+{
+  "skill_name": "drupal-rules",
+  "skill_file": "skills/drupal-rules/SKILL.md",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Drupal service class called ArticleManager in the namespace Drupal\\my_module that loads published articles by a given taxonomy term. The service should use EntityTypeManagerInterface to query nodes. Include the full PHP file.",
+      "expected_output": "A service class using constructor injection with EntityTypeManagerInterface, not \\Drupal::service() or \\Drupal::entityTypeManager() static calls.",
+      "expectations": [
+        "Uses constructor injection for EntityTypeManagerInterface",
+        "Does NOT use \\Drupal::service() or \\Drupal::entityTypeManager() static calls",
+        "Declares the class final",
+        "Uses declare(strict_types=1)",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["EntityTypeManagerInterface"],
+      "must_not_contain": ["\\Drupal::service(", "\\Drupal::entityTypeManager(", "\\Drupal::entityQuery("],
+      "check_php_lint": true
+    },
+    {
+      "id": 2,
+      "prompt": "Write a method in a Drupal service that finds all published event nodes created in the last 30 days. Use entity query. Show only the method body and any relevant setup code.",
+      "expected_output": "An entity query that includes accessCheck(TRUE) explicitly, not omitting it or passing FALSE.",
+      "expectations": [
+        "Entity query includes accessCheck(TRUE)",
+        "Does NOT omit accessCheck or use accessCheck(FALSE)",
+        "Uses getStorage('node')->getQuery() pattern",
+        "Filters by status and created date"
+      ],
+      "must_contain_any": ["accessCheck(TRUE)"],
+      "must_not_contain": ["accessCheck(FALSE)"],
+      "check_php_lint": false
+    },
+    {
+      "id": 3,
+      "prompt": "Write a Drupal controller method that returns a render array showing a list of the 5 most recent articles. The controller has EntityTypeManagerInterface injected. Include cache metadata so the output is properly cacheable.",
+      "expected_output": "A render array with #cache metadata including tags, contexts, or max-age. Not a bare render array without cache information.",
+      "expectations": [
+        "Render array includes #cache key",
+        "Cache metadata includes at least tags or contexts",
+        "Uses node_list tag for list invalidation",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["#cache"],
+      "must_not_contain": [],
+      "check_php_lint": true
+    },
+    {
+      "id": 4,
+      "prompt": "Write a Drupal service method that sets a status message to the user saying 'Your article has been saved.' and logs a notice. The service has MessengerInterface and LoggerInterface injected.",
+      "expected_output": "User-facing string wrapped in ->t() for TranslatableMarkup, not a raw string passed to messenger.",
+      "expectations": [
+        "Uses $this->t() or new TranslatableMarkup() for the user-facing message",
+        "Does NOT pass a raw untranslatable string to messenger->addMessage()",
+        "Uses LoggerInterface for logging"
+      ],
+      "must_contain_any": ["->t("],
+      "must_not_contain": [],
+      "check_php_lint": false
+    },
+    {
+      "id": 5,
+      "prompt": "Write the complete PHP file for a Drupal service class called NotificationSender in Drupal\\my_module namespace. It should accept a MailManagerInterface dependency and have a method sendNotification(string $to, string $subject, string $body): bool. Include the full file with namespace, use statements, and class definition.",
+      "expected_output": "A PHP file starting with declare(strict_types=1), using proper namespace, and following Drupal coding standards.",
+      "expectations": [
+        "File starts with declare(strict_types=1)",
+        "Uses constructor property promotion with private readonly",
+        "Class is declared final",
+        "Uses proper PSR-4 namespace",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["declare(strict_types=1)"],
+      "must_not_contain": ["\\Drupal::service("],
+      "check_php_lint": true
+    }
+  ]
+}

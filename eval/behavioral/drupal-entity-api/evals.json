@@ -1,0 +1,63 @@
+{
+  "skill_name": "drupal-entity-api",
+  "skill_file": "skills/drupal-entity-api/SKILL.md",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Drupal service method that finds all nodes of type 'event' with a specific taxonomy term reference, updates their status to unpublished, and saves them. The service has EntityTypeManagerInterface injected.",
+      "expected_output": "Code that uses Entity API (getStorage, getQuery, loadMultiple, save) for all CRUD operations, not raw SQL queries or db_query.",
+      "expectations": [
+        "Uses entityTypeManager->getStorage() for loading entities",
+        "Uses Entity API methods (load, loadMultiple, save) not raw SQL",
+        "Does NOT use \\Drupal\\Core\\Database\\Connection or db_query for entity operations",
+        "Uses set() method to update entity fields, not raw SQL UPDATE"
+      ],
+      "must_contain_any": ["getStorage("],
+      "must_not_contain": ["db_query(", "->query(\"SELECT", "->query(\"UPDATE", "->query('SELECT", "->query('UPDATE"],
+      "check_php_lint": false
+    },
+    {
+      "id": 2,
+      "prompt": "Write a custom content entity class called ProjectEntity for a Drupal module called project_tracker. The entity should have base fields for 'name' (string), 'description' (text_long), and 'status' (boolean). Use Drupal 11 style. Include the complete PHP file with all required attributes.",
+      "expected_output": "A content entity class using PHP 8 #[ContentEntityType] attribute, not annotation-based @ContentEntityType docblock.",
+      "expectations": [
+        "Uses #[ContentEntityType(...)] PHP 8 attribute for entity definition",
+        "Does NOT use @ContentEntityType annotation in docblock",
+        "Extends ContentEntityBase",
+        "Implements baseFieldDefinitions() static method",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["#[ContentEntityType"],
+      "must_not_contain": ["* @ContentEntityType"],
+      "check_php_lint": true
+    },
+    {
+      "id": 3,
+      "prompt": "Write a method that queries for the 10 most recent article nodes that have a specific tag term ID. The method receives the term ID as a parameter. It should respect access control.",
+      "expected_output": "An entity query with accessCheck(TRUE) called explicitly, not omitted or set to FALSE.",
+      "expectations": [
+        "Calls accessCheck(TRUE) on the entity query",
+        "Does NOT omit accessCheck() (which triggers a deprecation warning)",
+        "Uses condition() for filtering by type, status, and field value",
+        "Uses range() for limiting results"
+      ],
+      "must_contain_any": ["accessCheck(TRUE)"],
+      "must_not_contain": ["accessCheck(FALSE)"],
+      "check_php_lint": false
+    },
+    {
+      "id": 4,
+      "prompt": "I'm building a Drupal module for tracking projects. Each project has a client (reference to another entity), a budget amount, and a deadline date. What field types should I use for these three fields? Show the baseFieldDefinitions code.",
+      "expected_output": "Uses entity_reference for client (not a plain string ID), decimal for budget (not string or integer), and datetime for deadline (not string).",
+      "expectations": [
+        "Uses entity_reference type for the client relationship",
+        "Uses decimal or integer type for budget (not string)",
+        "Uses datetime type for deadline (not string)",
+        "Each field uses BaseFieldDefinition::create() with proper type"
+      ],
+      "must_contain_any": ["entity_reference"],
+      "must_not_contain": [],
+      "check_php_lint": false
+    }
+  ]
+}

@@ -1,6 +1,10 @@
 ---
 name: drupal-caching
 description: Cache bins, tags, contexts, invalidation strategies, and external caching for Drupal 10/11. Use when implementing caching, optimizing performance, or configuring cache backends.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Drupal Caching

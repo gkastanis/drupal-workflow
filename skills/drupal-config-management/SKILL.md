@@ -1,6 +1,10 @@
 ---
 name: drupal-config-management
 description: Configuration management patterns for Drupal 10/11 — config split, config ignore, environments, import/export workflows, config readonly, and the sync/install/optional directory hierarchy. Use when working with config export/import, multi-environment deployments, config split setup, or managing configuration across dev/staging/prod.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Drupal Config Management

@@ -1,0 +1,53 @@
+{
+  "skill_file": "skills/drupal-service-di/SKILL.md",
+  "assertions": [
+    {
+      "id": "S01",
+      "description": "Skill file exists",
+      "check": "file_exists",
+      "path": "skills/drupal-service-di/SKILL.md"
+    },
+    {
+      "id": "S02",
+      "description": "Frontmatter has required fields (name, description)",
+      "check": "frontmatter_fields",
+      "fields": ["name", "description"]
+    },
+    {
+      "id": "S03",
+      "description": "Shows constructor property promotion pattern",
+      "check": "contains",
+      "text": "private readonly"
+    },
+    {
+      "id": "S04",
+      "description": "Shows .services.yml definition pattern",
+      "check": "contains",
+      "text": ".services.yml"
+    },
+    {
+      "id": "S05",
+      "description": "Warns against \\Drupal:: static calls",
+      "check": "contains",
+      "text": "\\Drupal::"
+    },
+    {
+      "id": "S06",
+      "description": "Mentions interface type-hints",
+      "check": "contains",
+      "text": "Interface"
+    },
+    {
+      "id": "S07",
+      "description": "Shows final class pattern",
+      "check": "contains",
+      "text": "final class"
+    },
+    {
+      "id": "S08",
+      "description": "Skill file is under 200 lines",
+      "check": "max_lines",
+      "limit": 200
+    }
+  ]
+}

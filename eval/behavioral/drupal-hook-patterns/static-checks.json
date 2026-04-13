@@ -1,0 +1,53 @@
+{
+  "skill_file": "skills/drupal-hook-patterns/SKILL.md",
+  "assertions": [
+    {
+      "id": "S01",
+      "description": "Skill file exists",
+      "check": "file_exists",
+      "path": "skills/drupal-hook-patterns/SKILL.md"
+    },
+    {
+      "id": "S02",
+      "description": "Frontmatter has required fields (name, description)",
+      "check": "frontmatter_fields",
+      "fields": ["name", "description"]
+    },
+    {
+      "id": "S03",
+      "description": "Shows #[Hook] attribute pattern for Drupal 11",
+      "check": "contains",
+      "text": "#[Hook("
+    },
+    {
+      "id": "S04",
+      "description": "Shows form alter with &$form reference",
+      "check": "contains",
+      "text": "array &$form"
+    },
+    {
+      "id": "S05",
+      "description": "Shows EntityInterface type hint in entity hooks",
+      "check": "contains",
+      "text": "EntityInterface"
+    },
+    {
+      "id": "S06",
+      "description": "Mentions LegacyHook bridge for Drupal 10 compat",
+      "check": "contains",
+      "text": "LegacyHook"
+    },
+    {
+      "id": "S07",
+      "description": "Covers event subscribers as an alternative",
+      "check": "contains",
+      "text": "EventSubscriberInterface"
+    },
+    {
+      "id": "S08",
+      "description": "Skill file is under 250 lines",
+      "check": "max_lines",
+      "limit": 250
+    }
+  ]
+}

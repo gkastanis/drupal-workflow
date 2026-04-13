@@ -1,6 +1,10 @@
 ---
 name: discover
 description: Docs-first discovery for efficient codebase exploration. Use before Glob/Grep/Explore to get Logic IDs and file paths directly from semantic documentation. Saves tokens by avoiding expensive file searches. Commands include `/discover FEATURE` for feature lookup, `/discover "search terms"` for keyword search, and `/discover --prime` to load the business index.
+metadata:
+  status: stable
+  drupal-version: "all"
+  last-reviewed: 2026-04
 ---
 
 # Docs-First Discovery Skill

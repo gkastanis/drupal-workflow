@@ -1,6 +1,10 @@
 ---
 name: drupal-testing
 description: Practical Drupal testing patterns using curl smoke tests, drush eval, and test scripts. Use when verifying Drupal implementations actually work - module enabled, service exists, page renders, config correct.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Drupal Testing Skill

@@ -1,0 +1,53 @@
+{
+  "skill_file": "skills/drupal-caching/SKILL.md",
+  "assertions": [
+    {
+      "id": "S01",
+      "description": "Skill file exists",
+      "check": "file_exists",
+      "path": "skills/drupal-caching/SKILL.md"
+    },
+    {
+      "id": "S02",
+      "description": "Frontmatter has required fields (name, description)",
+      "check": "frontmatter_fields",
+      "fields": ["name", "description"]
+    },
+    {
+      "id": "S03",
+      "description": "Shows #cache render array pattern",
+      "check": "contains",
+      "text": "'#cache'"
+    },
+    {
+      "id": "S04",
+      "description": "Documents cache contexts table",
+      "check": "contains",
+      "text": "user.permissions"
+    },
+    {
+      "id": "S05",
+      "description": "Shows CacheableMetadata OOP approach",
+      "check": "contains",
+      "text": "CacheableMetadata"
+    },
+    {
+      "id": "S06",
+      "description": "Documents cache tags pattern",
+      "check": "contains",
+      "text": "node_list"
+    },
+    {
+      "id": "S07",
+      "description": "Covers lazy builders for per-user fragments",
+      "check": "contains",
+      "text": "lazy_builder"
+    },
+    {
+      "id": "S08",
+      "description": "Skill file is under 200 lines",
+      "check": "max_lines",
+      "limit": 200
+    }
+  ]
+}

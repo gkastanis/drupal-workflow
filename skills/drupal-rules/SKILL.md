@@ -1,6 +1,10 @@
 ---
 name: drupal-rules
 description: Core Drupal development rules covering code quality, security, services, and testing verification. ALWAYS consult when writing Drupal code.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Drupal Development Rules

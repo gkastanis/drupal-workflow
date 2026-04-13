@@ -1,0 +1,53 @@
+{
+  "skill_file": "skills/drupal-entity-api/SKILL.md",
+  "assertions": [
+    {
+      "id": "S01",
+      "description": "Skill file exists",
+      "check": "file_exists",
+      "path": "skills/drupal-entity-api/SKILL.md"
+    },
+    {
+      "id": "S02",
+      "description": "Frontmatter has required fields (name, description)",
+      "check": "frontmatter_fields",
+      "fields": ["name", "description"]
+    },
+    {
+      "id": "S03",
+      "description": "Includes field type selection matrix",
+      "check": "contains",
+      "text": "entity_reference"
+    },
+    {
+      "id": "S04",
+      "description": "Shows accessCheck(TRUE) in entity query examples",
+      "check": "contains",
+      "text": "accessCheck(TRUE)"
+    },
+    {
+      "id": "S05",
+      "description": "Mentions EntityTypeManagerInterface for CRUD",
+      "check": "contains",
+      "text": "EntityTypeManagerInterface"
+    },
+    {
+      "id": "S06",
+      "description": "Shows loadMultiple pattern to avoid N+1",
+      "check": "contains",
+      "text": "loadMultiple"
+    },
+    {
+      "id": "S07",
+      "description": "Mentions baseFieldDefinitions for entity fields",
+      "check": "contains",
+      "text": "baseFieldDefinitions"
+    },
+    {
+      "id": "S08",
+      "description": "Skill file is under 180 lines",
+      "check": "max_lines",
+      "limit": 180
+    }
+  ]
+}

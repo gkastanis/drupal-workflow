@@ -1,0 +1,848 @@
+{
+  "skill_name": "workflow-patterns",
+  "skill_file": "skills/workflow-patterns/SKILL.md",
+  "description": "Behavioral evals extracted from magic-era sessions (2026-03-29 to 2026-03-31). Tests whether the drupal-workflow plugin reproduces the structured delegation pattern: brainstorm -> plan -> delegate -> track -> verify.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u276f\u00a0We need to organise the first sprint of @docs/ use the specialised agent superpowers and workflow to start",
+      "expected_output": "Should delegate to specialized agents (observed: 0 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 0)"
+      ],
+      "must_contain_any": [
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "7827144b-24c9-4b06-ace7-b073657be72f",
+        "date": "2026-03-29",
+        "prompt_index": 5,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "prompt": "Base directory for this skill: <PATH>\n\n# Writing Plans\n\n## Overview\n\nWrite comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commit",
+      "expected_output": "Should delegate to specialized agents (observed: 2 dispatches); Should plan before implementing; Should verify with tests or drush",
+      "expectations": [
+        "Dispatches specialized agents (original had 2)",
+        "Plans approach before implementation",
+        "Includes verification step"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "7827144b-24c9-4b06-ace7-b073657be72f",
+        "date": "2026-03-29",
+        "prompt_index": 20,
+        "patterns": [
+          "delegation",
+          "planning",
+          "verification"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "prompt": "no retry tre brainstorm skill",
+      "expected_output": "Should plan before implementing",
+      "expectations": [
+        "Invokes relevant skills (brainstorm)",
+        "Plans approach before implementation"
+      ],
+      "must_contain_any": [
+        "brainstorm",
+        "plan",
+        "strategy",
+        "approach",
+        "steps"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "85a13afb-a2c2-4716-a900-029a96a67197",
+        "date": "2026-03-30",
+        "prompt_index": 11,
+        "patterns": [
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "prompt": "ask drupal builder to dig into",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)"
+      ],
+      "must_contain_any": [
+        "drupal-builder",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "ab522891-4b1e-419f-83df-fac84e752243",
+        "date": "2026-03-30",
+        "prompt_index": 527,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "prompt": "Base directory for this skill: <PATH>\n\n# Writing Plans\n\n## Overview\n\nWrite comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commit",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches); Should plan before implementing; Should verify with tests or drush",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)",
+        "Plans approach before implementation",
+        "Includes verification step"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "cfb0c835-8b94-4118-89fc-11aca9bb5be8",
+        "date": "2026-03-30",
+        "prompt_index": 3,
+        "patterns": [
+          "delegation",
+          "planning",
+          "verification"
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "prompt": "semantic docs. first bootstrap then semantic init",
+      "expected_output": "Should bootstrap project context first",
+      "expectations": [
+        "Invokes relevant skills (drupal-workflow:drupal-bootstrap)"
+      ],
+      "must_contain_any": [
+        "drupal-bootstrap",
+        "bootstrap",
+        "semantic",
+        "documentation",
+        "index"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "cfb0c835-8b94-4118-89fc-11aca9bb5be8",
+        "date": "2026-03-30",
+        "prompt_index": 98,
+        "patterns": [
+          "bootstrapping"
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "prompt": "@HANDOFF.md the eval need rate limit management. lets fix  the eval runs",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches); Should verify with tests or drush",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)",
+        "Includes verification step"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "verify",
+        "test"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "fa0b05b4-0527-474b-baf8-d379edc8a4ed",
+        "date": "2026-03-30",
+        "prompt_index": 0,
+        "patterns": [
+          "delegation",
+          "verification"
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "prompt": "Are we polling live already from all data sources?",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "12e14725-e6cb-404d-baa8-a6d91eb372af",
+        "date": "2026-03-31",
+        "prompt_index": 0,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "prompt": "We should just use drush cron command and use ultimate_cron.",
+      "expected_output": "Should verify with tests or drush",
+      "expectations": [
+        "Includes verification step"
+      ],
+      "must_contain_any": [
+        "verify",
+        "test",
+        "drush",
+        "phpunit",
+        "check"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "12e14725-e6cb-404d-baa8-a6d91eb372af",
+        "date": "2026-03-31",
+        "prompt_index": 2,
+        "patterns": [
+          "verification"
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "prompt": "Plan a sprint for it and work with specialised agents",
+      "expected_output": "Should delegate to specialized agents (observed: 0 dispatches); Should plan before implementing",
+      "expectations": [
+        "Dispatches specialized agents (original had 0)",
+        "Invokes relevant skills (drupal-workflow:writing-plans)",
+        "Plans approach before implementation"
+      ],
+      "must_contain_any": [
+        "writing-plans",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "12e14725-e6cb-404d-baa8-a6d91eb372af",
+        "date": "2026-03-31",
+        "prompt_index": 136,
+        "patterns": [
+          "delegation",
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": 11,
+      "prompt": "did you test that?",
+      "expected_output": "Should verify with tests or drush",
+      "expectations": [
+        "Invokes relevant skills (drupal-workflow:drupal-verify)",
+        "Includes verification step"
+      ],
+      "must_contain_any": [
+        "drupal-verify",
+        "verify",
+        "test",
+        "drush",
+        "phpunit",
+        "check"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "12e14725-e6cb-404d-baa8-a6d91eb372af",
+        "date": "2026-03-31",
+        "prompt_index": 169,
+        "patterns": [
+          "verification"
+        ]
+      }
+    },
+    {
+      "id": 12,
+      "prompt": "On /srv/pb/openbrain we have the slackbot using the router. In our drupal implementation we dont yet have this. Do a discover in both systems and a web deep search on what options we have, In @HANDOFF.md there might be already some info about it",
+      "expected_output": "Should delegate to specialized agents (observed: 3 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 3)"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "web-research-analyst",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "354bfe09-e2aa-44c8-b9e6-f589645ed973",
+        "date": "2026-03-31",
+        "prompt_index": 0,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "prompt": "We need this to be reproducable and deployable(possible productize). Propose and evaluate approaches.",
+      "expected_output": "Should plan before implementing",
+      "expectations": [
+        "Invokes relevant skills (superpowers:brainstorming)",
+        "Plans approach before implementation"
+      ],
+      "must_contain_any": [
+        "brainstorming",
+        "plan",
+        "strategy",
+        "approach",
+        "steps"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "354bfe09-e2aa-44c8-b9e6-f589645ed973",
+        "date": "2026-03-31",
+        "prompt_index": 4,
+        "patterns": [
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "prompt": "Base directory for this skill: <PATH>\n\n# Brainstorming Ideas Into Designs\n\nHelp turn ideas into fully formed designs and specs through natural collaborative dialogue.\n\nStart by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.\n\n<HARD-GATE>\nDo NOT invoke any implementation sk",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches); Should plan before implementing",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)",
+        "Plans approach before implementation"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "354bfe09-e2aa-44c8-b9e6-f589645ed973",
+        "date": "2026-03-31",
+        "prompt_index": 6,
+        "patterns": [
+          "delegation",
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": 15,
+      "prompt": "Dive deeper in hybrid",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)"
+      ],
+      "must_contain_any": [
+        "web-research-analyst",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "354bfe09-e2aa-44c8-b9e6-f589645ed973",
+        "date": "2026-03-31",
+        "prompt_index": 15,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "prompt": "Are you sure there is no contib module about that yet?",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)"
+      ],
+      "must_contain_any": [
+        "web-research-analyst",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "354bfe09-e2aa-44c8-b9e6-f589645ed973",
+        "date": "2026-03-31",
+        "prompt_index": 28,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "prompt": "You are the project manager and system architect. You delegate to builder and verifier. You ensure plan is implemented correctly and procedures are followed.",
+      "expected_output": "Should delegate to specialized agents (observed: 0 dispatches); Should plan before implementing",
+      "expectations": [
+        "Dispatches specialized agents (original had 0)",
+        "Invokes relevant skills (superpowers:writing-plans)",
+        "Plans approach before implementation"
+      ],
+      "must_contain_any": [
+        "writing-plans",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "354bfe09-e2aa-44c8-b9e6-f589645ed973",
+        "date": "2026-03-31",
+        "prompt_index": 43,
+        "patterns": [
+          "delegation",
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "prompt": "Base directory for this skill: <PATH>\n\n# Writing Plans\n\n## Overview\n\nWrite comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commit",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches); Should plan before implementing; Should verify with tests or drush",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)",
+        "Plans approach before implementation",
+        "Includes verification step"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "354bfe09-e2aa-44c8-b9e6-f589645ed973",
+        "date": "2026-03-31",
+        "prompt_index": 45,
+        "patterns": [
+          "delegation",
+          "planning",
+          "verification"
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "prompt": "Yes proceed to next steps",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)"
+      ],
+      "must_contain_any": [
+        "code-reviewer",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "354bfe09-e2aa-44c8-b9e6-f589645ed973",
+        "date": "2026-03-31",
+        "prompt_index": 134,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "prompt": "Write down to a GATEWAY_HANDOFF.md for the next steps including setup and real test. There is already the bot config(see python implementation)",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches); Should verify with tests or drush",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)",
+        "Includes verification step"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "verify",
+        "test"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "354bfe09-e2aa-44c8-b9e6-f589645ed973",
+        "date": "2026-03-31",
+        "prompt_index": 213,
+        "patterns": [
+          "delegation",
+          "verification"
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "prompt": "On /srv/pb/openbrain we have the slackbot using the router. In our drupal implementation we dont yet have this. Do a discover in both systems and a web deep search on what options we have, In @HANDOFF.md there might be already some info about it",
+      "expected_output": "Should delegate to specialized agents (observed: 3 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 3)"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "web-research-analyst",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "abf05a41-331e-425e-913e-043bf23951b0",
+        "date": "2026-03-31",
+        "prompt_index": 0,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "prompt": "We need this to be reproducable and deployable(possible productize). Propose and evaluate approaches.",
+      "expected_output": "Should plan before implementing",
+      "expectations": [
+        "Invokes relevant skills (superpowers:brainstorming)",
+        "Plans approach before implementation"
+      ],
+      "must_contain_any": [
+        "brainstorming",
+        "plan",
+        "strategy",
+        "approach",
+        "steps"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "abf05a41-331e-425e-913e-043bf23951b0",
+        "date": "2026-03-31",
+        "prompt_index": 4,
+        "patterns": [
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": 23,
+      "prompt": "Base directory for this skill: <PATH>\n\n# Brainstorming Ideas Into Designs\n\nHelp turn ideas into fully formed designs and specs through natural collaborative dialogue.\n\nStart by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.\n\n<HARD-GATE>\nDo NOT invoke any implementation sk",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches); Should plan before implementing",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)",
+        "Plans approach before implementation"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "abf05a41-331e-425e-913e-043bf23951b0",
+        "date": "2026-03-31",
+        "prompt_index": 6,
+        "patterns": [
+          "delegation",
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": 24,
+      "prompt": "Dive deeper in hybrid",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)"
+      ],
+      "must_contain_any": [
+        "web-research-analyst",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "abf05a41-331e-425e-913e-043bf23951b0",
+        "date": "2026-03-31",
+        "prompt_index": 15,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 25,
+      "prompt": "Are you sure there is no contib module about that yet?",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)"
+      ],
+      "must_contain_any": [
+        "web-research-analyst",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "abf05a41-331e-425e-913e-043bf23951b0",
+        "date": "2026-03-31",
+        "prompt_index": 28,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 26,
+      "prompt": "so we need to work on the embedding provider",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "d54c7891-4f5d-4490-bf4f-da2c7b963110",
+        "date": "2026-03-31",
+        "prompt_index": 369,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    },
+    {
+      "id": 27,
+      "prompt": "You design builder builds - verifier verifies",
+      "expected_output": "Should delegate to specialized agents (observed: 0 dispatches); Should plan before implementing",
+      "expectations": [
+        "Dispatches specialized agents (original had 0)",
+        "Invokes relevant skills (drupal-workflow:writing-plans)",
+        "Plans approach before implementation"
+      ],
+      "must_contain_any": [
+        "writing-plans",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "dd3a07cc-7f39-46c0-b9ed-bb964dd40de0",
+        "date": "2026-03-31",
+        "prompt_index": 297,
+        "patterns": [
+          "delegation",
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": 28,
+      "prompt": "yes create the plan",
+      "expected_output": "Should delegate to specialized agents (observed: 0 dispatches); Should plan before implementing",
+      "expectations": [
+        "Dispatches specialized agents (original had 0)",
+        "Invokes relevant skills (superpowers:brainstorming)",
+        "Plans approach before implementation"
+      ],
+      "must_contain_any": [
+        "brainstorming",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "dd3a07cc-7f39-46c0-b9ed-bb964dd40de0",
+        "date": "2026-03-31",
+        "prompt_index": 465,
+        "patterns": [
+          "delegation",
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": 29,
+      "prompt": "Base directory for this skill: <PATH>\n\n# Brainstorming Ideas Into Designs\n\nHelp turn ideas into fully formed designs and specs through natural collaborative dialogue.\n\nStart by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.\n\n<HARD-GATE>\nDo NOT invoke any implementation sk",
+      "expected_output": "Should delegate to specialized agents (observed: 1 dispatches); Should plan before implementing",
+      "expectations": [
+        "Dispatches specialized agents (original had 1)",
+        "Plans approach before implementation"
+      ],
+      "must_contain_any": [
+        "Explore",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "dd3a07cc-7f39-46c0-b9ed-bb964dd40de0",
+        "date": "2026-03-31",
+        "prompt_index": 467,
+        "patterns": [
+          "delegation",
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": 30,
+      "prompt": "Plan the fixes for all three issues using the sprint planning workflow",
+      "expected_output": "Should delegate to specialized agents (observed: 0 dispatches); Should plan before implementing; Should verify with tests or drush",
+      "expectations": [
+        "Dispatches specialized agents (original had 0)",
+        "Invokes relevant skills (superpowers:brainstorming)",
+        "Plans approach before implementation",
+        "Includes verification step"
+      ],
+      "must_contain_any": [
+        "brainstorming",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel",
+        "plan",
+        "strategy"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "eb0a653b-60bc-4d4e-91b4-6f22e608cad2",
+        "date": "2026-03-31",
+        "prompt_index": 17,
+        "patterns": [
+          "delegation",
+          "planning",
+          "verification"
+        ]
+      }
+    },
+    {
+      "id": 31,
+      "prompt": "update the notebook sources using nlm for notebook/395fcaf6-028d-46e2-ab18-fc7bf91134e6 and generate audio studio artifacts that will identify and critique the architecture similar as the ones it found the above. This was the prompt that created these. Security model analysis: PII scrubbing, tier classification, access control, and potential gaps",
+      "expected_output": "Should delegate to specialized agents (observed: 0 dispatches)",
+      "expectations": [
+        "Dispatches specialized agents (original had 0)",
+        "Invokes relevant skills (nlm-skill)"
+      ],
+      "must_contain_any": [
+        "nlm-skill",
+        "Agent",
+        "subagent",
+        "dispatch",
+        "builder",
+        "parallel"
+      ],
+      "must_not_contain": [],
+      "source": {
+        "session_id": "eb0a653b-60bc-4d4e-91b4-6f22e608cad2",
+        "date": "2026-03-31",
+        "prompt_index": 119,
+        "patterns": [
+          "delegation"
+        ]
+      }
+    }
+  ]
+}

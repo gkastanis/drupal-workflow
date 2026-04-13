@@ -1,0 +1,48 @@
+{
+  "skill_name": "drupal-caching",
+  "skill_file": "skills/drupal-caching/SKILL.md",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Drupal controller method called recentArticles() that loads the 5 most recent published article nodes and returns a render array with a list of their titles. Make sure the output is properly cacheable and invalidates when articles change.",
+      "expected_output": "A render array with #cache containing tags (including node_list for list invalidation) so Drupal can properly cache and invalidate the output.",
+      "expectations": [
+        "Render array includes #cache with 'tags' key",
+        "Tags include 'node_list' for list-level invalidation",
+        "Does NOT return a bare render array without any #cache metadata",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["'tags'"],
+      "must_not_contain": [],
+      "check_php_lint": true
+    },
+    {
+      "id": 2,
+      "prompt": "Write a Drupal block plugin's build() method that displays different content based on the current user's permissions. The block shows admin tools to admins and a public summary to everyone else. Include proper cache metadata.",
+      "expected_output": "A render array using CacheableMetadata or #cache array with proper contexts (like user.permissions) and tags. Not using bare Cache::invalidateTags() without attaching metadata to the render array.",
+      "expectations": [
+        "Uses #cache array or CacheableMetadata to attach cache information to the render array",
+        "Includes cache contexts for permission-dependent variation",
+        "Does NOT rely solely on manual Cache::invalidateTags() calls without render array metadata",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["#cache", "CacheableMetadata"],
+      "must_not_contain": [],
+      "check_php_lint": true
+    },
+    {
+      "id": 3,
+      "prompt": "Write a Drupal controller method that returns a page showing a user's dashboard. The page content varies by the current user and their permissions, and also depends on query parameters for filtering. Include complete cache metadata.",
+      "expected_output": "A render array with cache contexts including 'user' or 'user.permissions' and 'url.query_args' to ensure proper caching per user and per filter combination.",
+      "expectations": [
+        "Includes 'user' or 'user.permissions' cache context",
+        "Includes 'url.query_args' or 'url' cache context for query parameter variation",
+        "Cache contexts are in #cache['contexts'] array",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["user.permissions", "user"],
+      "must_not_contain": [],
+      "check_php_lint": true
+    }
+  ]
+}

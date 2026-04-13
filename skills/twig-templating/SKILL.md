@@ -1,6 +1,10 @@
 ---
 name: twig-templating
 description: Twig template patterns, filters, theme suggestions, and component architecture for Drupal 10/11. Use when creating or modifying Twig templates, implementing theme hooks, or building front-end components.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Twig Templating

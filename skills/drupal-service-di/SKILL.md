@@ -1,6 +1,10 @@
 ---
 name: drupal-service-di
 description: Service definitions, dependency injection patterns, and interface design for Drupal 10/11. Use when creating services, registering dependencies, or implementing the service container pattern.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Drupal Service & Dependency Injection

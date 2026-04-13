@@ -1,0 +1,63 @@
+{
+  "skill_name": "drupal-service-di",
+  "skill_file": "skills/drupal-service-di/SKILL.md",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Drupal service class called UserProfileManager in the Drupal\\my_module namespace. It needs EntityTypeManagerInterface and AccountProxyInterface as dependencies. Add a method getCurrentUserProfile() that loads the current user's profile. Include the complete PHP file.",
+      "expected_output": "A service class using constructor injection with typed dependencies, not \\Drupal:: static calls anywhere in the class body.",
+      "expectations": [
+        "Uses constructor injection for all dependencies",
+        "Does NOT use \\Drupal::entityTypeManager() or \\Drupal::currentUser()",
+        "Accesses dependencies via $this->entityTypeManager and $this->currentUser",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["__construct"],
+      "must_not_contain": ["\\Drupal::entityTypeManager(", "\\Drupal::currentUser(", "\\Drupal::service("],
+      "check_php_lint": true
+    },
+    {
+      "id": 2,
+      "prompt": "Write the .services.yml file and the corresponding PHP service class for a Drupal service called my_module.report_generator. It depends on entity_type.manager, database (Drupal\\Core\\Database\\Connection), and logger.channel.my_module. Show both files.",
+      "expected_output": "A .services.yml with proper service definition using '@' prefix for service references, and a PHP class with interface type-hints in the constructor.",
+      "expectations": [
+        "services.yml uses '@entity_type.manager' syntax for service references",
+        "PHP class constructor uses EntityTypeManagerInterface (not EntityTypeManager concrete class)",
+        "PHP class constructor uses Connection type-hint for database",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["EntityTypeManagerInterface"],
+      "must_not_contain": ["EntityTypeManager $entityTypeManager"],
+      "check_php_lint": true
+    },
+    {
+      "id": 3,
+      "prompt": "Write a Drupal service class called CacheWarmer in Drupal\\my_module namespace with CacheBackendInterface and ConfigFactoryInterface as dependencies. It should have a warmCache(): void method. Include the full PHP file.",
+      "expected_output": "A final class with constructor property promotion using private readonly for dependencies.",
+      "expectations": [
+        "Class is declared final",
+        "Uses constructor property promotion (private readonly in constructor parameters)",
+        "Does NOT have separate property declarations and manual assignment in constructor body",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["final class"],
+      "must_not_contain": ["\\Drupal::cache(", "\\Drupal::config("],
+      "check_php_lint": true
+    },
+    {
+      "id": 4,
+      "prompt": "Write a Drupal service class called TokenValidator in Drupal\\my_module namespace. It depends on StateInterface and TimeInterface. It should have a method isTokenValid(string $token): bool. Use modern PHP patterns. Include the full PHP file.",
+      "expected_output": "A class using constructor property promotion with private readonly modifiers, declared as final.",
+      "expectations": [
+        "Uses 'private readonly' in constructor parameter list (property promotion)",
+        "Class is declared final",
+        "Uses declare(strict_types=1)",
+        "Return type is explicitly bool",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["private readonly"],
+      "must_not_contain": ["\\Drupal::state(", "\\Drupal::time("],
+      "check_php_lint": true
+    }
+  ]
+}

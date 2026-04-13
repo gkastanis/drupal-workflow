@@ -1,6 +1,10 @@
 ---
 name: drupal-coding-standards
 description: PHPCS, PHPStan, naming conventions, and code style enforcement for Drupal 10/11. Use when checking coding standards, running static analysis, or enforcing code quality.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Drupal Coding Standards

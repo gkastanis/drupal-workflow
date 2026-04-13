@@ -1,0 +1,53 @@
+{
+  "skill_file": "skills/drupal-security-patterns/SKILL.md",
+  "assertions": [
+    {
+      "id": "S01",
+      "description": "Skill file exists",
+      "check": "file_exists",
+      "path": "skills/drupal-security-patterns/SKILL.md"
+    },
+    {
+      "id": "S02",
+      "description": "Frontmatter has required fields (name, description)",
+      "check": "frontmatter_fields",
+      "fields": ["name", "description"]
+    },
+    {
+      "id": "S03",
+      "description": "Covers SQL injection prevention with parameterized queries",
+      "check": "contains",
+      "text": "parameterized"
+    },
+    {
+      "id": "S04",
+      "description": "Covers XSS with Xss::filter()",
+      "check": "contains",
+      "text": "Xss::filter("
+    },
+    {
+      "id": "S05",
+      "description": "Shows route access control with requirements",
+      "check": "contains",
+      "text": "_permission:"
+    },
+    {
+      "id": "S06",
+      "description": "Warns against hardcoded credentials",
+      "check": "contains",
+      "text": "hardcoded"
+    },
+    {
+      "id": "S07",
+      "description": "Covers CSRF protection",
+      "check": "contains",
+      "text": "CSRF"
+    },
+    {
+      "id": "S08",
+      "description": "Skill file is under 180 lines",
+      "check": "max_lines",
+      "limit": 180
+    }
+  ]
+}

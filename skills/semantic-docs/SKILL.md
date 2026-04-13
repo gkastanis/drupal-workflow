@@ -1,6 +1,10 @@
 ---
 name: semantic-docs
 description: Navigate semantic documentation in docs/semantic/ that maps business logic to Drupal code. Use this skill when asking how features work (authentication, content types, views, migrations, access control, workflows, caching, theming, forms, blocks, entities). Search by Logic ID (AUTH-L1), feature code (MIGR), user story (US-001), or entity schema. Answers "where is X implemented?", "how does X work?", "what code handles X?".
+metadata:
+  status: stable
+  drupal-version: "all"
+  last-reviewed: 2026-04
 ---
 
 # Semantic Documentation Navigator

@@ -1,6 +1,10 @@
 ---
 name: drupal-security-patterns
 description: OWASP prevention patterns, access control, input sanitization, and XSS protection for Drupal 10/11. Use when reviewing code for security issues, implementing access control, or hardening Drupal applications.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Drupal Security Patterns

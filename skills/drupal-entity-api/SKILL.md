@@ -1,6 +1,10 @@
 ---
 name: drupal-entity-api
 description: Field type selection, entity CRUD operations, view modes, and content modeling patterns for Drupal 10/11. Use when designing content types, selecting field types, or working with the Entity API.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Drupal Entity API

@@ -4,6 +4,10 @@ description: |
   Use when delegating tasks to sub-agents or creating implementation plans.
   Write comprehensive plans assuming the engineer has zero codebase context.
   Include exact file paths, complete code, verification commands, and bite-sized tasks.
+metadata:
+  status: stable
+  drupal-version: "all"
+  last-reviewed: 2026-04
 ---
 
 # Writing Implementation Plans

@@ -1,6 +1,10 @@
 ---
 name: drupal-conventions
 description: Load Drupal-specific conventions (translations, CSS, error handling) on demand. Use when working on theming, translations, or exception handling.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Drupal Conventions (JIT)

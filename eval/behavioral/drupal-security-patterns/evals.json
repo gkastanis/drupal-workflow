@@ -1,0 +1,62 @@
+{
+  "skill_name": "drupal-security-patterns",
+  "skill_file": "skills/drupal-security-patterns/SKILL.md",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Drupal form class called ContactSettingsForm that extends ConfigFormBase. It has a text field for 'recipient_email' and a textarea for 'default_message'. Include form building, validation, and submission. Write the complete PHP file.",
+      "expected_output": "A form class that uses Form API buildForm/validateForm/submitForm methods for input handling, not raw $_POST or $_GET access.",
+      "expectations": [
+        "Uses FormBase or ConfigFormBase with buildForm() method",
+        "Validates input in validateForm() using Form API (setErrorByName, etc.)",
+        "Does NOT access $_POST, $_GET, or $_REQUEST directly",
+        "Submits via submitForm() using $form_state->getValue()",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["validateForm", "submitForm"],
+      "must_not_contain": ["$_POST", "$_GET", "$_REQUEST"],
+      "check_php_lint": true
+    },
+    {
+      "id": 2,
+      "prompt": "Write a Drupal service method that takes user-submitted HTML content and renders it safely in a render array. The content may contain some allowed HTML tags (bold, italic, links) but must strip dangerous tags like script.",
+      "expected_output": "Code that uses Xss::filter() or Xss::filterAdmin() for HTML sanitization, or relies on Twig auto-escaping via render arrays, not raw unescaped output.",
+      "expectations": [
+        "Uses Xss::filter() or Html::escape() for sanitization",
+        "Does NOT output raw user input with #markup without filtering",
+        "Explains or demonstrates the filtering approach"
+      ],
+      "must_contain_any": ["Xss::filter(", "Html::escape("],
+      "must_not_contain": [],
+      "check_php_lint": false
+    },
+    {
+      "id": 3,
+      "prompt": "Write a Drupal routing YAML file (my_module.routing.yml) with three routes: an admin settings page at /admin/config/my-module, a public listing page at /my-module/items, and an AJAX callback at /my-module/api/search. Each route should have appropriate access control.",
+      "expected_output": "A routing.yml where every route has requirements with _permission, _role, _access, or _entity_access defined. No route should be left without access control.",
+      "expectations": [
+        "Every route has a 'requirements' key with access control",
+        "Admin route uses _permission with an admin-level permission",
+        "Public route has appropriate access requirement (not left wide open without _access: 'TRUE')",
+        "No route is missing the requirements section entirely"
+      ],
+      "must_contain_any": ["requirements:", "_permission:"],
+      "must_not_contain": [],
+      "check_php_lint": false
+    },
+    {
+      "id": 4,
+      "prompt": "Write a Drupal service class called ApiClient in Drupal\\my_module namespace that makes HTTP requests to an external API. It needs an API key for authentication and a base URL. Show the complete class with constructor and a method fetchData(string $endpoint): array.",
+      "expected_output": "A service class that gets credentials from configuration, environment variables, or Drupal's key module -- not hardcoded strings in the source code.",
+      "expectations": [
+        "API key is NOT hardcoded as a string literal in the class",
+        "Credentials come from ConfigFactoryInterface, Settings, or environment variable",
+        "Does NOT contain a hardcoded API key like 'sk-...' or 'api_key_here'",
+        "Generated PHP passes php -l syntax check"
+      ],
+      "must_contain_any": ["ConfigFactoryInterface", "Settings::get(", "getenv("],
+      "must_not_contain": ["'sk-", "\"sk-", "'api_key_", "\"api_key_"],
+      "check_php_lint": true
+    }
+  ]
+}

@@ -1,6 +1,10 @@
 ---
 name: structural-index
 description: Generate and query structural indexes for Drupal projects. Parses services.yml, routing.yml, hooks, plugins, and entity types to build an automated dependency graph. Use for blast radius analysis, service dependency mapping, and structural queries. Commands include `/structural-index` to generate, and structural query prefixes via discover (e.g., `discover service:entity_type.manager`, `discover deps:AUTH`).
+metadata:
+  status: stable
+  drupal-version: "all"
+  last-reviewed: 2026-04
 ---
 
 # Structural Index Skill

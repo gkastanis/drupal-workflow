@@ -1,6 +1,10 @@
 ---
 name: verification-before-completion
 description: Gate function ensuring implementations are tested before claiming completion. Prevents rationalization and untested claims. Use at the end of any implementation task to validate work actually functions.
+metadata:
+  status: stable
+  drupal-version: "all"
+  last-reviewed: 2026-04
 ---
 
 # Verification Before Completion Skill

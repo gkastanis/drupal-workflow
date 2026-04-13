@@ -1,6 +1,10 @@
 ---
 name: drupal-hook-patterns
 description: OOP hooks (Drupal 11), form alters, entity hooks, and legacy bridges for Drupal 10/11. Use when implementing hooks, form alterations, or event subscribers.
+metadata:
+  status: stable
+  drupal-version: "10+"
+  last-reviewed: 2026-04
 ---
 
 # Drupal Hook Patterns

@@ -11,6 +11,10 @@ metadata:
 
 Consolidated rules for Drupal development. Follow these for every implementation task.
 
+## Autopilot Interventions (MANDATORY)
+
+When you see `AUTOPILOT [type]:` messages in hook output, you MUST stop what you are doing and follow the instruction. These are not suggestions — they are policy enforcement from the session autopilot. The intervention contains a specific tool call you must execute before making further edits. Ignoring an autopilot intervention is equivalent to ignoring a test failure.
+
 ## Services & Dependency Injection
 
 ### Mandatory Rules

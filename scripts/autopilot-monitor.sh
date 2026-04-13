@@ -167,15 +167,15 @@ if policy.get("require_verification", False) and not state["verification_done"] 
 
 state["drift_score"] = drift
 
-# Check if intervention should fire (only on Edit/Write)
+# Check if intervention should fire
 should_intervene = False
 intervention_type = ""
 intervention_msg = ""
 
-if tool_name in ["Edit", "Write"]:
-    turns_since = state["turn"] - state["last_intervention_turn"]
-    if turns_since >= 3 and state["intervention_count"] < 5:
-        # Priority: plan > delegate > skill > verify
+turns_since = state["turn"] - state["last_intervention_turn"]
+if turns_since >= 3 and state["intervention_count"] < 5:
+    if tool_name in ["Edit", "Write"]:
+        # Priority: plan > delegate > skill
         if plan_drift and policy.get("require_plan", False):
             should_intervene = True
             intervention_type = "plan_missing"
@@ -188,10 +188,13 @@ if tool_name in ["Edit", "Write"]:
             should_intervene = True
             intervention_type = "skill_suggest"
             intervention_msg = "No skills consulted yet. Try: /discover or /drupal-blast-radius to navigate before changes."
-        elif verify_drift and policy.get("require_verification", False):
+
+    # Verification nudge fires on ANY tool when edits are substantial and no verification yet
+    if not should_intervene and verify_drift and policy.get("require_verification", False):
+        if state["edits"] >= 5 and state["delegations"] >= 1:
             should_intervene = True
             intervention_type = "verify_remind"
-            intervention_msg = f"Implementation substantial ({state['edits']} edits). Dispatch @drupal-verifier or run /drupal-test before wrapping up."
+            intervention_msg = f"Implementation looks done ({state['edits']} edits, {state['delegations']} agents). Dispatch @drupal-verifier before wrapping up."
 
 # Log intervention if fired
 if should_intervene and intervention_type:

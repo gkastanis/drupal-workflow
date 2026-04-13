@@ -17,7 +17,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 
 MAGIC_BENCHMARKS = {
-    "delegation_rate": 0.52,
+    "delegation_rate": 0.55,    # agents per edit (not per turn) — magic era: 200 agents / 360 edits
     "skills_per_session": 3.5,
     "task_tracking_pct": 11.1,
     "specialization_pct": 82.0,
@@ -67,7 +67,7 @@ def analyze_session(fpath):
     sid = os.path.basename(fpath).replace(".jsonl", "")[:8]
     info = {"sid": sid, "date": None, "branch": None,
             "user_turns": 0, "agent_dispatches": 0, "skill_invocations": 0,
-            "task_tracking": 0, "total_tools": 0, "specialized_agents": 0,
+            "task_tracking": 0, "total_tools": 0, "edits": 0, "specialized_agents": 0,
             "total_agents": 0, "plan_first": False,
             "first_plan_turn": None, "first_heavy_turn": None,
             "has_verification": False}
@@ -121,7 +121,11 @@ def analyze_session(fpath):
                         info["has_verification"] = True
                 elif name in ("TaskCreate", "TaskUpdate"):
                     info["task_tracking"] += 1
-                elif name in ("Edit", "Write", "Bash"):
+                elif name in ("Edit", "Write"):
+                    info["edits"] += 1
+                    if info["first_heavy_turn"] is None:
+                        info["first_heavy_turn"] = turn_idx
+                elif name == "Bash":
                     if info["first_heavy_turn"] is None:
                         info["first_heavy_turn"] = turn_idx
     if info["first_plan_turn"] is not None:
@@ -132,11 +136,11 @@ def analyze_session(fpath):
 
 def score_session(info):
     scores = {}
-    ut = max(info["user_turns"], 1)
+    edits = max(info["edits"], 1)
     tt = max(info["total_tools"], 1)
     ta = max(info["total_agents"], 1)
-    rate = info["agent_dispatches"] / ut
-    # Fix 4: Delegation reduced from 25 to 20 to make room for verification
+    # Delegation: agents per edit (not per turn) — burst sessions score fairly
+    rate = info["agent_dispatches"] / edits
     scores["delegation"] = min(20, int(20 * rate / MAGIC_BENCHMARKS["delegation_rate"]))
     sk = info["skill_invocations"]
     scores["skills"] = min(25, int(25 * sk / MAGIC_BENCHMARKS["skills_per_session"]))
@@ -214,7 +218,7 @@ def main():
         r = results[0]
         s = r["scores"]
         print(f"Session: {r['sid']}  Date: {r['date']}  Branch: {r['branch']}")
-        print(f"  Delegation:     {s['delegation']:>2}/20  ({r['agent_dispatches']} agents / {r['user_turns']} turns)")
+        print(f"  Delegation:     {s['delegation']:>2}/20  ({r['agent_dispatches']} agents / {r['edits']} edits)")
         print(f"  Skills:         {s['skills']:>2}/25  ({r['skill_invocations']} invocations)")
         print(f"  Task tracking:  {s['tracking']:>2}/20  ({r['task_tracking']} creates+updates / {r['total_tools']} tools)")
         print(f"  Specialization: {s['specialization']:>2}/15  ({r['specialized_agents']}/{r['total_agents']} specialized)")

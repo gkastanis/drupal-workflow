@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # teammate-quality-gate.sh
-# Advisory hook for TeammateIdle and TaskCompleted events.
+# Advisory hook for TaskCompleted events.
 # Checks if verification output was produced before task completion.
 # Always exits 0 (never blocks) - reminder only.
 #

@@ -10,8 +10,6 @@ Checks:
 import json
 import os
 import re
-import stat
-import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass, field
@@ -19,6 +17,8 @@ from pathlib import Path
 
 PLUGIN_DIR = Path(__file__).resolve().parent.parent
 HOOKS_FILE = PLUGIN_DIR / "hooks" / "hooks.json"
+if not HOOKS_FILE.exists():
+    HOOKS_FILE = PLUGIN_DIR / "hooks.json"
 EVAL_DIR = PLUGIN_DIR / "eval" / "evals"
 
 

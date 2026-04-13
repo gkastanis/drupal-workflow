@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # block-sensitive-files.sh
 # PreToolUse Hook - Block access to sensitive Drupal files
 # Exit code 2 = BLOCK execution, Exit code 0 = ALLOW execution
+set -u
 
 # Set up logging
 LOG_FILE="/tmp/blocked-sensitive-files.log"
@@ -37,6 +38,8 @@ TOOL_NAME=""
 FILE_PATH=""
 PATTERN=""
 PATH_PARAM=""
+CUSTOM_PATTERNS=""
+ALLOWLIST=""
 
 # Try direct jq extraction first
 if command -v jq >/dev/null 2>&1; then
@@ -90,12 +93,13 @@ check_allowlist() {
     local path="$1"
 
     if [ -n "$ALLOWLIST" ]; then
-        for allowed_path in $ALLOWLIST; do
+        while IFS= read -r allowed_path; do
+            [ -z "$allowed_path" ] && continue
             if echo "$path" | grep -qE "$allowed_path"; then
                 log "Path is in allowlist, allowing access: $path"
                 exit 0
             fi
-        done
+        done <<< "$ALLOWLIST"
     fi
 }
 
@@ -104,11 +108,12 @@ check_custom_patterns() {
     local path="$1"
 
     if [ -n "$CUSTOM_PATTERNS" ]; then
-        for pattern in $CUSTOM_PATTERNS; do
+        while IFS= read -r pattern; do
+            [ -z "$pattern" ] && continue
             if echo "$path" | grep -qE "$pattern"; then
                 block_access "matches custom sensitive pattern: $pattern" "$path"
             fi
-        done
+        done <<< "$CUSTOM_PATTERNS"
     fi
 }
 
@@ -135,14 +140,9 @@ block_access() {
 check_env_files() {
     local path="$1"
 
-    # .env and variants (.env.local, .env.production, etc.)
-    if echo "$path" | grep -qiE "\.env(\.[a-z]+)?$|^\.env$"; then
+    # .env and all variants (.env.local, .env.production, .env.local.php, .env.test.local, etc.)
+    if echo "$path" | grep -qiE '(^|/)\.env(\..+)?$'; then
         block_access "environment file (.env) contains sensitive credentials" "$path"
-    fi
-
-    # .env in any directory
-    if echo "$path" | grep -qE "/\.env(\.[a-z]+)?$"; then
-        block_access "environment file contains sensitive credentials" "$path"
     fi
 }
 
@@ -183,8 +183,8 @@ check_other_sensitive_files() {
         block_access "private key or certificate file" "$path"
     fi
 
-    # SSH keys
-    if echo "$path" | grep -qE "id_rsa|id_ed25519|authorized_keys|known_hosts"; then
+    # SSH keys (anchored to path components to avoid false positives)
+    if echo "$path" | grep -qE '(^|/)id_rsa($|\.pub$)|(^|/)id_ed25519($|\.pub$)|(^|/)authorized_keys$|(^|/)known_hosts$'; then
         block_access "SSH key or configuration file" "$path"
     fi
 

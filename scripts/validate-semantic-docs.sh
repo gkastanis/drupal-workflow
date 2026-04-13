@@ -23,6 +23,15 @@ pass() {
     ((CHECKS++)) || true
 }
 
+# Extract frontmatter content (between first and second ---)
+extract_frontmatter() {
+    awk '
+        NR==1 && /^---$/ {in_fm=1; next}
+        in_fm && /^---$/ {exit}
+        in_fm {print}
+    ' "$1"
+}
+
 # --- Guard: skip if no semantic docs exist ---
 if [[ ! -d "$TECH_DIR" ]]; then
     echo "SEMANTIC DOCS: No tech specs found (run /drupal-bootstrap to set up)"
@@ -46,7 +55,7 @@ else
     for spec in "${TECH_SPECS[@]}"; do
         SPEC_NAME=$(basename "$spec" .md)
         FEATURE_CODE=$(echo "$SPEC_NAME" | sed 's/_[0-9]*_.*$//')
-        if ! grep -qF "$FEATURE_CODE" "$BUSINESS_INDEX" 2>/dev/null; then
+        if ! grep -qE "(^|\|)[[:space:]]*${FEATURE_CODE}[[:space:]]*(\||$)" "$BUSINESS_INDEX" 2>/dev/null; then
             warn "$SPEC_NAME not listed in 00_BUSINESS_INDEX.md"
         else
             pass
@@ -150,7 +159,7 @@ for spec in "${TECH_SPECS[@]}"; do
     SPEC_NAME=$(basename "$spec" .md)
 
     # Get module name from frontmatter to resolve relative paths
-    SPEC_MODULE=$(grep '^module:' "$spec" 2>/dev/null | head -1 | sed 's/^module:[[:space:]]*//' | sed 's/[[:space:]]*$//')
+    SPEC_MODULE=$(extract_frontmatter "$spec" | grep '^module:' | head -1 | sed 's/^module:[[:space:]]*//' | sed 's/[[:space:]]*$//')
     MODULE_DIR=""
     if [[ -n "$SPEC_MODULE" && -n "$MODULES_DIR" ]]; then
         MODULE_DIR="$MODULES_DIR/$SPEC_MODULE"
@@ -206,8 +215,8 @@ done
 if [[ -f "$STRUCTURAL_DIR/services.md" ]]; then
     for spec in "${TECH_SPECS[@]}"; do
         SPEC_NAME=$(basename "$spec" .md)
-        # Extract module from frontmatter
-        MODULE=$(grep '^module:' "$spec" 2>/dev/null | head -1 | sed 's/^module:[[:space:]]*//' | sed 's/[[:space:]]*$//')
+        # Extract module from frontmatter only
+        MODULE=$(extract_frontmatter "$spec" | grep '^module:' | head -1 | sed 's/^module:[[:space:]]*//' | sed 's/[[:space:]]*$//')
         if [[ -n "$MODULE" && "$MODULE" != "-" ]]; then
             # Check if module appears anywhere in structural index
             if ! grep -qF "$MODULE" "$STRUCTURAL_DIR/services.md" 2>/dev/null && \

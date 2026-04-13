@@ -33,6 +33,8 @@ if [[ -z "$AGENT_NAME" || "$AGENT_NAME" == "null" ]]; then
 fi
 # Final fallback to env var for backward compatibility.
 AGENT_NAME="${AGENT_NAME:-${SUBAGENT_NAME:-unknown}}"
+# Sanitize AGENT_NAME to prevent path traversal
+[[ "$AGENT_NAME" =~ ^[a-zA-Z0-9._:-]+$ ]] || AGENT_NAME="unknown"
 
 log "SubagentStart hook triggered for agent: $AGENT_NAME"
 

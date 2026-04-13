@@ -5,13 +5,16 @@
 
 INPUT_JSON=$(cat)
 
-# Extract file_path
+# Extract file_path (try file_path first, then path)
 FILE_PATH=""
 if command -v jq >/dev/null 2>&1; then
-    FILE_PATH=$(echo "$INPUT_JSON" | jq -r '.tool_input.file_path // ""' 2>/dev/null)
+    FILE_PATH=$(echo "$INPUT_JSON" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)
 fi
 if [ -z "$FILE_PATH" ] || [ "$FILE_PATH" = "null" ]; then
     FILE_PATH=$(echo "$INPUT_JSON" | grep -o '"file_path":"[^"]*"' | head -1 | cut -d'"' -f4)
+fi
+if [ -z "$FILE_PATH" ] || [ "$FILE_PATH" = "null" ]; then
+    FILE_PATH=$(echo "$INPUT_JSON" | grep -o '"path":"[^"]*"' | head -1 | cut -d'"' -f4)
 fi
 
 if [ -z "$FILE_PATH" ] || [ "$FILE_PATH" = "null" ]; then

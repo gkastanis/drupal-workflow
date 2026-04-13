@@ -6,21 +6,27 @@
 # Read JSON input from stdin (Claude hook provides tool use context as JSON)
 INPUT_JSON=$(cat)
 
-# Extract file_path from the JSON
+# Extract file_path from the JSON (try file_path first, then path)
 FILE_PATH=""
 if command -v jq >/dev/null 2>&1; then
-    FILE_PATH=$(echo "$INPUT_JSON" | jq -r '.tool_input.file_path // ""' 2>/dev/null)
+    FILE_PATH=$(echo "$INPUT_JSON" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)
 fi
 
 # Fallback to grep if jq unavailable or returned null
 if [ -z "$FILE_PATH" ] || [ "$FILE_PATH" = "null" ]; then
     FILE_PATH=$(echo "$INPUT_JSON" | grep -o '"file_path":"[^"]*"' | head -1 | cut -d'"' -f4)
 fi
+if [ -z "$FILE_PATH" ] || [ "$FILE_PATH" = "null" ]; then
+    FILE_PATH=$(echo "$INPUT_JSON" | grep -o '"path":"[^"]*"' | head -1 | cut -d'"' -f4)
+fi
 
 # If no file path found, allow (might be a non-file operation)
 if [ -z "$FILE_PATH" ] || [ "$FILE_PATH" = "null" ]; then
     exit 0
 fi
+
+# Ensure php binary is available
+command -v php >/dev/null 2>&1 || exit 0
 
 # Check if the file extension matches PHP-related extensions
 case "$FILE_PATH" in

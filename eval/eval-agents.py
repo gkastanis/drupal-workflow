@@ -43,13 +43,20 @@ class AgentResult:
 
 
 def parse_frontmatter(content: str) -> dict:
-    """Parse YAML frontmatter between --- delimiters."""
-    if not content.startswith("---"):
+    """Parse YAML frontmatter, handling --- in body correctly."""
+    lines = content.split('\n')
+    if not lines or lines[0].strip() != '---':
         return {}
-    end = content.find("---", 3)
-    if end < 0:
+    # Find closing --- (must be on its own line)
+    end_idx = None
+    for i in range(1, len(lines)):
+        if lines[i].strip() == '---':
+            end_idx = i
+            break
+    if end_idx is None:
         return {}
-    fm_text = content[3:end].strip()
+    fm_text = '\n'.join(lines[1:end_idx])
+    # Parse key: value pairs, including list values
     result = {}
     current_key = None
     current_list = None
@@ -87,6 +94,19 @@ def get_valid_skills() -> set:
 
 def eval_agent(agent_file: Path) -> AgentResult:
     agent_name = agent_file.stem
+
+    if not agent_file.exists():
+        ar = AgentResult(agent=agent_name, file=str(agent_file))
+        ar.assertions.append(AssertionResult(
+            id="A00",
+            description=f"Agent file exists: {agent_name}",
+            passed=False,
+            detail=f"Agent file not found at {agent_file}"
+        ))
+        ar.total_count = 1
+        ar.pass_count = 0
+        return ar
+
     content = agent_file.read_text()
     fm = parse_frontmatter(content)
     valid_skills = get_valid_skills()
@@ -95,7 +115,7 @@ def eval_agent(agent_file: Path) -> AgentResult:
     assertions = []
 
     # A01: Has YAML frontmatter
-    has_fm = content.startswith("---") and content.find("---", 3) > 0
+    has_fm = bool(fm)
     assertions.append(AssertionResult(
         id="A01", description="Has YAML frontmatter",
         passed=has_fm, detail="Frontmatter found" if has_fm else "No frontmatter"

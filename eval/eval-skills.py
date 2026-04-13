@@ -192,20 +192,28 @@ SKILL_ASSERTIONS = {
 
 # =================== ASSERTION CHECKERS ===================
 
-def parse_frontmatter(content: str) -> dict:
-    """Simple YAML frontmatter parser."""
-    if not content.startswith("---"):
-        return {}
-    end = content.find("---", 3)
-    if end < 0:
-        return {}
-    fm_text = content[3:end].strip()
-    result = {}
-    for line in fm_text.split("\n"):
-        if ":" in line and not line.startswith("  "):
-            key, _, val = line.partition(":")
-            result[key.strip()] = val.strip()
-    return result
+def parse_frontmatter(content: str) -> tuple[dict, str]:
+    """Parse YAML frontmatter, handling --- in body correctly."""
+    lines = content.split('\n')
+    if not lines or lines[0].strip() != '---':
+        return {}, content
+    # Find closing --- (must be on its own line)
+    end_idx = None
+    for i in range(1, len(lines)):
+        if lines[i].strip() == '---':
+            end_idx = i
+            break
+    if end_idx is None:
+        return {}, content
+    fm_text = '\n'.join(lines[1:end_idx])
+    body = '\n'.join(lines[end_idx + 1:])
+    # Parse simple key: value pairs
+    fm = {}
+    for line in fm_text.split('\n'):
+        if ':' in line and not line.startswith('  '):
+            key, _, value = line.partition(':')
+            fm[key.strip()] = value.strip()
+    return fm, body
 
 
 def check_assertion(assertion: dict, content: str, content_lower: str) -> AssertionResult:
@@ -217,7 +225,7 @@ def check_assertion(assertion: dict, content: str, content_lower: str) -> Assert
 
     try:
         if check == "frontmatter_fields":
-            fm = parse_frontmatter(content)
+            fm, _ = parse_frontmatter(content)
             missing = [f for f in assertion["fields"] if not fm.get(f)]
             passed = len(missing) == 0
             detail = f"Missing: {missing}" if missing else "All present"
@@ -232,11 +240,7 @@ def check_assertion(assertion: dict, content: str, content_lower: str) -> Assert
 
         elif check == "word_count_range":
             # Strip frontmatter for word count
-            body = content
-            if content.startswith("---"):
-                end = content.find("---", 3)
-                if end > 0:
-                    body = content[end + 3:]
+            _, body = parse_frontmatter(content)
             words = len(body.split())
             passed = assertion["min"] <= words <= assertion["max"]
             detail = f"{words} words"
@@ -290,7 +294,16 @@ def eval_skill(skill_name: str) -> SkillResult:
     skill_file = skill_dir / "SKILL.md"
 
     if not skill_file.exists():
-        return SkillResult(skill=skill_name, file=str(skill_file))
+        sr = SkillResult(skill=skill_name, file=str(skill_file))
+        sr.assertions.append(AssertionResult(
+            id="S00",
+            description=f"Skill file exists: {skill_name}",
+            passed=False,
+            detail=f"SKILL.md not found at {skill_file}"
+        ))
+        sr.total_count = 1
+        sr.pass_count = 0
+        return sr
 
     content = skill_file.read_text()
     content_lower = content.lower()

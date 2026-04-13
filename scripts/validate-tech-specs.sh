@@ -21,6 +21,20 @@ VALID=0
 
 REQUIRED_FIELDS="type feature_id feature_name module last_updated logic_id_count"
 
+# Extract frontmatter content (between first and second ---)
+extract_frontmatter() {
+    awk '
+        NR==1 && /^---$/ {in_fm=1; next}
+        in_fm && /^---$/ {exit}
+        in_fm {print}
+    ' "$1"
+}
+
+# Extract a single frontmatter field value
+get_frontmatter_field() {
+    extract_frontmatter "$1" | grep "^${2}:" | head -1 | sed "s/^${2}:[[:space:]]*//"
+}
+
 for spec in "$TECH_DIR"/*.md; do
     [[ -f "$spec" ]] || continue
     BASENAME=$(basename "$spec")
@@ -32,8 +46,8 @@ for spec in "$TECH_DIR"/*.md; do
 
         if $FIX; then
             # Try to derive correct name from frontmatter.
-            FEAT_ID=$(sed -n '/^---$/,/^---$/p' "$spec" | grep '^feature_id:' | head -1 | awk -F': ' '{print $2}' | tr -d ' ')
-            FEAT_NAME=$(sed -n '/^---$/,/^---$/p' "$spec" | grep '^feature_name:' | head -1 | awk -F': ' '{print $2}' | sed 's/^ *//')
+            FEAT_ID=$(get_frontmatter_field "$spec" "feature_id" | tr -d ' ')
+            FEAT_NAME=$(get_frontmatter_field "$spec" "feature_name" | sed 's/^ *//')
 
             if [[ -n "$FEAT_ID" && -n "$FEAT_NAME" ]]; then
                 # Convert feature name to PascalCase: strip non-alphanumeric, capitalize words.
@@ -92,7 +106,7 @@ for spec in "$TECH_DIR"/*.md; do
         fi
     else
         # Frontmatter exists — check required fields.
-        FRONTMATTER_BLOCK=$(sed -n '1,/^---$/p' "$spec" | tail -n +2)
+        FRONTMATTER_BLOCK=$(extract_frontmatter "$spec")
         for field in $REQUIRED_FIELDS; do
             if ! echo "$FRONTMATTER_BLOCK" | grep -q "^${field}:"; then
                 ISSUES="${ISSUES}  frontmatter: missing field '$field'\n"
@@ -102,7 +116,7 @@ for spec in "$TECH_DIR"/*.md; do
 
     if [[ -n "$ISSUES" ]]; then
         echo "  FAIL: $BASENAME"
-        printf "$ISSUES"
+        printf '%b' "$ISSUES"
         ((ERRORS++)) || true
     else
         ((VALID++)) || true

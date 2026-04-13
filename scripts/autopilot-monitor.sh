@@ -25,9 +25,12 @@ fi
 [ -z "$TOOL_NAME" ] || [ "$TOOL_NAME" = "null" ] && exit 0
 
 # Session ID and state directory
+# CLAUDE_SESSION_ID is NOT exposed to hooks. Use project dir hash as stable key —
+# only one Claude session runs per project directory at a time.
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-SESSION_ID="${CLAUDE_SESSION_ID:-$$_$(date +%s)}"
-STATE_DIR="/tmp/drupal-workflow-states/session-${SESSION_ID}"
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+SESSION_KEY=$(echo "$PROJECT_DIR" | md5sum | cut -c1-12)
+STATE_DIR="/tmp/drupal-workflow-states/project-${SESSION_KEY}"
 STATE_FILE="$STATE_DIR/state.json"
 POLICY_FILE="$STATE_DIR/policy.json"
 LOCK_FILE="$STATE_DIR/state.lock"
@@ -69,7 +72,7 @@ fi
     cat > "$PYUPDATE" << 'PYEOF'
 import json
 import sys
-from datetime import datetime
+import datetime as _dt
 
 state_file = sys.argv[1]
 policy_file = sys.argv[2]
@@ -208,7 +211,7 @@ if should_intervene and intervention_type:
         "drift_score": drift,
         "phase": state["phase"],
         "message": intervention_msg,
-        "timestamp": datetime.now(datetime.timezone.utc).isoformat()
+        "timestamp": _dt.datetime.now(_dt.timezone.utc).isoformat()
     }
 
     try:

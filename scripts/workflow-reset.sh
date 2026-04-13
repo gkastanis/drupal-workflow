@@ -3,11 +3,11 @@
 # SessionStart Hook - Reset workflow tracking state for new session.
 # Always exits 0 (never blocks session start).
 
-# Unique session ID fallback: PID + epoch when CLAUDE_SESSION_ID is empty
-SESSION_ID="${CLAUDE_SESSION_ID:-$$_$(date +%s)}"
-
-# Session-scoped state directory with restrictive permissions
-STATE_DIR="/tmp/drupal-workflow-states/session-${SESSION_ID}"
+# Use project dir hash as stable session key — CLAUDE_SESSION_ID is not exposed to hooks.
+# Only one Claude session runs per project directory at a time.
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+SESSION_KEY=$(echo "$PROJECT_DIR" | md5sum | cut -c1-12)
+STATE_DIR="/tmp/drupal-workflow-states/project-${SESSION_KEY}"
 mkdir -p "$STATE_DIR" 2>/dev/null
 chmod 700 "$STATE_DIR" 2>/dev/null
 

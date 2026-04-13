@@ -21,11 +21,12 @@ if [ -z "$TOOL_NAME" ] || [ "$TOOL_NAME" = "null" ]; then
     exit 0
 fi
 
-# Unique session ID fallback: PID + epoch when CLAUDE_SESSION_ID is empty
-SESSION_ID="${CLAUDE_SESSION_ID:-$$_$(date +%s)}"
+# Use project dir hash as stable session key — CLAUDE_SESSION_ID is not exposed to hooks.
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+SESSION_KEY=$(echo "$PROJECT_DIR" | md5sum | cut -c1-12)
 
 # Session-scoped state directory
-STATE_DIR="/tmp/drupal-workflow-states/session-${SESSION_ID}"
+STATE_DIR="/tmp/drupal-workflow-states/project-${SESSION_KEY}"
 mkdir -p "$STATE_DIR" 2>/dev/null
 chmod 700 "$STATE_DIR" 2>/dev/null
 STATE_FILE="$STATE_DIR/counters.state"

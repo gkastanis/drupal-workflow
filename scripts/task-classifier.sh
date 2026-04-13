@@ -6,8 +6,10 @@
 set -u
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-SESSION_ID="${CLAUDE_SESSION_ID:-$$_$(date +%s)}"
-STATE_DIR="/tmp/drupal-workflow-states/session-${SESSION_ID}"
+# Use project dir hash as stable session key — CLAUDE_SESSION_ID is not exposed to hooks.
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+SESSION_KEY=$(echo "$PROJECT_DIR" | md5sum | cut -c1-12)
+STATE_DIR="/tmp/drupal-workflow-states/project-${SESSION_KEY}"
 POLICIES_DIR="${PLUGIN_ROOT}/scripts/policies"
 
 mkdir -p "$STATE_DIR" 2>/dev/null

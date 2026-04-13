@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.0.0] - 2026-04-13
+
+### Added
+
+- **Magic Loop Autopilot (Phase 1)**: Live workflow policy engine. Task classifier at SessionStart categorizes prompts into 5 types (implementation, investigation, refactoring, documentation, debugging). Autopilot monitor replaces workflow-nudge with state-vector-based drift detection. Context-specific interventions: plan_missing, delegate_suggest, skill_suggest, verify_remind. Kill switch via `DRUPAL_WORKFLOW_AUTOPILOT=off`.
+- **`drupal-brainstorming` skill**: Structured exploration before implementation — entity/data design, service architecture, hook/event strategy, anti-patterns.
+- **`drupal-delegation` skill**: Execute plans via specialized agent dispatch with progress tracking. Documents the brainstorm→plan→delegate→verify workflow.
+- **Behavioral eval framework**: `run-behavioral.py` (static + behavioral runner, 4 providers: Claude, Codex, Gemini, Mistral) and `compare.py` (A/B skill comparison with cost tracking, automatic git baseline). Ported from ai_best_practices.
+- **23 behavioral eval cases** across 6 skills (drupal-rules, service-di, entity-api, security-patterns, caching, hook-patterns) + 48 static checks.
+- **Session replay eval**: `extract-prompts.py` extracts eval cases from JSONL session logs, `replay-eval.py` converts to behavioral evals, `pattern-score.py` scores sessions 0-100 against magic-era benchmarks. 31 replay cases from 11 magic-era sessions.
+- **Session analysis toolkit** (10 scripts): overview, timeline, costs, tools, search, quality, thinking, subagents, branches, dashboard. Shared `_common.py` with per-model pricing.
+- **5 policy templates** in `scripts/policies/` for task-type-specific workflow expectations.
+- **Freshness metadata** on all 18 SKILL.md files: `status`, `drupal-version`, `last-reviewed`.
+- **Autopilot spec** (`docs/AUTOPILOT_SPEC.md`, 447 lines) covering Phases 2-3: drift formula, escalation, provider routing, replay feedback loop.
+
+### Fixed
+
+- **30 bug fixes** from 3-way review (Claude + Codex GPT-5.4 + claude-code-guide agent).
+- **Security**: `block-sensitive-files.sh` shebang `#!/bin/sh`→`#!/usr/bin/env bash` (was failing open on dash), state file sourcing replaced with grep/cut, agent name sanitization, flock for concurrency.
+- **Correctness**: `.tool_input.path` fallback in lint/staleness hooks, atomic writes (temp+mv) in all 10 generators, frontmatter extraction with awk, feature code anchoring, check-staleness expanded to `.install`/`.profile`, nullglob for `ls` under `set -e`, event subscriber grep pipeline fix.
+- **Eval framework**: frontmatter parser handles `---` in body, missing file emits failing assertion, dual hooks.json path resolution, unused imports removed.
+
+### Changed
+
+- **18 skills** (was 16). `drupal-builder` agent loads `drupal-brainstorming` and `drupal-delegation`.
+- **12 hooks** (was 8). Added: `task-classifier.sh` (SessionStart), `autopilot-monitor.sh` (PostToolUse `.*`), `workflow-reset.sh` (SessionStart).
+- **hooks.json**: SessionStart watches 8 file types (was 4), `/tmp` info leak removed.
+- **pattern-score.py**: 6 scoring dimensions (was 5, added verification), recognizes in-house skills (no superpowers dependency).
+
 ## [1.8.0] - 2026-03-14
 
 ### Added

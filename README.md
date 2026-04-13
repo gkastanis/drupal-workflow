@@ -1,6 +1,6 @@
 # drupal-workflow
 
-A comprehensive Claude Code plugin for Drupal development. Provides 16 skills, 4 specialized agents, 10 commands, and quality-gate hooks for testing, dependency injection, entity API, caching, config management, security, and verification.
+A Claude Code plugin for Drupal development with live workflow optimization. Provides 18 skills, 4 specialized agents, 10 commands, behavioral evals, session analysis, and the Magic Loop Autopilot — a live policy engine that classifies tasks, tracks session behavior, and nudges toward proven high-productivity patterns.
 
 ## Installation
 
@@ -23,12 +23,14 @@ npm install drupal-workflow
 - Drupal 10+ or 11+ project
 - PHP 8.2+
 
-## Skills (16)
+## Skills (18)
 
 Skills provide domain knowledge that Claude can consult during development.
 
 | Skill | Description |
 |-------|-------------|
+| **drupal-brainstorming** | Explore requirements and design options before implementing. Entity design, service architecture, hook/event strategy. |
+| **drupal-delegation** | Execute plans by dispatching specialized agents in parallel. Structured agent dispatch with tracking. |
 | **drupal-rules** | Core development rules: code quality, security, services, testing. Auto-consulted when writing Drupal code. |
 | **drupal-testing** | Practical testing patterns: curl smoke tests, drush eval, test scripts. Verifies implementations actually work. |
 | **drupal-service-di** | Service definitions, dependency injection patterns, and interface design. |

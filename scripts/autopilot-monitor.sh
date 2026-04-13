@@ -181,22 +181,46 @@ if turns_since >= 3 and state["intervention_count"] < 5:
         if plan_drift and policy.get("require_plan", False):
             should_intervene = True
             intervention_type = "plan_missing"
-            intervention_msg = f"You've made {state['edits']} edits without a plan. Consider: /writing-plans to structure the approach first."
+            skills_hint = ", ".join(policy.get("recommended_skills", [])[:3])
+            intervention_msg = (
+                f"STOP. You have made {state['edits']} edits without a plan. "
+                f"This is an implementation task — the policy requires planning before coding.\n"
+                f"You MUST invoke the Skill tool now:\n"
+                f'  Skill({{skill: "drupal-brainstorming"}})\n'
+                f"Then after brainstorming:\n"
+                f'  Skill({{skill: "writing-plans"}})\n'
+                f"Do not make further edits until you have a plan."
+            )
         elif delegate_drift:
             should_intervene = True
             intervention_type = "delegate_suggest"
-            intervention_msg = f"Direct editing at scale ({state['edits']} edits). Consider: @drupal-builder for parallel implementation."
+            intervention_msg = (
+                f"You have made {state['edits']} direct edits without delegating. "
+                f"Use the Agent tool to dispatch specialized agents:\n"
+                f'  Agent({{subagent_type: "drupal-workflow:drupal-builder", description: "...", prompt: "..."}})\n'
+                f"Specialized agents produce higher-quality code and can work in parallel."
+            )
         elif skill_drift:
             should_intervene = True
             intervention_type = "skill_suggest"
-            intervention_msg = "No skills consulted yet. Try: /discover or /drupal-blast-radius to navigate before changes."
+            skills_hint = ", ".join(policy.get("recommended_skills", [])[:3])
+            intervention_msg = (
+                f"No skills consulted yet. Before continuing, invoke:\n"
+                f'  Skill({{skill: "discover"}})\n'
+                f"Recommended for this task: {skills_hint}"
+            )
 
     # Verification nudge fires on ANY tool when edits are substantial and no verification yet
     if not should_intervene and verify_drift and policy.get("require_verification", False):
         if state["edits"] >= 5 and state["delegations"] >= 1:
             should_intervene = True
             intervention_type = "verify_remind"
-            intervention_msg = f"Implementation looks done ({state['edits']} edits, {state['delegations']} agents). Dispatch @drupal-verifier before wrapping up."
+            intervention_msg = (
+                f"Implementation appears complete ({state['edits']} edits, {state['delegations']} agents dispatched). "
+                f"You MUST verify before claiming completion. Invoke:\n"
+                f'  Agent({{subagent_type: "drupal-workflow:drupal-verifier", description: "Verify implementation", prompt: "..."}})\n'
+                f"Or run: Skill({{skill: \"drupal-workflow:drupal-verify\"}})"
+            )
 
 # Log intervention if fired
 if should_intervene and intervention_type:
@@ -222,8 +246,9 @@ if should_intervene and intervention_type:
     with open(sys.argv[5], "a") as f:
         f.write(json.dumps(log_entry) + "\n")
 
-    # Print intervention to stdout
-    print(f"AUTOPILOT [{intervention_type}]: {intervention_msg}", file=sys.stderr)
+    # Print to stdout — PostToolUse stdout is injected into the conversation as
+    # actionable context the agent must process (stderr is ignored as noise)
+    print(f"AUTOPILOT [{intervention_type}]: {intervention_msg}")
 
 # Write updated state
 with open(state_file, "w") as f:

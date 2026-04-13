@@ -1,0 +1,15 @@
+{
+  "task_type": "refactoring",
+  "expected_phases": ["planning", "implementing", "verifying"],
+  "min_skills": 2,
+  "min_delegations": 1,
+  "require_plan": true,
+  "require_verification": true,
+  "recommended_agents": ["drupal-builder", "drupal-reviewer", "drupal-verifier"],
+  "recommended_skills": ["drupal-brainstorming", "writing-plans", "discover"],
+  "phase_budget": {
+    "planning": { "max_edits": 0, "max_turns": 5 },
+    "implementing": { "max_turns": 25 },
+    "verifying": { "min_checks": 1 }
+  }
+}

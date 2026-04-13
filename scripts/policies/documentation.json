@@ -1,0 +1,14 @@
+{
+  "task_type": "documentation",
+  "expected_phases": ["exploring", "implementing"],
+  "min_skills": 1,
+  "min_delegations": 0,
+  "require_plan": false,
+  "require_verification": false,
+  "recommended_agents": ["semantic-architect"],
+  "recommended_skills": ["discover", "semantic-docs"],
+  "phase_budget": {
+    "exploring": { "max_turns": 10 },
+    "implementing": { "max_turns": 20 }
+  }
+}

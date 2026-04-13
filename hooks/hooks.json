@@ -4,7 +4,7 @@
       {
         "hooks": [{
           "type": "command",
-          "command": "echo \"$CLAUDE_PLUGIN_ROOT\" > /tmp/drupal-workflow-plugin-root; echo 'DRUPAL WORKFLOW PLUGIN ACTIVE | Start: /drupal-bootstrap | Prime: /drupal-prime | Status: /drupal-status | Semantic: /drupal-semantic | Test: /drupal-test | Verify: /drupal-verify'",
+          "command": "echo 'DRUPAL WORKFLOW PLUGIN ACTIVE | Start: /drupal-bootstrap | Prime: /drupal-prime | Status: /drupal-status | Semantic: /drupal-semantic | Test: /drupal-test | Verify: /drupal-verify'",
           "timeout": 3000,
           "once": true,
           "statusMessage": "Drupal workflow init"
@@ -14,10 +14,26 @@
         "matcher": "startup",
         "hooks": [{
           "type": "command",
-          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/project-state-check.sh\" 2>/dev/null; exit 0",
+          "command": "PROJECT_DIR=\"${CLAUDE_PROJECT_DIR:-$(pwd)}\"; TIMESTAMP=\"$PROJECT_DIR/docs/semantic/structural/.generated-at\"; if [ -f \"$TIMESTAMP\" ]; then STALE=$(find \"$PROJECT_DIR\" -newer \"$TIMESTAMP\" \\( -name '*.services.yml' -o -name '*.routing.yml' -o -name '*.module' -o -name '*.permissions.yml' -o -name '*.install' -o -name '*.profile' -o -name '*.links.menu.yml' -o -name '*.links.task.yml' \\) -path '*/modules/*' 2>/dev/null | head -1); if [ -n \"$STALE\" ]; then bash \"${CLAUDE_PLUGIN_ROOT}/skills/structural-index/scripts/generate-all.sh\" \"$PROJECT_DIR\" >/dev/null 2>&1 && echo 'STRUCTURAL INDEX: Auto-regenerated (source files changed since last generation).' || echo 'STRUCTURAL INDEX: Auto-regeneration failed (non-critical).'; fi; fi; exit 0",
           "timeout": 15000,
           "once": true,
           "statusMessage": "Checking project docs"
+        }]
+      },
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/workflow-reset.sh",
+          "timeout": 3000,
+          "once": true
+        }]
+      },
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/task-classifier.sh",
+          "timeout": 3000,
+          "once": true
         }]
       },
       {
@@ -78,6 +94,15 @@
           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/stop-verification-gate.sh",
           "timeout": 5000,
           "statusMessage": "Verification gate"
+        }]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-monitor.sh",
+          "timeout": 3000,
+          "once": false
         }]
       }
     ],

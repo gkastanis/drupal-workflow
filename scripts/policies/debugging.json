@@ -1,0 +1,15 @@
+{
+  "task_type": "debugging",
+  "expected_phases": ["exploring", "implementing", "verifying"],
+  "min_skills": 1,
+  "min_delegations": 0,
+  "require_plan": false,
+  "require_verification": true,
+  "recommended_agents": ["drupal-verifier"],
+  "recommended_skills": ["drupal-testing", "drupal-rules", "discover"],
+  "phase_budget": {
+    "exploring": { "max_turns": 10 },
+    "implementing": { "max_turns": 15 },
+    "verifying": { "min_checks": 1 }
+  }
+}

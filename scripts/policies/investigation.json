@@ -1,0 +1,14 @@
+{
+  "task_type": "investigation",
+  "expected_phases": ["exploring", "implementing"],
+  "min_skills": 1,
+  "min_delegations": 0,
+  "require_plan": false,
+  "require_verification": false,
+  "recommended_agents": [],
+  "recommended_skills": ["discover", "semantic-docs", "structural-index"],
+  "phase_budget": {
+    "exploring": { "max_turns": 20 },
+    "implementing": { "max_turns": 5 }
+  }
+}

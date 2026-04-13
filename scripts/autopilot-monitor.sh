@@ -24,13 +24,12 @@ fi
 # No tool name? Nothing to track
 [ -z "$TOOL_NAME" ] || [ "$TOOL_NAME" = "null" ] && exit 0
 
-# Session ID and state directory
-# CLAUDE_SESSION_ID is NOT exposed to hooks. Use project dir hash as stable key —
-# only one Claude session runs per project directory at a time.
+# Session ID and project dir are not exposed to hooks. Use a single well-known
+# active state directory, namespaced by plugin root, so every hook resolves the
+# same path regardless of cwd.
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-SESSION_KEY=$(echo "$PROJECT_DIR" | md5sum | cut -c1-12)
-STATE_DIR="/tmp/drupal-workflow-states/project-${SESSION_KEY}"
+SESSION_KEY=$(printf '%s' "$PLUGIN_ROOT" | md5sum | cut -c1-12)
+STATE_DIR="/tmp/drupal-workflow-states/active-${SESSION_KEY}"
 STATE_FILE="$STATE_DIR/state.json"
 POLICY_FILE="$STATE_DIR/policy.json"
 LOCK_FILE="$STATE_DIR/state.lock"

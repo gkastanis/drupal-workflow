@@ -21,12 +21,10 @@ if [ -z "$TOOL_NAME" ] || [ "$TOOL_NAME" = "null" ]; then
     exit 0
 fi
 
-# Use project dir hash as stable session key — CLAUDE_SESSION_ID is not exposed to hooks.
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-SESSION_KEY=$(echo "$PROJECT_DIR" | md5sum | cut -c1-12)
-
-# Session-scoped state directory
-STATE_DIR="/tmp/drupal-workflow-states/project-${SESSION_KEY}"
+# Use CLAUDE_PLUGIN_ROOT as stable anchor — always set, same across all hooks.
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+SESSION_KEY=$(printf '%s' "$PLUGIN_ROOT" | md5sum | cut -c1-12)
+STATE_DIR="/tmp/drupal-workflow-states/active-${SESSION_KEY}"
 mkdir -p "$STATE_DIR" 2>/dev/null
 chmod 700 "$STATE_DIR" 2>/dev/null
 STATE_FILE="$STATE_DIR/counters.state"

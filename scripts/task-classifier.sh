@@ -6,10 +6,11 @@
 set -u
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-# Use project dir hash as stable session key — CLAUDE_SESSION_ID is not exposed to hooks.
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-SESSION_KEY=$(echo "$PROJECT_DIR" | md5sum | cut -c1-12)
-STATE_DIR="/tmp/drupal-workflow-states/project-${SESSION_KEY}"
+# Hooks do not receive a stable session or project identifier. Use a single
+# well-known active state directory, namespaced by plugin root, so every hook
+# resolves the same path regardless of cwd.
+SESSION_KEY=$(printf '%s' "$PLUGIN_ROOT" | md5sum | cut -c1-12)
+STATE_DIR="/tmp/drupal-workflow-states/active-${SESSION_KEY}"
 POLICIES_DIR="${PLUGIN_ROOT}/scripts/policies"
 
 mkdir -p "$STATE_DIR" 2>/dev/null

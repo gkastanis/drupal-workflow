@@ -85,6 +85,15 @@
           "once": false,
           "statusMessage": "Staleness check"
         }]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [{
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-monitor.sh",
+          "timeout": 3000,
+          "once": false
+        }]
       }
     ],
     "Stop": [
@@ -94,15 +103,6 @@
           "command": "${CLAUDE_PLUGIN_ROOT}/scripts/stop-verification-gate.sh",
           "timeout": 5000,
           "statusMessage": "Verification gate"
-        }]
-      },
-      {
-        "matcher": ".*",
-        "hooks": [{
-          "type": "command",
-          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-monitor.sh",
-          "timeout": 3000,
-          "once": false
         }]
       }
     ],

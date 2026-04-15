@@ -136,7 +136,7 @@ elif tool_name == "Skill":
         # Check for planning and verification skills
         if any(x in skill for x in ["writing-plans", "brainstorm"]):
             state["plan_exists"] = True
-        if any(x in skill for x in ["drupal-test", "drupal-verif"]):
+        if any(x in skill for x in ["drupal-test", "drupal-verif", "verification-before"]):
             state["verification_done"] = True
 elif tool_name in ["TaskCreate", "TaskUpdate"]:
     state["tasks_created"] += 1

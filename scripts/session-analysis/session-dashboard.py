@@ -27,7 +27,7 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 session-dashboard.py ~/.claude/projects/-home-pointblank-projects-openbrain-drupal/
+  python3 session-dashboard.py ~/.claude/projects/-home-user-myproject/
   python3 session-dashboard.py /path/to/session.jsonl
   python3 session-dashboard.py /path/to/sessions/ --days 7
   python3 session-dashboard.py /path/to/sessions/ --json > dashboard.json

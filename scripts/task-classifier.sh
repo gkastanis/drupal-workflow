@@ -30,11 +30,13 @@ fi
 
 PROMPT_LOWER=$(echo "$PROMPT" | tr '[:upper:]' '[:lower:]')
 
-# Classify by keyword priority: debugging > implementation > investigation > refactoring > documentation
+# Classify by keyword priority: debugging > maintenance > implementation > investigation > refactoring > documentation
 TASK_TYPE="implementation"  # default
 
 if echo "$PROMPT_LOWER" | grep -qE 'fix|broken|error|failing|bug|not working|crash|debug'; then
     TASK_TYPE="debugging"
+elif echo "$PROMPT_LOWER" | grep -qE 'update|config|settings|tweak|adjust|bump|cleanup|tidy|enable|disable|toggle|patch|minor|change|modify|set|tune|swap|switch'; then
+    TASK_TYPE="maintenance"
 elif echo "$PROMPT_LOWER" | grep -qE 'create|add|build|implement|module|entity|service|feature|write a|make a'; then
     TASK_TYPE="implementation"
 elif echo "$PROMPT_LOWER" | grep -qE 'why|how does|trace|find|what|explain|where|show me|look at'; then

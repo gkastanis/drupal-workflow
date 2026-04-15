@@ -56,7 +56,8 @@ if [ ! -f "$STATE_FILE" ]; then
   "last_intervention_turn": 0,
   "intervention_count": 0,
   "drift_score": 0.0,
-  "policy_task_type": "implementation"
+  "policy_task_type": "implementation",
+  "intervention_history": {}
 }
 INIT
     chmod 600 "$STATE_FILE"
@@ -64,7 +65,7 @@ fi
 
 # Atomic read-modify-write with flock
 (
-    flock -n 9 || exit 0
+    flock -w 1 9 || exit 0
 
     # Create Python script to read/update state (using separate file to avoid heredoc issues)
     PYUPDATE="/tmp/autopilot-update-$$.py"
@@ -98,6 +99,19 @@ except:
         "min_skills": 0,
         "require_verification": False
     }
+
+# One-time banner on first tool call of the session
+if state["turn"] == 0 and state["edits"] == 0 and state["reads"] == 0:
+    task_type = policy.get("task_type", state.get("policy_task_type", "unknown"))
+    req = []
+    if policy.get("require_plan"): req.append("plan")
+    if policy.get("require_verification"): req.append("verify")
+    if policy.get("min_delegations", 0) > 0: req.append("delegate")
+    skills_hint = ", ".join(policy.get("recommended_skills", [])[:3])
+    banner = f"AUTOPILOT active | task={task_type}"
+    if req: banner += f" | requires: {', '.join(req)}"
+    if skills_hint: banner += f" | skills: {skills_hint}"
+    print(banner)
 
 # Update counters based on tool type
 if tool_name in ["Edit", "Write"]:
@@ -140,34 +154,65 @@ elif state["verification_done"] == True:
 else:
     state["phase"] = "exploring"
 
-# Compute drift score
-drift = 0.0
-plan_drift = False
-delegate_drift = False
-skill_drift = False
-verify_drift = False
+# Check phase budgets
+phase_budgets = policy.get("phase_budget", {})
+current_budget = phase_budgets.get(state["phase"], {})
+budget_exceeded = False
+budget_msg = ""
 
-# Plan missing when required
-if policy.get("require_plan", False) and not state["plan_exists"] and state["edits"] > 3:
-    plan_drift = True
-    drift = max(drift, 0.3)
+if "max_edits" in current_budget and state["edits"] > current_budget["max_edits"]:
+    budget_exceeded = True
+    budget_msg = f"Phase '{state['phase']}' allows max {current_budget['max_edits']} edits, you have {state['edits']}."
 
-# Delegation missing when required
+if "max_turns" in current_budget and state["turn"] > current_budget["max_turns"]:
+    budget_exceeded = True
+    budget_msg += f" Phase '{state['phase']}' allows max {current_budget['max_turns']} turns, you are at {state['turn']}."
+
+state["budget_exceeded"] = budget_exceeded
+state["_budget_msg"] = budget_msg.strip()
+
+# Compute drift score (weighted sum)
+drift_components = {
+    "plan": 0.0,
+    "delegate": 0.0,
+    "skill": 0.0,
+    "verify": 0.0,
+}
+
+if policy.get("require_plan", False) and not state["plan_exists"] and state["edits"] > 5:
+    drift_components["plan"] = 1.0
+
 if policy.get("min_delegations", 0) > 0 and state["delegations"] < policy.get("min_delegations", 0) and state["edits"] > 5:
-    delegate_drift = True
-    drift = max(drift, 0.3)
+    drift_components["delegate"] = 1.0
 
-# Skills not consulted
 if len(state["skills_used"]) < policy.get("min_skills", 0) and state["turn"] > 5:
-    skill_drift = True
-    drift = max(drift, 0.2)
+    drift_components["skill"] = 1.0
 
-# No verification when required
 if policy.get("require_verification", False) and not state["verification_done"] and state["edits"] > 8:
-    verify_drift = True
-    drift = max(drift, 0.2)
+    drift_components["verify"] = 1.0
+
+DRIFT_WEIGHTS = {"plan": 0.3, "delegate": 0.3, "skill": 0.2, "verify": 0.2}
+drift = sum(drift_components[k] * DRIFT_WEIGHTS[k] for k in drift_components)
+
+plan_drift = drift_components["plan"] > 0
+delegate_drift = drift_components["delegate"] > 0
+skill_drift = drift_components["skill"] > 0
+verify_drift = drift_components["verify"] > 0
 
 state["drift_score"] = drift
+
+# Escalation levels: 1=hint (gentle), 2=command (firm), 3+=suppress (silent)
+MAX_FIRES_PER_TYPE = 2
+
+def get_escalation_level(itype):
+    hist = state.get("intervention_history", {})
+    return hist.get(itype, {}).get("count", 0) + 1
+
+def record_intervention(itype):
+    hist = state.setdefault("intervention_history", {})
+    entry = hist.setdefault(itype, {"count": 0, "turns": []})
+    entry["count"] += 1
+    entry["turns"].append(state["turn"])
 
 # Check if intervention should fire
 should_intervene = False
@@ -175,55 +220,111 @@ intervention_type = ""
 intervention_msg = ""
 
 turns_since = state["turn"] - state["last_intervention_turn"]
-if turns_since >= 3 and state["intervention_count"] < 5:
+if turns_since >= 3 and state["intervention_count"] < 8:
     if tool_name in ["Edit", "Write"]:
+        # Highest priority: phase budget exceeded
+        if state.get("budget_exceeded", False):
+            level = get_escalation_level("phase_budget_exceeded")
+            if level <= MAX_FIRES_PER_TYPE:
+                should_intervene = True
+                intervention_type = "phase_budget_exceeded"
+                if level == 1:
+                    intervention_msg = (
+                        f"Phase budget warning: you are in '{state['phase']}' phase. "
+                        f"{state.get('_budget_msg', '')} "
+                        f"Consider moving to the next phase."
+                    )
+                else:
+                    intervention_msg = (
+                        f"Phase budget EXCEEDED for '{state['phase']}' — second warning. "
+                        f"{state.get('_budget_msg', '')} "
+                        f"You MUST transition to the next workflow phase NOW."
+                    )
+
         # Priority: plan > delegate > skill
-        if plan_drift and policy.get("require_plan", False):
-            should_intervene = True
-            intervention_type = "plan_missing"
-            skills_hint = ", ".join(policy.get("recommended_skills", [])[:3])
-            intervention_msg = (
-                f"STOP. You have made {state['edits']} edits without a plan. "
-                f"This is an implementation task — the policy requires planning before coding.\n"
-                f"You MUST invoke the Skill tool now:\n"
-                f'  Skill({{skill: "drupal-brainstorming"}})\n'
-                f"Then after brainstorming:\n"
-                f'  Skill({{skill: "writing-plans"}})\n'
-                f"Do not make further edits until you have a plan."
-            )
+        elif plan_drift and policy.get("require_plan", False):
+            level = get_escalation_level("plan_missing")
+            if level <= MAX_FIRES_PER_TYPE:
+                should_intervene = True
+                intervention_type = "plan_missing"
+                if level == 1:
+                    skills_hint = ", ".join(policy.get("recommended_skills", [])[:3])
+                    intervention_msg = (
+                        f"You have made {state['edits']} edits without a plan. "
+                        f"Consider invoking Skill({{skill: \"drupal-brainstorming\"}}) "
+                        f"followed by Skill({{skill: \"writing-plans\"}}) before continuing. "
+                        f"Recommended: {skills_hint}"
+                    )
+                else:
+                    intervention_msg = (
+                        f"STOP. You have made {state['edits']} edits without a plan — this is the second warning. "
+                        f"You MUST invoke the Skill tool NOW:\n"
+                        f'  Skill({{skill: "drupal-brainstorming"}})\n'
+                        f"Then:\n"
+                        f'  Skill({{skill: "writing-plans"}})\n'
+                        f"Do not make further edits until you have a plan."
+                    )
+
         elif delegate_drift:
-            should_intervene = True
-            intervention_type = "delegate_suggest"
-            intervention_msg = (
-                f"You have made {state['edits']} direct edits without delegating. "
-                f"Use the Agent tool to dispatch specialized agents:\n"
-                f'  Agent({{subagent_type: "drupal-workflow:drupal-builder", description: "...", prompt: "..."}})\n'
-                f"Specialized agents produce higher-quality code and can work in parallel."
-            )
+            level = get_escalation_level("delegate_suggest")
+            if level <= MAX_FIRES_PER_TYPE:
+                should_intervene = True
+                intervention_type = "delegate_suggest"
+                if level == 1:
+                    intervention_msg = (
+                        f"You have made {state['edits']} direct edits. "
+                        f"Consider using the Agent tool to dispatch specialized agents for parallel work."
+                    )
+                else:
+                    intervention_msg = (
+                        f"You have made {state['edits']} direct edits without delegating — second warning. "
+                        f"Use the Agent tool NOW:\n"
+                        f'  Agent({{subagent_type: "drupal-workflow:drupal-builder", description: "...", prompt: "..."}})\n'
+                        f"Specialized agents produce higher-quality code."
+                    )
+
         elif skill_drift:
-            should_intervene = True
-            intervention_type = "skill_suggest"
-            skills_hint = ", ".join(policy.get("recommended_skills", [])[:3])
-            intervention_msg = (
-                f"No skills consulted yet. Before continuing, invoke:\n"
-                f'  Skill({{skill: "discover"}})\n'
-                f"Recommended for this task: {skills_hint}"
-            )
+            level = get_escalation_level("skill_suggest")
+            if level <= MAX_FIRES_PER_TYPE:
+                should_intervene = True
+                intervention_type = "skill_suggest"
+                skills_hint = ", ".join(policy.get("recommended_skills", [])[:3])
+                if level == 1:
+                    intervention_msg = (
+                        f"No skills consulted yet. Consider invoking: "
+                        f'Skill({{skill: "discover"}}). '
+                        f"Recommended: {skills_hint}"
+                    )
+                else:
+                    intervention_msg = (
+                        f"Still no skills consulted — second warning. Invoke NOW:\n"
+                        f'  Skill({{skill: "discover"}})\n'
+                        f"Recommended: {skills_hint}"
+                    )
 
     # Verification nudge fires on ANY tool when edits are substantial and no verification yet
     if not should_intervene and verify_drift and policy.get("require_verification", False):
-        if state["edits"] >= 5 and state["delegations"] >= 1:
-            should_intervene = True
-            intervention_type = "verify_remind"
-            intervention_msg = (
-                f"Implementation appears complete ({state['edits']} edits, {state['delegations']} agents dispatched). "
-                f"You MUST verify before claiming completion. Invoke:\n"
-                f'  Agent({{subagent_type: "drupal-workflow:drupal-verifier", description: "Verify implementation", prompt: "..."}})\n'
-                f"Or run: Skill({{skill: \"drupal-workflow:drupal-verify\"}})"
-            )
+        if state["edits"] >= 5:
+            level = get_escalation_level("verify_remind")
+            if level <= MAX_FIRES_PER_TYPE:
+                should_intervene = True
+                intervention_type = "verify_remind"
+                if level == 1:
+                    intervention_msg = (
+                        f"Implementation looks substantial ({state['edits']} edits). "
+                        f"Consider verifying before claiming completion."
+                    )
+                else:
+                    intervention_msg = (
+                        f"You MUST verify before completion — second warning. Invoke:\n"
+                        f'  Agent({{subagent_type: "drupal-workflow:drupal-verifier", description: "Verify", prompt: "..."}})\n'
+                        f'Or: Skill({{skill: "drupal-workflow:drupal-verify"}})'
+                    )
 
 # Log intervention if fired
 if should_intervene and intervention_type:
+    fired_level = get_escalation_level(intervention_type)
+    record_intervention(intervention_type)
     state["intervention_count"] += 1
     state["last_intervention_turn"] = state["turn"]
 
@@ -231,7 +332,9 @@ if should_intervene and intervention_type:
     log_entry = {
         "turn": state["turn"],
         "type": intervention_type,
+        "level": fired_level,
         "drift_score": drift,
+        "drift_components": drift_components,
         "phase": state["phase"],
         "message": intervention_msg,
         "timestamp": _dt.datetime.now(_dt.timezone.utc).isoformat()

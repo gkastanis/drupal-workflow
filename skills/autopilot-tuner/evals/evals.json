@@ -1,0 +1,23 @@
+{
+  "skill_name": "autopilot-tuner",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The autopilot keeps nagging about plans on small config changes, can you tune it?",
+      "expected_output": "Runs diagnose.py, identifies classification issues or threshold problems, proposes specific changes to classifier keywords or policy thresholds, presents proposals with reasoning before applying",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "How is the workflow plugin doing? Run a health check and improve what's not working",
+      "expected_output": "Runs full diagnostic, presents acceptance rates and outcome summary, identifies highest-impact issues, generates proposals ordered by confidence, offers to apply changes",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "skill_suggest is always at 0% — what should we do?",
+      "expected_output": "Focuses on skill_suggest data, analyzes why agents ignore it, proposes lowering min_skills or changing the intervention message, explains tradeoffs",
+      "files": []
+    }
+  ]
+}

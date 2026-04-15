@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPRECATED: superseded by autopilot-monitor.sh (Phase 2). Not in hooks.json.
 # workflow-nudge.sh
 # PostToolUse Hook - Track session behavior and nudge toward delegation.
 # Fires on ALL tool calls (matcher: .*). Tracks counters in a temp state

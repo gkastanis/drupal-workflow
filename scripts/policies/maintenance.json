@@ -1,0 +1,14 @@
+{
+  "task_type": "maintenance",
+  "expected_phases": ["exploring", "implementing"],
+  "min_skills": 0,
+  "min_delegations": 0,
+  "require_plan": false,
+  "require_verification": false,
+  "recommended_agents": [],
+  "recommended_skills": ["discover", "drupal-rules"],
+  "phase_budget": {
+    "exploring": { "max_turns": 5 },
+    "implementing": { "max_turns": 15, "max_edits": 10 }
+  }
+}

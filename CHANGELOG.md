@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.0.1] - 2026-04-15
+
+### Added
+
+- **Autopilot Phase 2**: Weighted drift formula (plan=0.3, delegate=0.3, skill=0.2, verify=0.2), 3-level escalation (hint → command → suppress, MAX_FIRES_PER_TYPE=2), phase budget enforcement from policy files.
+- **`maintenance` task type**: New classifier category for config/update/tweak tasks — no plan or delegation required. Keywords: update, config, settings, tweak, adjust, bump, cleanup, tidy, enable, disable, toggle, patch, minor, change, modify, set, tune, swap, switch.
+- **`autopilot-tuner` skill**: Self-improvement skill that reads session data (intervention logs, outcomes), computes acceptance rates, and proposes policy/threshold/classifier changes with confidence levels.
+- **`analyze-replays.py`**: Session analysis script with `--compare` mode (before/after Phase 2 deployment) and `--json` output. `--verbose` for per-session breakdown.
+- **`diagnose.py`**: Structured diagnostic script outputting acceptance rates, outcome correlations, classification accuracy, threshold sensitivity, and actionable proposals.
+- **Outcome archival**: `workflow-reset.sh` archives previous session state + intervention log to `outcomes.jsonl` before resetting. Intervention log truncated per session (no cross-session accumulation).
+- **One-time banner**: PostToolUse monitor prints autopilot status on first tool call of session.
+- **10 behavioral eval cases** (`test-autopilot-phase2.sh`): Classifier, weighted drift, escalation levels, suppression, phase budgets, maintenance policy, verification.
+
+### Fixed
+
+- **Monitor on wrong hook**: Rebase artifact placed autopilot-monitor under `Stop` instead of `PostToolUse` — monitor never received per-tool payloads. (Found by Codex review)
+- **flock race condition**: `flock -n` (non-blocking) → `flock -w 1` (1s wait) — prevents concurrent tool calls from clobbering `intervention_history`, which was defeating the escalation cap.
+- **Cache desync**: Plugin cache had old version printing to stderr (invisible to agents), no escalation, no maintenance type. Synced marketplace → cache.
+- **verification-before-completion not detected**: Added to verification skill detection patterns alongside drupal-test/drupal-verif.
+- **Dead code**: `workflow-nudge.sh` deprecated (not in hooks.json), `counters.state` init removed from `workflow-reset.sh`.
+
+### Changed
+
+- **19 skills** (was 18). Added `autopilot-tuner`.
+- **6 task types** (was 5). Added `maintenance`.
+- **min_skills**: 2 → 1 in implementation and refactoring policies.
+- **plan_missing threshold**: edits > 3 → edits > 5.
+- **verify_remind**: Removed `delegations >= 1` gate — solo sessions now get verification nudges.
+- README updated with Phase 2 features, autopilot-tuner in skills table, project structure.
+
 ## [2.0.0] - 2026-04-13
 
 ### Added

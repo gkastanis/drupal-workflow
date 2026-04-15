@@ -1,6 +1,6 @@
 {
   "name": "drupal-workflow",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Drupal development workflow with live autopilot: 19 skills, 4 agents, 10 commands, behavioral evals, session analysis, and Magic Loop Autopilot for task classification and drift detection.",
   "author": { "name": "Zorz" },
   "license": "MIT",

@@ -1,6 +1,6 @@
 # drupal-workflow
 
-A Claude Code plugin for Drupal development with live workflow optimization. Provides 18 skills, 4 specialized agents, 10 commands, behavioral evals, session analysis, and the Magic Loop Autopilot — a live policy engine that classifies tasks, tracks session behavior, and nudges toward proven high-productivity patterns.
+A Claude Code plugin for Drupal development with live workflow optimization. Provides 19 skills, 4 specialized agents, 10 commands, behavioral evals, session analysis, and the Magic Loop Autopilot — a live policy engine that classifies tasks, detects drift via weighted scoring, escalates interventions (hint → command → suppress), and self-tunes based on session replay data.
 
 ## Installation
 
@@ -23,7 +23,7 @@ npm install drupal-workflow
 - Drupal 10+ or 11+ project
 - PHP 8.2+
 
-## Skills (18)
+## Skills (19)
 
 Skills provide domain knowledge that Claude can consult during development.
 
@@ -47,6 +47,7 @@ Skills provide domain knowledge that Claude can consult during development.
 | **discover** | Docs-first codebase discovery. Use before Glob/Grep to get Logic IDs and file paths from semantic documentation. Now supports structural queries (`service:`, `hook:`, `deps:`, etc.). |
 | **structural-index** | Auto-generated structural awareness for Drupal projects. Parses `*.services.yml`, `*.routing.yml`, hooks, plugins, and entity types to build dependency graphs and feature maps. |
 | **writing-plans** | Write comprehensive implementation plans for sub-agents or complex tasks. |
+| **autopilot-tuner** | Analyze autopilot effectiveness and self-tune the plugin. Reads session data, computes acceptance rates, and proposes policy/threshold/classifier changes. |
 
 ## Agents (4)
 
@@ -82,9 +83,10 @@ The plugin registers hooks for quality gates:
 
 | Event | Trigger | Action |
 |-------|---------|--------|
-| **SessionStart** | Plugin loaded | Displays activation message with available commands. Auto-regenerates structural index if stale. |
+| **SessionStart** | Plugin loaded | Displays activation message. Auto-regenerates structural index if stale. Classifies task type (implementation/maintenance/debugging/investigation/refactoring/documentation) and loads matching policy. |
 | **PreToolUse** | `Read` or `Grep` | Blocks access to sensitive files (`settings.php`, `.env`, credentials). |
 | **PostToolUse** | `Edit` or `Write` | Runs `php -l` lint on modified PHP files. Advisory staleness warning when structural source files are edited. |
+| **PostToolUse** | Any tool | **Autopilot monitor**: tracks session state (edits, delegations, skills, phase), computes weighted drift score, fires 3-level escalation interventions (hint → command → suppress), enforces phase budgets. |
 | **SubagentStart** | Any subagent | Injects Drupal context (version detection, agent memory paths). |
 | **TaskCompleted** | Task marked done | Runs quality gate checks on completed work. |
 
@@ -94,22 +96,27 @@ The plugin registers hooks for quality gates:
 drupal-workflow/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin metadata
-├── skills/                   # 16 Drupal development skills
+├── skills/                   # 19 skills (18 Drupal + 1 autopilot)
 │   ├── structural-index/     # Auto-generated structural awareness
 │   │   └── scripts/          # 13 generator + check scripts
-│   └── ...                   # 15 other skills
+│   ├── autopilot-tuner/      # Self-improvement: diagnose.py + SKILL.md
+│   └── ...                   # 17 other skills
 ├── agents/                   # 4 specialized agents
 ├── commands/                 # 10 slash commands
 ├── hooks/
 │   └── hooks.json            # Hook event definitions
 ├── scripts/                  # Hook + utility scripts
+│   ├── autopilot-monitor.sh  # PostToolUse: drift detection, escalation, phase budgets
+│   ├── task-classifier.sh    # SessionStart: task type classification
+│   ├── workflow-reset.sh     # SessionStart: state reset + outcome archival
 │   ├── block-sensitive-files.sh
 │   ├── php-lint-on-save.sh
-│   ├── staleness-check.sh    # PostToolUse structural staleness advisory
+│   ├── staleness-check.sh
 │   ├── subagent-context-inject.sh
 │   ├── teammate-quality-gate.sh
-│   ├── inject-claude-md.sh   # Add/update ## Codebase section in CLAUDE.md
-│   ├── validate-tech-specs.sh # Check/fix tech spec filenames and frontmatter
+│   ├── policies/             # Per-task-type policy configs (6 types)
+│   ├── session-analysis/     # analyze-replays.py, session-quality.py, etc.
+│   ├── tests/                # test-autopilot-phase2.sh (10 behavioral cases)
 │   └── lib/
 │       └── hook-utils.sh
 └── README.md
